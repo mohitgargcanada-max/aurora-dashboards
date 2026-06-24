@@ -14,7 +14,8 @@ import {
 const projectRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const DEFAULT_CACHE_ROOT = resolve(projectRoot, "cache/us/ohlcv");
 const DEFAULT_REPORT_PATH = resolve(projectRoot, "data/us-daily-refresh-report.json");
-const DEFAULT_CHUNK_SIZE = 150;
+const STOOQ_QUOTE_ENDPOINT = "https://stooq.pl/q/l/";
+const DEFAULT_CHUNK_SIZE = 75;
 const DEFAULT_TIMEOUT_MS = 15_000;
 const DEFAULT_MAX_CONSECUTIVE_FAILURES = 3;
 
@@ -123,7 +124,7 @@ async function cachedSymbols(cacheRoot) {
 }
 
 async function fetchStooqQuotes(symbols, fetcher = fetch, timeoutMs = DEFAULT_TIMEOUT_MS) {
-  const url = `https://stooq.com/q/l/?s=${symbols.map(stooqSymbol).join(",")}&f=sd2t2ohlcv&h&e=csv`;
+  const url = `${STOOQ_QUOTE_ENDPOINT}?s=${symbols.map(stooqSymbol).join(",")}&f=sd2t2ohlcv&h&e=csv`;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -138,6 +139,31 @@ async function fetchStooqQuotes(symbols, fetcher = fetch, timeoutMs = DEFAULT_TI
     return parseStooqQuoteCsv(await response.text());
   } finally {
     clearTimeout(timeout);
+  }
+}
+
+async function fetchStooqQuotesAdaptive(symbols, fetcher = fetch, timeoutMs = DEFAULT_TIMEOUT_MS) {
+  try {
+    return { rows: await fetchStooqQuotes(symbols, fetcher, timeoutMs), warnings: [] };
+  } catch (error) {
+    if (error.message === "STOOQ_HTTP_404" && symbols.length > 1) {
+      const midpoint = Math.ceil(symbols.length / 2);
+      const left = await fetchStooqQuotesAdaptive(symbols.slice(0, midpoint), fetcher, timeoutMs);
+      const right = await fetchStooqQuotesAdaptive(symbols.slice(midpoint), fetcher, timeoutMs);
+      return {
+        rows: [...left.rows, ...right.rows],
+        warnings: [...left.warnings, ...right.warnings]
+      };
+    }
+    return {
+      rows: [],
+      warnings: [{
+        provider: "STOOQ",
+        symbols: symbols.length,
+        sample: symbols.slice(0, 5),
+        warning: error.message
+      }]
+    };
   }
 }
 
@@ -216,19 +242,20 @@ export async function refreshDailyBars({
 
   for (let offset = 0; offset < symbols.length; offset += chunkSize) {
     const chunk = symbols.slice(offset, offset + chunkSize);
-    try {
-      for (const row of await fetchStooqQuotes(chunk, fetcher, timeoutMs)) {
-        quoteMap.set(row.symbol, {
-          bar: row.bar,
-          provider: "STOOQ",
-          endpoint: "https://stooq.com/q/l/",
-          fallback_label: "FREE_PRIMARY",
-          fallback_reason: null
-        });
-      }
+    const result = await fetchStooqQuotesAdaptive(chunk, fetcher, timeoutMs);
+    warnings.push(...result.warnings.map(warning => ({ ...warning, offset })));
+    for (const row of result.rows) {
+      quoteMap.set(row.symbol, {
+        bar: row.bar,
+        provider: "STOOQ",
+        endpoint: STOOQ_QUOTE_ENDPOINT,
+        fallback_label: "FREE_PRIMARY",
+        fallback_reason: null
+      });
+    }
+    if (result.rows.length) {
       consecutiveFailures = 0;
-    } catch (error) {
-      warnings.push({ provider: "STOOQ", offset, symbols: chunk.length, warning: error.message });
+    } else {
       consecutiveFailures += 1;
       if (!quoteMap.size && consecutiveFailures >= maxConsecutiveFailures) break;
     }
@@ -259,7 +286,8 @@ export async function refreshDailyBars({
     }
   }
 
-  if (symbols.some(symbol => !quoteMap.has(symbol)) && eodhdToken) {
+  const eodhdMissing = symbols.filter(symbol => !quoteMap.has(symbol));
+  if (eodhdMissing.length && eodhdToken) {
     try {
       const fallback = await fetchEodhdBulkLastDay(expectedSession, eodhdToken, fetcher, timeoutMs);
       for (const row of fallback.rows) {
@@ -279,6 +307,12 @@ export async function refreshDailyBars({
     } catch (error) {
       warnings.push({ provider: "EODHD", warning: error.message });
     }
+  } else if (eodhdMissing.length) {
+    warnings.push({
+      provider: "EODHD",
+      symbols: eodhdMissing.length,
+      warning: "EODHD_TOKEN_MISSING"
+    });
   }
 
   let inserted = 0;
@@ -358,7 +392,7 @@ export async function refreshDailyBars({
   await rename(temporary, reportPath);
 
   if (status === "DATA_REFRESH_BLOCKED" && !allowStale) {
-    const error = new Error("US daily refresh did not load any usable Stooq quotes");
+    const error = new Error("US daily refresh did not load any usable daily quotes");
     error.report = report;
     throw error;
   }
