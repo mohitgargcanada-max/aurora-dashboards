@@ -3,7 +3,7 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { saveSymbol, loadSymbol } from "../engine/cache-store.mjs";
-import { latestCompletedUsSession, parseEodhdBulkRows, parseStooqQuoteCsv, parseYahooQuoteRows, refreshDailyBars, stooqSymbol, yahooSymbol } from "../scripts/refresh-stooq-daily-bars.mjs";
+import { latestCompletedUsSession, parseEodhdBulkRows, parseStooqDailyCsv, parseStooqQuoteCsv, parseYahooQuoteRows, refreshDailyBars, stooqSymbol, yahooSymbol } from "../scripts/refresh-stooq-daily-bars.mjs";
 
 assert.equal(stooqSymbol("BRK-B"), "brk-b.us");
 assert.equal(yahooSymbol("BRK-B"), "BRK-B");
@@ -12,6 +12,9 @@ assert.equal(latestCompletedUsSession(new Date("2026-06-24T13:00:00Z")), "2026-0
 const parsed = parseStooqQuoteCsv("Symbol,Date,Time,Open,High,Low,Close,Volume\nAAPL.US,2026-06-23,22:00:00,10,12,9,11,1000\n");
 assert.equal(parsed[0].symbol, "AAPL");
 assert.equal(parsed[0].bar.close, 11);
+const stooqDailyParsed = parseStooqDailyCsv("AAPL", "<DATE>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>\n2026-06-23,10,12,9,11,1000\n");
+assert.equal(stooqDailyParsed[0].symbol, "AAPL");
+assert.equal(stooqDailyParsed[0].bar.close, 11);
 const eodhdParsed = parseEodhdBulkRows([{ code: "MSFT.US", date: "2026-06-23", open: 20, high: 22, low: 19, close: 21, adjusted_close: 21, volume: 2000 }]);
 assert.equal(eodhdParsed[0].symbol, "MSFT");
 assert.equal(eodhdParsed[0].bar.volume, 2000);
@@ -99,6 +102,48 @@ assert.equal(splitReport.missing_quote, 1);
 assert.equal((await loadSymbol(splitDirectory, "AAPL")).data_as_of, "2026-06-23");
 
 await rm(splitDirectory, { recursive: true, force: true });
+
+const historyDirectory = await mkdtemp(join(tmpdir(), "aurora-refresh-history-"));
+const historyReportPath = join(historyDirectory, "report.json");
+await saveSymbol(historyDirectory, {
+  schema_version: "2.0",
+  market: "US",
+  symbol: "AAPL",
+  currency: "USD",
+  interval: "1d",
+  provider: "STOOQ",
+  endpoint: "d_us_txt.zip",
+  adjustment_status: "STOOQ_ADJUSTED_OHLC",
+  delayed_or_live: "EOD",
+  fallback_label: "FREE_PRIMARY",
+  data_as_of: "2026-06-22",
+  bars: [
+    { date: "2026-06-22", open: 9, high: 10, low: 8, close: 9.5, adjusted_close: 9.5, volume: 900 }
+  ]
+});
+const historyFetcher = async url => {
+  if (url.includes("/q/l/")) return new Response("not found", { status: 404 });
+  if (url.includes("/q/d/l/")) {
+    assert(url.includes("d1=20260623"));
+    return new Response(
+      "<DATE>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>\n2026-06-23,10,12,9,11,1000\n",
+      { status: 200, headers: { "content-type": "text/csv" } }
+    );
+  }
+  throw new Error(`Unexpected URL ${url}`);
+};
+const historyReport = await refreshDailyBars({
+  cacheRoot: historyDirectory,
+  reportPath: historyReportPath,
+  chunkSize: 10,
+  fetcher: historyFetcher,
+  now: new Date("2026-06-24T13:00:00Z")
+});
+assert.equal(historyReport.status, "UPDATED");
+assert.equal(historyReport.provider_counts.STOOQ, 1);
+assert.equal((await loadSymbol(historyDirectory, "AAPL")).endpoint, "https://stooq.pl/q/d/l/");
+
+await rm(historyDirectory, { recursive: true, force: true });
 
 const yahooDirectory = await mkdtemp(join(tmpdir(), "aurora-refresh-yahoo-"));
 const yahooReportPath = join(yahooDirectory, "report.json");
