@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "classification_system": "GICS-style sector / main industry / sub-industry / theme",
+  "source_basis": "AURORA_MASTER_v2_18_2 US_PROFILE sector_proxy_map; MSCI GICS hierarchy used for label governance",
+  "sector_proxy_map": {
+    "Technology": "XLK",
+    "Financials": "XLF",
+    "Industrials": "XLI",
+    "Energy": "XLE",
+    "Consumer Discretionary": "XLY",
+    "Consumer Staples": "XLP",
+    "Health Care": "XLV",
+    "Utilities": "XLU",
+    "Communication Services": "XLC",
+    "Materials": "XLB",
+    "Real Estate": "XLRE"
+  },
+  "sector_aliases": {
+    "Information Technology": "Technology",
+    "Technology": "Technology",
+    "Finance": "Financials",
+    "Financial Services": "Financials",
+    "Financials": "Financials",
+    "Industrials": "Industrials",
+    "Energy": "Energy",
+    "Consumer Cyclical": "Consumer Discretionary",
+    "Consumer Discretionary": "Consumer Discretionary",
+    "Consumer Defensive": "Consumer Staples",
+    "Consumer Staples": "Consumer Staples",
+    "Healthcare": "Health Care",
+    "Health Care": "Health Care",
+    "Utilities": "Utilities",
+    "Telecommunications": "Communication Services",
+    "Communication Services": "Communication Services",
+    "Basic Materials": "Materials",
+    "Materials": "Materials",
+    "Real Estate": "Real Estate"
+  },
+  "missing_policy": "Set gics_sector=GICS_UNKNOWN, theme_tracker_label=THEME_UNKNOWN and classification_status=UNKNOWN_OR_PARTIAL. Do not block discovery or final bucket assignment."
+}

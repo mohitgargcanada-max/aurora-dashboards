@@ -1,0 +1,17 @@
+{
+  "name": "aurora-india-dashboard",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "cache:fetch:nse": "bash scripts/fetch-nse-session.sh",
+    "cache:universe": "node scripts/ingest-universe.mjs",
+    "cache:corporate-actions": "node scripts/ingest-corporate-actions.mjs",
+    "cache:adjust": "node scripts/apply-corporate-actions.mjs",
+    "cache:bootstrap": "node scripts/ingest-bhavcopy.mjs",
+    "cache:append": "node scripts/ingest-bhavcopy.mjs",
+    "cache:audit": "node scripts/audit-cache.mjs",
+    "cache:audit:indices": "node scripts/audit-indices.mjs",
+    "scan:full": "node scripts/run-full-dashboard-scan.mjs",
+    "test": "node tests/cache-store.test.mjs && node tests/bhavcopy-parser.test.mjs"
+  }
+}

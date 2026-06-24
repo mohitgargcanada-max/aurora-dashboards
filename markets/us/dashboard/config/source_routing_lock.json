@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "locked": true,
+  "markets": ["US", "CA"],
+  "policy": {
+    "free_sources_first": true,
+    "eodhd_role": "FALLBACK_ONLY",
+    "eodhd_allowed_outcomes": ["MISSING", "STALE", "FAILED", "PARTIAL"],
+    "eodhd_blocked_when": "ANY_FREE_SOURCE_IS_FRESH_AND_COMPLETE",
+    "required_audit_fields": ["provider", "attempted_at", "asof_date", "outcome", "fields_requested", "fields_returned"],
+    "conflict_rule": "OFFICIAL_OR_ISSUER_WINS"
+  },
+  "lanes": {
+    "US": {
+      "security_master": ["NASDAQ_TRADER", "SEC_EDGAR"],
+      "ohlcv": ["STOOQ_BULK_AND_CURRENT_SNAPSHOT", "YAHOO_FINANCE"],
+      "fundamentals": ["SEC_EDGAR", "ISSUER_FILINGS", "YAHOO_FINANCE"],
+      "earnings_events": ["SEC_EDGAR", "ISSUER_RELATIONS", "YAHOO_FINANCE"],
+      "risk_macro": ["CBOE", "FRED"]
+    },
+    "CA": {
+      "security_master": ["TMX", "CSE", "SEDAR_PLUS"],
+      "ohlcv": ["YAHOO_FINANCE"],
+      "fundamentals": ["SEDAR_PLUS", "ISSUER_FILINGS", "YAHOO_FINANCE"],
+      "earnings_events": ["SEDAR_PLUS", "ISSUER_RELATIONS", "YAHOO_FINANCE"],
+      "risk_macro": ["BANK_OF_CANADA", "STATISTICS_CANADA"]
+    }
+  }
+}

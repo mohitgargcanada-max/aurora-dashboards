@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "market": "CA",
+  "routing_lock": "source_routing_lock.json",
+  "history_url_template": "https://ca.finance.yahoo.com/quote/{ENCODED_SYMBOL}/history/",
+  "history_api_template": "https://query1.finance.yahoo.com/v8/finance/chart/{ENCODED_SYMBOL}?period1={START_EPOCH}&period2={END_EPOCH}&interval=1d&events=div%2Csplits",
+  "symbol_suffixes": {
+    "TSX": ".TO",
+    "TSXV": ".V",
+    "CSE": ".CN",
+    "NEO": ".NE"
+  },
+  "free_routes": {
+    "security_master": ["TMX issuer and security files", "CSE listed securities", "SEDAR+ issuer profiles"],
+    "ohlcv": ["Yahoo Finance daily adjusted OHLCV"],
+    "fundamentals": ["SEDAR+ filings", "issuer investor-relations filings", "Yahoo Finance quoteSummary enrichment"],
+    "earnings_events": ["SEDAR+ filings", "issuer investor relations", "Yahoo Finance calendar enrichment"],
+    "risk_macro": ["Bank of Canada", "Statistics Canada"]
+  },
+  "fallback_routes": {
+    "security_master": "EODHD exchange tickers",
+    "ohlcv": "EODHD historical EOD",
+    "fundamentals": "EODHD only when endpoint entitlement is verified",
+    "earnings_events": "EODHD only when endpoint entitlement is verified"
+  },
+  "filter_policy": {
+    "include": ["active common stock", "ordinary share", "eligible interlisted share"],
+    "exclude": ["ETF", "fund", "warrant", "right", "unit", "preferred", "bond", "structured product", "inactive security"]
+  }
+}

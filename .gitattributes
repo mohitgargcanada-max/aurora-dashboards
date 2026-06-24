@@ -1,0 +1,13 @@
+*.json diff
+*.md diff
+*.mjs diff
+*.js diff
+*.ts diff
+*.sh text eol=lf
+*.ps1 text eol=crlf
+
+# If large history is later committed with Git LFS, track these:
+*.zip filter=lfs diff=lfs merge=lfs -text
+*.tar.gz filter=lfs diff=lfs merge=lfs -text
+*.parquet filter=lfs diff=lfs merge=lfs -text
+

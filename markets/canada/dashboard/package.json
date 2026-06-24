@@ -1,0 +1,11 @@
+{
+  "name": "aurora-canada-dashboard",
+  "private": true,
+  "version": "0.1.0",
+  "description": "AURORA Canada dashboard scaffold.",
+  "scripts": {
+    "scan:full": "node scripts/scan-full.mjs",
+    "test": "node scripts/validate-scaffold.mjs"
+  }
+}
+

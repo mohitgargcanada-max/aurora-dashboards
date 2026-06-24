@@ -1,0 +1,59 @@
+{
+  "schema_version": "3.0",
+  "market": "INDIA",
+  "history_bars_retained": 420,
+  "minimum_complete_bars": 252,
+  "discovery_policy": {
+    "liquidity_is_discovery_gate": false,
+    "surveillance_is_discovery_gate": false,
+    "wide_thesis_stop_is_discovery_gate": false,
+    "valid_data_is_hard_gate": true
+  },
+  "bootstrap_order": [
+    "NSE_BSE_OFFICIAL_BULK_ARCHIVE",
+    "USER_SUPPLIED_OFFICIAL_ARCHIVE",
+    "YAHOO_SYMBOL_REPAIR",
+    "TAPETIDE_SYMBOL_REPAIR",
+    "EODHD_LAST_REPAIR"
+  ],
+  "daily_rule": "append or correct one completed-session bulk file; rebuild history only for new listings, gaps, corporate actions, provider conflicts, benchmark changes, or schema migrations",
+  "cache_key": [
+    "market",
+    "exchange",
+    "symbol",
+    "interval",
+    "data_as_of",
+    "adjustment_status",
+    "schema_version"
+  ],
+  "benchmarks": {
+    "broad": "NIFTY500.INDX",
+    "large": "NIFTY500.INDX",
+    "mid": "NIFTYMIDCAP150.INDX",
+    "small": "NISM250.INDX"
+  },
+  "sector_indices": [
+    "NSEBANK.INDX",
+    "NIFTYFINSERVICE.INDX",
+    "CNXIT.INDX",
+    "CNXPHARMA.INDX",
+    "NIFTYHEALTHCARE.INDX",
+    "CNXAUTO.INDX",
+    "CNXFMCG.INDX",
+    "CNXMETAL.INDX",
+    "CNXENERGY.INDX",
+    "NIFOILGAS.INDX",
+    "NIFTYREAL.INDX",
+    "NIFTYINFRA.INDX",
+    "NIFTYPSU.INDX",
+    "CNXMEDIA.INDX"
+  ],
+  "risk_indices": ["INDIAVIX.INDX"],
+  "liquidity_labels": {
+    "HIGH": "percentile >= 70",
+    "ADEQUATE": "percentile 40-69",
+    "THIN": "percentile 15-39",
+    "VERY_THIN": "percentile < 15",
+    "DATA_REPAIR": "invalid turnover"
+  }
+}

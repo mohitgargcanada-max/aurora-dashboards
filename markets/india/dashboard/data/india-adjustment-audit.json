@@ -1,0 +1,141 @@
+{
+  "schema_version": "3.0",
+  "generated_at": "2026-06-22T23:22:22.546Z",
+  "adjusted_records": 225,
+  "applied_events": 253,
+  "unresolved_events": 22,
+  "unresolved": [
+    {
+      "symbol": "ABFRL",
+      "ex_date": "2025-05-22",
+      "type": "REORGANIZATION",
+      "purpose": "Demerger"
+    },
+    {
+      "symbol": "ALLCARGO",
+      "ex_date": "2025-11-12",
+      "type": "REORGANIZATION",
+      "purpose": "Demerger"
+    },
+    {
+      "symbol": "CHEMBOND",
+      "ex_date": "2025-05-09",
+      "type": "REORGANIZATION",
+      "purpose": "Demerger"
+    },
+    {
+      "symbol": "CPCAP",
+      "ex_date": "2025-05-09",
+      "type": "REORGANIZATION",
+      "purpose": "Demerger"
+    },
+    {
+      "symbol": "DALMIASUG",
+      "ex_date": "2025-10-31",
+      "type": "REORGANIZATION",
+      "purpose": "Demerger"
+    },
+    {
+      "symbol": "DBREALTY",
+      "ex_date": "2025-07-18",
+      "type": "REORGANIZATION",
+      "purpose": "Demerger"
+    },
+    {
+      "symbol": "DCMSRIND",
+      "ex_date": "2025-12-26",
+      "type": "REORGANIZATION",
+      "purpose": "Demerger"
+    },
+    {
+      "symbol": "GENUSPOWER",
+      "ex_date": "2026-02-06",
+      "type": "REORGANIZATION",
+      "purpose": "Demerger"
+    },
+    {
+      "symbol": "HERCULES",
+      "ex_date": "2024-10-11",
+      "type": "REORGANIZATION",
+      "purpose": "Demerger"
+    },
+    {
+      "symbol": "HINDUNILVR",
+      "ex_date": "2025-12-05",
+      "type": "REORGANIZATION",
+      "purpose": "Demerger"
+    },
+    {
+      "symbol": "ITC",
+      "ex_date": "2025-01-06",
+      "type": "REORGANIZATION",
+      "purpose": "Demerger"
+    },
+    {
+      "symbol": "KESORAMIND",
+      "ex_date": "2025-03-10",
+      "type": "REORGANIZATION",
+      "purpose": "Demerger"
+    },
+    {
+      "symbol": "KHADIM",
+      "ex_date": "2025-06-06",
+      "type": "REORGANIZATION",
+      "purpose": "Demerger"
+    },
+    {
+      "symbol": "QUESS",
+      "ex_date": "2025-04-15",
+      "type": "REORGANIZATION",
+      "purpose": "Demerger"
+    },
+    {
+      "symbol": "RAYMOND",
+      "ex_date": "2025-05-14",
+      "type": "REORGANIZATION",
+      "purpose": "Demerger"
+    },
+    {
+      "symbol": "RELTD",
+      "ex_date": "2026-06-08",
+      "type": "RIGHTS",
+      "purpose": "Rights 1:9 @ Premium 91"
+    },
+    {
+      "symbol": "SHANKARA",
+      "ex_date": "2025-09-24",
+      "type": "REORGANIZATION",
+      "purpose": "Demerger"
+    },
+    {
+      "symbol": "SIEMENS",
+      "ex_date": "2025-04-07",
+      "type": "REORGANIZATION",
+      "purpose": "Demerger"
+    },
+    {
+      "symbol": "SKFINDIA",
+      "ex_date": "2025-10-15",
+      "type": "REORGANIZATION",
+      "purpose": "Demerger"
+    },
+    {
+      "symbol": "STAR",
+      "ex_date": "2024-12-06",
+      "type": "REORGANIZATION",
+      "purpose": "Demerger"
+    },
+    {
+      "symbol": "STLTECH",
+      "ex_date": "2025-04-24",
+      "type": "REORGANIZATION",
+      "purpose": "Demerger"
+    },
+    {
+      "symbol": "VEDL",
+      "ex_date": "2026-04-30",
+      "type": "REORGANIZATION",
+      "purpose": "Demerger"
+    }
+  ]
+}

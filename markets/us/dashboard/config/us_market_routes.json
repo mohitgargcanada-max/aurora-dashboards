@@ -1,0 +1,162 @@
+{
+  "schema_version": "1.0",
+  "market": "US",
+  "routing_lock": "source_routing_lock.json",
+  "history_url_template": "https://ca.finance.yahoo.com/quote/{ENCODED_SYMBOL}/history/",
+  "history_api_template": "https://query1.finance.yahoo.com/v8/finance/chart/{ENCODED_SYMBOL}?period1={START_EPOCH}&period2={END_EPOCH}&interval=1d&events=div%2Csplits",
+  "exchange_universe": {
+    "nasdaq": {
+      "primary": "https://www.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt",
+      "secondary": "https://www.sec.gov/files/company_tickers_exchange.json"
+    },
+    "nyse_and_nyse_american": {
+      "primary": "https://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt",
+      "secondary": "https://www.sec.gov/files/company_tickers_exchange.json"
+    },
+    "filter_policy": {
+      "include": ["active common stock", "ordinary share", "eligible ADR"],
+      "exclude": ["ETF", "ETN", "fund", "warrant", "right", "unit", "preferred", "bond", "test issue", "OTC"]
+    }
+  },
+  "benchmarks": {
+    "broad_market": {
+      "name": "S&P 500",
+      "yahoo_symbol": "^GSPC",
+      "encoded_symbol": "%5EGSPC",
+      "etf_proxy": "SPY",
+      "membership_source": "https://www.ssga.com/library-content/products/fund-data/etfs/us/holdings-daily-us-en-spy.xlsx"
+    },
+    "nasdaq_composite": {
+      "name": "Nasdaq Composite",
+      "yahoo_symbol": "^IXIC",
+      "encoded_symbol": "%5EIXIC",
+      "etf_proxy": null,
+      "membership_source": "NASDAQ_EXCHANGE_UNIVERSE"
+    },
+    "nasdaq_100": {
+      "name": "Nasdaq-100",
+      "yahoo_symbol": "^NDX",
+      "encoded_symbol": "%5ENDX",
+      "etf_proxy": "QQQ",
+      "membership_source": "https://www.nasdaq.com/solutions/global-indexes/nasdaq-100/companies"
+    },
+    "dow_30": {
+      "name": "Dow Jones Industrial Average",
+      "yahoo_symbol": "^DJI",
+      "encoded_symbol": "%5EDJI",
+      "etf_proxy": "DIA",
+      "membership_source": "https://www.ssga.com/library-content/products/fund-data/etfs/us/holdings-daily-us-en-dia.xlsx"
+    },
+    "russell_1000": {
+      "name": "Russell 1000",
+      "yahoo_symbol": "^RUI",
+      "encoded_symbol": "%5ERUI",
+      "etf_proxy": "IWB",
+      "membership_source": "https://www.ishares.com/us/products/239707/ishares-russell-1000-etf"
+    },
+    "russell_2000": {
+      "name": "Russell 2000",
+      "yahoo_symbol": "^RUT",
+      "encoded_symbol": "%5ERUT",
+      "etf_proxy": "IWM",
+      "membership_source": "https://www.ishares.com/us/products/239710/ishares-russell-2000-etf"
+    },
+    "sp_midcap_400": {
+      "name": "S&P MidCap 400",
+      "yahoo_symbol": "^SP400",
+      "alternate_yahoo_symbol": "^MID",
+      "encoded_symbol": "%5ESP400",
+      "etf_proxy": "MDY",
+      "membership_source": "https://www.ssga.com/library-content/products/fund-data/etfs/us/holdings-daily-us-en-mdy.xlsx"
+    },
+    "sp_smallcap_600": {
+      "name": "S&P SmallCap 600",
+      "yahoo_symbol": "^SP600",
+      "encoded_symbol": "%5ESP600",
+      "etf_proxy": "IJR",
+      "membership_source": "https://www.ishares.com/us/products/239774/ishares-core-sp-smallcap-etf"
+    },
+    "nyse_composite": {
+      "name": "NYSE Composite",
+      "yahoo_symbol": "^NYA",
+      "encoded_symbol": "%5ENYA",
+      "etf_proxy": null,
+      "membership_source": "NYSE_EXCHANGE_UNIVERSE"
+    },
+    "nyse_american_composite": {
+      "name": "NYSE American Composite",
+      "yahoo_symbol": "^XAX",
+      "encoded_symbol": "%5EXAX",
+      "etf_proxy": null,
+      "membership_source": "NYSE_AMERICAN_EXCHANGE_UNIVERSE"
+    },
+    "russell_3000_context": {
+      "name": "Russell 3000",
+      "yahoo_symbol": "^RUA",
+      "encoded_symbol": "%5ERUA",
+      "etf_proxy": "IWV",
+      "membership_source": "https://www.ishares.com/us/products/239714/ishares-russell-3000-etf"
+    },
+    "volatility": {
+      "name": "CBOE Volatility Index",
+      "yahoo_symbol": "^VIX",
+      "encoded_symbol": "%5EVIX",
+      "etf_proxy": null,
+      "membership_source": null
+    }
+  },
+  "membership_benchmark_routing": {
+    "S&P 500": "SPY",
+    "Nasdaq 100": "QQQ",
+    "Dow 30": "DIA",
+    "Russell 1000": "IWB",
+    "Russell 2000": "IWM",
+    "S&P MidCap 400": "MDY",
+    "S&P SmallCap 600": "IJR",
+    "Nasdaq non-index": "^IXIC",
+    "NYSE non-index": "^NYA",
+    "NYSE American non-index": "^XAX",
+    "fallback": "SPY"
+  },
+  "sector_etfs": {
+    "Information Technology": "XLK",
+    "Financials": "XLF",
+    "Industrials": "XLI",
+    "Energy": "XLE",
+    "Consumer Discretionary": "XLY",
+    "Consumer Staples": "XLP",
+    "Health Care": "XLV",
+    "Utilities": "XLU",
+    "Communication Services": "XLC",
+    "Materials": "XLB",
+    "Real Estate": "XLRE"
+  },
+  "fundamentals_routes": {
+    "authoritative_facts": [
+      "SEC EDGAR Company Facts",
+      "SEC EDGAR filings"
+    ],
+    "free_enrichment": [
+      "Yahoo Finance quoteSummary",
+      "issuer investor-relations filings"
+    ],
+    "fallback": [
+      "EODHD fundamentals when entitled"
+    ],
+    "conflict_rule": "SEC or issuer filing wins; otherwise retain both values and mark PARTIAL"
+  },
+  "data_precedence": [
+    "official exchange or issuer file",
+    "SEC EDGAR",
+    "Stooq bulk adjusted OHLCV bootstrap and current daily snapshot",
+    "Yahoo Finance history",
+    "CBOE or FRED",
+    "EODHD fallback"
+  ],
+  "incremental_cache_policy": {
+    "bootstrap_once": "Stooq d_us_txt.zip after browser/CAPTCHA download, normalized to the last 420 daily bars per symbol",
+    "daily_append": "Stooq current date snapshot first, Yahoo completed-session batch second, EODHD unresolved symbols only",
+    "full_history_refetch_only_for": ["new_symbol", "missing_bar_gap", "corporate_action", "provider_conflict", "schema_migration"],
+    "compute_policy": "derive all AURORA indicators and scan memberships locally from one cached series per symbol"
+  }
+}

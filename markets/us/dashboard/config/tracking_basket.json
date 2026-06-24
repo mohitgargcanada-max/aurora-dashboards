@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "max_total": 50,
+  "weekly_max": 20,
+  "near_watchlist_max": 20,
+  "event_workspace_separate": true,
+  "enrichment_scope": ["WEEKLY_UNIVERSE", "NEAR_WATCHLIST", "EVENT_EXCEPTION"],
+  "routine_enrichment_policy": "changed_or_stale_only"
+}

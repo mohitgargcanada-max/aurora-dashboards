@@ -1,0 +1,13 @@
+{
+  "name": "aurora-dashboards",
+  "private": true,
+  "version": "0.3.0",
+  "description": "AURORA market dashboards monorepo for US, India and Canada.",
+  "scripts": {
+    "scan:us": "bash scripts/run-market.sh us",
+    "scan:india": "bash scripts/run-market.sh india",
+    "scan:canada": "bash scripts/run-market.sh canada",
+    "scan:all": "bash scripts/run-market.sh us && bash scripts/run-market.sh india && bash scripts/run-market.sh canada"
+  }
+}
+

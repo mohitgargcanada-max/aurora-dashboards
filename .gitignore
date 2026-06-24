@@ -1,0 +1,23 @@
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+artifacts/*.png
+artifacts/*.jpg
+artifacts/*.webp
+tools/
+*.log
+
+# Raw bulky archives are stored outside git or in GitHub Releases/LFS.
+*.zip
+*.tar.gz
+*.part-*
+cache/**/raw/
+cache/**/archives/
+markets/us/dashboard/cache/us/d_us_txt.zip
+
+# Keep normalized cache/state JSON unless explicitly excluded above.
+!markets/**/dashboard/cache/**/*.json
+!markets/**/dashboard/data/**/*.json
+

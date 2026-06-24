@@ -1,0 +1,25 @@
+{
+  "schema_version": "2.0",
+  "market": "US",
+  "history_bars_retained": 420,
+  "minimum_complete_bars": 252,
+  "bootstrap": {
+    "provider": "STOOQ",
+    "download_page": "https://stooq.com/db/h/",
+    "archive_name": "d_us_txt.zip",
+    "mode": "USER_OR_BROWSER_CAPTCHA_DOWNLOAD_THEN_LOCAL_INGEST",
+    "adjustment_status": "STOOQ_ADJUSTED_OHLC",
+    "validation": ["official_symbol_match", "USD", "ordered_unique_dates", "valid_ohlcv", "sample_cross_check"]
+  },
+  "daily_append_order": [
+    "STOOQ_CURRENT_DAILY_SNAPSHOT",
+    "YAHOO_BATCH_COMPLETED_SESSION",
+    "EODHD_UNRESOLVED_ONLY"
+  ],
+  "daily_rule": "append or correct exactly one expected completed-session bar; refetch history only for new symbols, gaps, corporate actions, or conflicts",
+  "cache_key": ["market", "provider", "symbol", "interval", "data_as_of", "adjustment_status", "schema_version"],
+  "benchmark_symbols": ["SPY", "QQQ", "IWM", "DIA", "IWB", "MDY", "IJR", "IWV"],
+  "risk_on_symbols": ["QQQ", "IWM", "SMH", "IBIT", "ARKK"],
+  "sector_symbols": ["XLK", "XLF", "XLI", "XLE", "XLY", "XLP", "XLV", "XLU", "XLC", "XLB", "XLRE"],
+  "reference_basket_fallback": ["NVDA", "MSFT", "AAPL", "AMZN", "GOOGL", "META", "AVGO", "TSLA", "JPM", "BRK-B"]
+}

@@ -1,0 +1,47 @@
+name: AURORA US Dashboard
+
+on:
+  workflow_dispatch:
+  schedule:
+    # GitHub cron is UTC. These two slots cover New York 9am across EST/EDT.
+    - cron: "0 13 * * 0-5"
+    - cron: "0 14 * * 0-5"
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: browser-actions/setup-chrome@v1
+
+      - name: Gate scheduled run to 9am New York
+        if: github.event_name == 'schedule'
+        run: node scripts/nyse-time-gate.mjs
+
+      - name: Run US dashboard
+        env:
+          EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN }}
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+        run: bash scripts/run-market.sh us
+
+      - name: Commit updated US outputs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add markets/us/dashboard/data markets/us/dashboard/cache markets/us/AURORA_US_Dashboard.html
+          if ! git diff --cached --quiet; then
+            git commit -m "Update AURORA US dashboard"
+            git push
+          else
+            echo "No US dashboard changes to commit."
+          fi
