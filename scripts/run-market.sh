@@ -20,7 +20,6 @@ case "$market" in
     ;;
   india)
     cd "$repo_root/markets/india/dashboard"
-    npm run cache:audit || true
     npm run scan:full
     npm test
     ;;
@@ -38,4 +37,3 @@ case "$market" in
     exit 2
     ;;
 esac
-

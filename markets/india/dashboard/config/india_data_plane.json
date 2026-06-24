@@ -16,7 +16,14 @@
     "TAPETIDE_SYMBOL_REPAIR",
     "EODHD_LAST_REPAIR"
   ],
-  "daily_rule": "append or correct one completed-session bulk file; rebuild history only for new listings, gaps, corporate actions, provider conflicts, benchmark changes, or schema migrations",
+  "daily_route": [
+    "LOCAL_NSE_BSE_OFFICIAL_INCOMING_FILES",
+    "NSE_BSE_OFFICIAL_FETCH_ONCE",
+    "TAPETIDE_CONNECTED_INDIA_PROVIDER",
+    "YAHOO_NS_BO_VALIDATED_ONE_DAY_FALLBACK",
+    "EODHD_ONE_DAY_LAST_REPAIR"
+  ],
+  "daily_rule": "append or correct one completed-session daily bar before every scheduled scan; rebuild history only for new listings, gaps, corporate actions, provider conflicts, benchmark changes, or schema migrations",
   "cache_key": [
     "market",
     "exchange",
