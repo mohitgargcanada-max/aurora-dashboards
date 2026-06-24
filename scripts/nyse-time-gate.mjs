@@ -1,3 +1,5 @@
+import { appendFileSync } from "node:fs";
+
 const now = new Date();
 const parts = new Intl.DateTimeFormat("en-CA", {
   timeZone: "America/New_York",
@@ -14,6 +16,10 @@ const weekday = parts.weekday;
 const hour = Number(parts.hour);
 const minute = Number(parts.minute);
 const run = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri"].includes(weekday) && hour === 9 && minute < 20;
+
+if (process.env.GITHUB_ENV) {
+  appendFileSync(process.env.GITHUB_ENV, `RUN_US_DASHBOARD=${run ? "1" : "0"}\n`);
+}
 
 if (!run) {
   console.log(`Skipping cleanly outside 9am America/New_York run window: ${weekday} ${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`);
