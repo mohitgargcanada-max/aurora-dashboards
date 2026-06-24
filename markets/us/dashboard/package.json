@@ -7,13 +7,15 @@
     "cache:bootstrap": "bash scripts/bootstrap-stooq.sh",
     "cache:stooq": "node scripts/ingest-stooq.mjs",
     "cache:append": "node scripts/apply-daily-snapshot.mjs",
-    "scan:universe": "node scripts/scan-universe.mjs && node scripts/enrich-sector-classification.mjs && node scripts/scan-universe.mjs && node scripts/scan-rs-leadership.mjs",
+    "cache:refresh:daily": "node scripts/refresh-stooq-daily-bars.mjs",
+    "scan:universe": "npm run cache:refresh:daily && npm run scan:universe:cache-only",
+    "scan:universe:cache-only": "node scripts/scan-universe.mjs && node scripts/enrich-sector-classification.mjs && node scripts/scan-universe.mjs && node scripts/scan-rs-leadership.mjs",
     "enrich:sectors": "node scripts/enrich-sector-classification.mjs",
     "scan:rs-leadership": "node scripts/scan-rs-leadership.mjs",
     "render:canonical": "node scripts/render-canonical.mjs",
     "ingest:nasdaq-screener": "node scripts/ingest-nasdaq-screener.mjs",
     "visual:validate": "bash scripts/visual-validate.sh",
     "validate": "node scripts/validate-artifact.mjs",
-    "test": "node tests/aurora.test.mjs && node tests/source-routing.test.mjs && node tests/data-sources.test.mjs && node tests/cache-store.test.mjs && node tests/universe-routing.test.mjs"
+    "test": "node tests/aurora.test.mjs && node tests/source-routing.test.mjs && node tests/data-sources.test.mjs && node tests/cache-store.test.mjs && node tests/daily-refresh.test.mjs && node tests/universe-routing.test.mjs"
   }
 }
