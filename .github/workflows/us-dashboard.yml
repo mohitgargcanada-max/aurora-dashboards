@@ -48,7 +48,7 @@ jobs:
         run: bash scripts/run-market.sh us
 
       - name: Summarize US dashboard outputs
-        if: github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1'
+        if: always() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
         run: |
           node <<'NODE' >> "$GITHUB_STEP_SUMMARY"
           const fs = require("fs");
@@ -83,6 +83,10 @@ jobs:
             console.log(`- Provider counts: \`${JSON.stringify(refresh.provider_counts || {})}\``);
             console.log(`- Quotes loaded: \`${refresh.quotes_loaded ?? "UNKNOWN"}\``);
             console.log(`- Inserted/corrected/stale: \`${refresh.inserted ?? "?"}/${refresh.corrected ?? "?"}/${refresh.stale_quote ?? "?"}\``);
+            const warnings = Array.isArray(refresh.warnings) ? refresh.warnings.slice(0, 8) : [];
+            for (const warning of warnings) {
+              console.log(`- Warning: \`${warning.provider || "UNKNOWN"}: ${warning.warning || "UNKNOWN"}\``);
+            }
           } else {
             console.log("- Daily refresh report is missing; treat the dashboard as using committed cache/state only.");
           }
