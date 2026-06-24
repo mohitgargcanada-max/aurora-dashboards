@@ -31,6 +31,7 @@ function barsThrough(date, count = 260) {
 async function seedRecord(cacheRoot, {
   exchange = "NSE",
   symbol = "RELIANCE",
+  series = "EQ",
   provider = "NSE_OFFICIAL_BHAVCOPY",
   dataAsOf = "2026-06-22"
 } = {}) {
@@ -39,6 +40,7 @@ async function seedRecord(cacheRoot, {
     market: "INDIA",
     exchange,
     symbol,
+    series,
     currency: "INR",
     interval: "1d",
     provider,
@@ -111,6 +113,12 @@ assert.equal(blockedReport.fallback_decision_pack.rsle_top20[0].symbol, "DEEPAKF
 
 const yahooDir = await mkdtemp(join(tmpdir(), "aurora-india-yahoo-"));
 await seedRecord(join(yahooDir, "cache"));
+await seedRecord(join(yahooDir, "cache"), {
+  exchange: "BSE",
+  symbol: "07AGG",
+  series: "F",
+  provider: "BSE_OFFICIAL_BHAVCOPY"
+});
 const yahooFetch = async url => {
   assert.match(url, /RELIANCE\.NS/);
   return new Response(JSON.stringify({
@@ -127,7 +135,8 @@ let fallback = await appendProviderConsistentFallback({
   expectedSession: "2026-06-23",
   cacheRoot: join(yahooDir, "cache"),
   fetcher: yahooFetch,
-  allowProviderRepair: false
+  allowProviderRepair: false,
+  maxSymbols: 1
 });
 assert.equal(fallback.skipped_no_blend, 1);
 fallback = await appendProviderConsistentFallback({
@@ -135,10 +144,12 @@ fallback = await appendProviderConsistentFallback({
   expectedSession: "2026-06-23",
   cacheRoot: join(yahooDir, "cache"),
   fetcher: yahooFetch,
-  allowProviderRepair: true
+  allowProviderRepair: true,
+  maxSymbols: 1
 });
 assert.equal(fallback.inserted, 1);
 assert.equal((await loadSymbol(join(yahooDir, "cache"), "NSE", "RELIANCE")).provider, "YAHOO_DATA_REPAIR");
+assert.equal((await loadSymbol(join(yahooDir, "cache"), "BSE", "07AGG")).data_as_of, "2026-06-22");
 
 const tapetideDir = await mkdtemp(join(tmpdir(), "aurora-india-tapetide-"));
 await seedRecord(join(tapetideDir, "cache"), { provider: "TAPETIDE_DAILY" });

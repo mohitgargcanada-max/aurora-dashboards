@@ -1,6 +1,5 @@
 import { createHash } from "node:crypto";
-import { execFile, execFileSync } from "node:child_process";
-import { promisify } from "node:util";
+import { execFileSync } from "node:child_process";
 import { copyFile, mkdir, readFile, readdir, rename, stat, writeFile } from "node:fs/promises";
 import { basename, extname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -8,7 +7,6 @@ import { normalizeBhavcopyRow, parseCsv } from "../engine/bhavcopy-parser.mjs";
 import { CACHE_SCHEMA_VERSION, loadSymbol, mergeBars, normalizeBar, normalizeDate, normalizeSymbol, saveSymbol, validateSeries } from "../engine/cache-store.mjs";
 import { compactSession, latestCompletedIndiaSession } from "../engine/trading-calendar.mjs";
 
-const execFileAsync = promisify(execFile);
 const projectRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const DEFAULT_CACHE_ROOT = resolve(projectRoot, "cache/india/ohlcv");
 const DEFAULT_RAW_ROOT = resolve(projectRoot, "cache/india/raw");
@@ -18,6 +16,9 @@ const DEFAULT_MIN_CURRENT_COVERAGE = 0.25;
 const DEFAULT_TIMEOUT_MS = 15_000;
 
 const OFFICIAL_PROVIDER_FAMILY = new Set(["NSE_OFFICIAL_BHAVCOPY", "BSE_OFFICIAL_BHAVCOPY"]);
+const NSE_EQUITY_SERIES = new Set(["EQ", "BE", "SM", "ST", "BZ"]);
+const BSE_EQUITY_SERIES = new Set(["A", "B", "T", "TS", "X", "XT", "Z", "ZP", "M", "MT", "MS", "EQ"]);
+const HIGH_PRIORITY_SCAN_LISTS = ["daily_top_1_4", "focus_list", "weekly_universe", "rsle_top20", "developing_watchlist_20"];
 const PROVIDER_ENDPOINTS = {
   OFFICIAL_LOCAL: "local official incoming/raw bhavcopy",
   NSE_OFFICIAL_FETCH: "scripts/fetch-nse-session.sh",
@@ -47,6 +48,22 @@ function exchangeSuffix(record, provider) {
   if (provider === "YAHOO") return exchange === "BSE" ? ".BO" : ".NS";
   if (provider === "EODHD") return exchange === "BSE" ? ".BSE" : ".NSE";
   return "";
+}
+
+function isEquityRecord(record) {
+  const exchange = String(record.exchange || "").toUpperCase();
+  const series = String(record.series || record.group || "").toUpperCase();
+  if (exchange === "NSE") return NSE_EQUITY_SERIES.has(series);
+  if (exchange === "BSE") return BSE_EQUITY_SERIES.has(series);
+  return false;
+}
+
+function averageTurnover(record, days = 20) {
+  const bars = Array.isArray(record.bars) ? record.bars.slice(-days) : [];
+  const values = bars
+    .map(bar => Number(bar.turnover) || (Number(bar.close) * Number(bar.volume)))
+    .filter(Number.isFinite);
+  return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
 }
 
 function sessionToUnix(session) {
@@ -195,6 +212,21 @@ async function cachedRecords(cacheRoot) {
   return records;
 }
 
+async function prioritySymbols(scanPath = DEFAULT_LAST_GOOD_SCAN_PATH) {
+  try {
+    const scan = JSON.parse(await readFile(scanPath, "utf8"));
+    const symbols = new Set();
+    for (const list of HIGH_PRIORITY_SCAN_LISTS) {
+      for (const item of scan[list] || []) {
+        if (item?.symbol) symbols.add(normalizeSymbol(item.symbol));
+      }
+    }
+    return symbols;
+  } catch {
+    return new Set();
+  }
+}
+
 function parseTapetideBar(payload, expectedSession) {
   const row = payload?.data?.bar || payload?.data || payload?.bar || payload;
   return normalizeBar({
@@ -300,13 +332,22 @@ export async function appendProviderConsistentFallback({
   provider,
   expectedSession,
   cacheRoot = DEFAULT_CACHE_ROOT,
+  lastGoodScanPath = DEFAULT_LAST_GOOD_SCAN_PATH,
   fetcher = fetch,
   timeoutMs = DEFAULT_TIMEOUT_MS,
   maxSymbols = Number(process.env.AURORA_DAILY_FALLBACK_SYMBOL_LIMIT || 250),
   allowProviderRepair = process.env.AURORA_ALLOW_DATA_REPAIR_FALLBACK !== "0"
 } = {}) {
   const retrievedAt = new Date().toISOString();
-  const records = (await cachedRecords(cacheRoot)).filter(record => record.data_as_of !== expectedSession);
+  const priorities = await prioritySymbols(lastGoodScanPath);
+  const records = (await cachedRecords(cacheRoot))
+    .filter(record => record.data_as_of !== expectedSession && isEquityRecord(record))
+    .sort((a, b) => {
+      const aPriority = priorities.has(normalizeSymbol(a.symbol)) ? 1 : 0;
+      const bPriority = priorities.has(normalizeSymbol(b.symbol)) ? 1 : 0;
+      if (aPriority !== bPriority) return bPriority - aPriority;
+      return averageTurnover(b) - averageTurnover(a);
+    });
   const report = {
     provider,
     endpoint: PROVIDER_ENDPOINTS[provider],
@@ -361,9 +402,38 @@ export async function appendProviderConsistentFallback({
 }
 
 async function officialFetch(session, destination) {
-  const script = resolve(projectRoot, "scripts/fetch-nse-session.sh");
-  const { stdout } = await execFileAsync("bash", [script, session, destination], { cwd: projectRoot, encoding: "utf8", maxBuffer: 1024 * 1024 });
-  return stdout.trim().split(/\r?\n/).filter(Boolean);
+  await mkdir(destination, { recursive: true });
+  const yyyymmdd = compactSession(session);
+  const ddmmyyyy = `${session.slice(8, 10)}${session.slice(5, 7)}${session.slice(0, 4)}`;
+  const ddmmyy = `${session.slice(8, 10)}${session.slice(5, 7)}${session.slice(2, 4)}`;
+  const urls = [
+    `https://nsearchives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_${yyyymmdd}_F_0000.csv.zip`,
+    `https://nsearchives.nseindia.com/products/content/sec_bhavdata_full_${ddmmyyyy}.csv`,
+    `https://www.bseindia.com/download/BhavCopy/Equity/EQ_ISINCODE_${ddmmyy}.zip`
+  ];
+  const downloaded = [];
+  for (const url of urls) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 45_000);
+    try {
+      const response = await fetch(url, {
+        signal: controller.signal,
+        headers: {
+          "user-agent": "Mozilla/5.0 AURORA/2.18.2",
+          referer: url.includes("bseindia.com") ? "https://www.bseindia.com/" : "https://www.nseindia.com/"
+        }
+      });
+      if (!response.ok) continue;
+      const filename = basename(new URL(url).pathname);
+      const output = resolve(destination, filename);
+      await writeFile(output, Buffer.from(await response.arrayBuffer()));
+      downloaded.push(output);
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+  if (!downloaded.length) throw new Error(`OFFICIAL_FETCH_BLOCKED: download the NSE/BSE session bhavcopy in a browser and place it in ${destination}`);
+  return downloaded;
 }
 
 async function writeReport(reportPath, report) {

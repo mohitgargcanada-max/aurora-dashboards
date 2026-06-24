@@ -10,8 +10,7 @@ function run(command, args) {
   return new Promise((resolvePromise, reject) => {
     const child = spawn(command, args, {
       cwd: projectRoot,
-      stdio: "inherit",
-      shell: process.platform === "win32"
+      stdio: "inherit"
     });
     child.on("exit", code => {
       if (code === 0) resolvePromise();
@@ -38,5 +37,5 @@ async function refreshedSession() {
 }
 
 const session = explicitSession();
-await run("node", ["scripts/refresh-india-daily-bars.mjs", ...(session ? [session] : [])]);
-await run("node", ["scripts/run-full-dashboard-scan.mjs", await refreshedSession()]);
+await run(process.execPath, ["scripts/refresh-india-daily-bars.mjs", ...(session ? [session] : [])]);
+await run(process.execPath, ["scripts/run-full-dashboard-scan.mjs", await refreshedSession()]);
