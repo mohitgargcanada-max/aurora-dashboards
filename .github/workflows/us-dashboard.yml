@@ -47,6 +47,56 @@ jobs:
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
         run: bash scripts/run-market.sh us
 
+      - name: Summarize US dashboard outputs
+        if: github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1'
+        run: |
+          node <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+          const fs = require("fs");
+
+          function readJson(path) {
+            try {
+              return JSON.parse(fs.readFileSync(path, "utf8"));
+            } catch {
+              return null;
+            }
+          }
+
+          const dashboardPath = "markets/us/AURORA_US_Dashboard.html";
+          const statePath = "markets/us/dashboard/data/us-dashboard-state.json";
+          const rslePath = "markets/us/dashboard/data/rs-leadership-scan.json";
+          const refreshPath = "markets/us/dashboard/data/us-daily-refresh-report.json";
+          const refresh = readJson(refreshPath);
+          const state = readJson(statePath);
+          const rsle = readJson(rslePath);
+
+          console.log("## AURORA US Dashboard");
+          console.log("");
+          console.log(`- Dashboard HTML: \`${dashboardPath}\` ${fs.existsSync(dashboardPath) ? "present" : "missing"}`);
+          console.log(`- Dashboard state: \`${statePath}\` ${state ? "present" : "missing/unreadable"}`);
+          console.log(`- RSLE data: \`${rslePath}\` ${rsle ? "present" : "missing/unreadable"}`);
+          console.log(`- Daily refresh report: \`${refreshPath}\` ${refresh ? "present" : "missing/unreadable"}`);
+          console.log("");
+          console.log("### Data Provenance");
+          if (refresh) {
+            console.log(`- Daily refresh status: \`${refresh.status || "UNKNOWN"}\``);
+            console.log(`- Expected completed session: \`${refresh.expected_completed_session || "UNKNOWN"}\``);
+            console.log(`- Provider counts: \`${JSON.stringify(refresh.provider_counts || {})}\``);
+            console.log(`- Quotes loaded: \`${refresh.quotes_loaded ?? "UNKNOWN"}\``);
+            console.log(`- Inserted/corrected/stale: \`${refresh.inserted ?? "?"}/${refresh.corrected ?? "?"}/${refresh.stale_quote ?? "?"}\``);
+          } else {
+            console.log("- Daily refresh report is missing; treat the dashboard as using committed cache/state only.");
+          }
+          if (rsle) {
+            console.log(`- RSLE data_as_of: \`${rsle.data_as_of || "UNKNOWN"}\``);
+            console.log(`- RSLE provider: \`${rsle.provider || "UNKNOWN"}\``);
+            console.log(`- Universe/liquid/eligible: \`${rsle.universe_input_count ?? "?"}/${rsle.liquid_universe_count ?? "?"}/${rsle.eligible_setup_count ?? "?"}\``);
+          }
+          if (state) {
+            console.log(`- Dashboard generated_at: \`${state.generated_at || "UNKNOWN"}\``);
+            console.log(`- Dashboard data_as_of: \`${state.data_as_of || state.market_summary?.data_as_of || "UNKNOWN"}\``);
+          }
+          NODE
+
       - name: Commit updated US outputs
         if: github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1'
         run: |
