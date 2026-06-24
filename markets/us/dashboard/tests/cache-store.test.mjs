@@ -2,9 +2,12 @@ import assert from "node:assert/strict";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { normalizeBar, normalizeDate, normalizeSymbol, mergeBars, validateSeries, saveSymbol, loadSymbol } from "../engine/cache-store.mjs";
+import { cacheFileName, normalizeBar, normalizeDate, normalizeSymbol, mergeBars, validateSeries, saveSymbol, loadSymbol } from "../engine/cache-store.mjs";
 
 assert.equal(normalizeSymbol("brk_b.us"), "BRK-B");
+assert.equal(cacheFileName("CON"), "_CON.json");
+assert.equal(cacheFileName("PRN"), "_PRN.json");
+assert.equal(cacheFileName("AAPL"), "AAPL.json");
 assert.equal(normalizeDate("20260618"), "2026-06-18");
 const first = normalizeBar({ DATE: "20260617", OPEN: "10", HIGH: "11", LOW: "9", CLOSE: "10.5", VOL: "1000" });
 const corrected = normalizeBar({ DATE: "20260617", OPEN: "10", HIGH: "12", LOW: "9", CLOSE: "11.5", VOL: "1500" });
