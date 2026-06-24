@@ -39,14 +39,34 @@ npm run cache:audit:indices -- cache/india/indices YYYY-MM-DD
 ## Daily Append
 
 ```bash
-npm run cache:fetch:nse -- YYYY-MM-DD
-npm run cache:append -- cache/india/raw/YYYY-MM-DD YYYY-MM-DD
-npm run cache:audit -- cache/india/ohlcv YYYY-MM-DD
+npm run cache:refresh:daily -- YYYY-MM-DD
+npm run scan:full
 ```
+
+`scan:full` is the scheduled-safe command. It refreshes or appends the latest
+completed India daily bar before running AURORA calculations. It must not be
+replaced by a cache-only scan in scheduled jobs.
+
+The daily route is:
+
+1. local official NSE/BSE files in `data/incoming/YYYYMMDD`,
+   `data/incoming/YYYY-MM-DD`, or `cache/india/raw/YYYY-MM-DD`;
+2. one official NSE/BSE fetch attempt;
+3. TapeTide daily-bar endpoint when configured;
+4. Yahoo `.NS` / `.BO` one-day fallback when validated;
+5. EODHD one-day fallback only as the final repair route.
 
 If the official host blocks automated downloading, download that day's official
 bhavcopy in a browser and place it in the dated raw directory. No historical
-refetch is needed.
+refetch is needed. If no route can refresh the completed session, the command
+writes `data/india-daily-refresh-report.json`, reports `DATA_REFRESH_BLOCKED`,
+and preserves the last-good dashboard.
+
+Use this only for diagnostics or historical replays:
+
+```bash
+npm run scan:full:cache-only -- YYYY-MM-DD
+```
 
 ## Discovery Rule
 
