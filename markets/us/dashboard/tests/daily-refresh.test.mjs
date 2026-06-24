@@ -56,6 +56,50 @@ assert.equal(JSON.parse(await readFile(reportPath, "utf8")).latest_data_as_of, "
 
 await rm(directory, { recursive: true, force: true });
 
+const splitDirectory = await mkdtemp(join(tmpdir(), "aurora-refresh-split-"));
+const splitReportPath = join(splitDirectory, "report.json");
+for (const symbol of ["AAPL", "BADTICKER"]) {
+  await saveSymbol(splitDirectory, {
+    schema_version: "2.0",
+    market: "US",
+    symbol,
+    currency: "USD",
+    interval: "1d",
+    provider: "STOOQ",
+    endpoint: "d_us_txt.zip",
+    adjustment_status: "STOOQ_ADJUSTED_OHLC",
+    delayed_or_live: "EOD",
+    fallback_label: "FREE_PRIMARY",
+    data_as_of: "2026-06-22",
+    bars: [
+      { date: "2026-06-22", open: 9, high: 10, low: 8, close: 9.5, adjusted_close: 9.5, volume: 900 }
+    ]
+  });
+}
+const splitFetcher = async url => {
+  if (url.includes("aapl.us,badticker.us")) return new Response("not found", { status: 404 });
+  if (url.includes("aapl.us")) {
+    return new Response(
+      "Symbol,Date,Time,Open,High,Low,Close,Volume\nAAPL.US,2026-06-23,22:00:00,10,12,9,11,1000\n",
+      { status: 200, headers: { "content-type": "text/csv" } }
+    );
+  }
+  return new Response("not found", { status: 404 });
+};
+const splitReport = await refreshDailyBars({
+  cacheRoot: splitDirectory,
+  reportPath: splitReportPath,
+  chunkSize: 10,
+  fetcher: splitFetcher,
+  now: new Date("2026-06-24T13:00:00Z")
+});
+assert.equal(splitReport.status, "UPDATED");
+assert.equal(splitReport.provider_counts.STOOQ, 1);
+assert.equal(splitReport.missing_quote, 1);
+assert.equal((await loadSymbol(splitDirectory, "AAPL")).data_as_of, "2026-06-23");
+
+await rm(splitDirectory, { recursive: true, force: true });
+
 const yahooDirectory = await mkdtemp(join(tmpdir(), "aurora-refresh-yahoo-"));
 const yahooReportPath = join(yahooDirectory, "report.json");
 await saveSymbol(yahooDirectory, {
@@ -75,7 +119,7 @@ await saveSymbol(yahooDirectory, {
   ]
 });
 const yahooFetcher = async url => {
-  if (url.includes("stooq.com")) return new Response("blocked", { status: 403 });
+  if (url.includes("stooq.pl")) return new Response("blocked", { status: 403 });
   return new Response(
     JSON.stringify({ quoteResponse: { result: [{ symbol: "MSFT", regularMarketTime: Date.parse("2026-06-23T20:00:00Z") / 1000, regularMarketOpen: 20, regularMarketDayHigh: 22, regularMarketDayLow: 19, regularMarketPrice: 21, regularMarketVolume: 2000 }] } }),
     { status: 200, headers: { "content-type": "application/json" } }
@@ -113,7 +157,7 @@ await saveSymbol(fallbackDirectory, {
   ]
 });
 const fallbackFetcher = async url => {
-  if (url.includes("stooq.com")) return new Response("blocked", { status: 403 });
+  if (url.includes("stooq.pl")) return new Response("blocked", { status: 403 });
   if (url.includes("query1.finance.yahoo.com")) return new Response("blocked", { status: 403 });
   assert(url.includes("api_token=secret-token"));
   return new Response(
