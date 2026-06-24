@@ -647,7 +647,10 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     const report = await refreshIndiaDailyBars({ expectedSession });
     console.log(JSON.stringify(report));
   } catch (error) {
-    if (error.report) console.error(JSON.stringify(error.report));
+    if (error.report) {
+      console.error(JSON.stringify(error.report));
+      if (error.report.status === "DATA_REFRESH_BLOCKED") process.exit(0);
+    }
     throw error;
   }
 }
