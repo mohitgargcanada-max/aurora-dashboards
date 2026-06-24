@@ -15,6 +15,7 @@ const projectRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const DEFAULT_CACHE_ROOT = resolve(projectRoot, "cache/us/ohlcv");
 const DEFAULT_REPORT_PATH = resolve(projectRoot, "data/us-daily-refresh-report.json");
 const STOOQ_QUOTE_ENDPOINT = "https://stooq.pl/q/l/";
+const STOOQ_HISTORY_ENDPOINT = "https://stooq.pl/q/d/l/";
 const DEFAULT_CHUNK_SIZE = 75;
 const DEFAULT_TIMEOUT_MS = 15_000;
 const DEFAULT_MAX_CONSECUTIVE_FAILURES = 3;
@@ -56,6 +57,18 @@ export function parseStooqQuoteCsv(text) {
       VOL: row.VOLUME
     });
     return symbol && bar ? { symbol, bar } : null;
+  }).filter(Boolean);
+}
+
+export function parseStooqDailyCsv(symbol, text) {
+  const lines = String(text || "").trim().split(/\r?\n/).filter(Boolean);
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(",").map(x => x.replace(/[<>]/g, "").trim().toUpperCase());
+  return lines.slice(1).map(line => {
+    const values = line.split(",");
+    const row = Object.fromEntries(headers.map((header, index) => [header, values[index]?.trim()]));
+    const bar = normalizeBar(row);
+    return bar ? { symbol: normalizeSymbol(symbol), bar } : null;
   }).filter(Boolean);
 }
 
@@ -167,6 +180,44 @@ async function fetchStooqQuotesAdaptive(symbols, fetcher = fetch, timeoutMs = DE
   }
 }
 
+async function fetchStooqDailySymbol(symbol, expectedSession, fetcher = fetch, timeoutMs = DEFAULT_TIMEOUT_MS) {
+  const date = expectedSession.replaceAll("-", "");
+  const url = `${STOOQ_HISTORY_ENDPOINT}?s=${stooqSymbol(symbol)}&d1=${date}&d2=${date}&i=d`;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetcher(url, {
+      signal: controller.signal,
+      headers: {
+        accept: "text/csv,text/plain,*/*",
+        "user-agent": "Mozilla/5.0 AURORA/2.18.2"
+      }
+    });
+    if (!response.ok) throw new Error(`STOOQ_HISTORY_HTTP_${response.status}`);
+    return parseStooqDailyCsv(symbol, await response.text());
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function fetchStooqDailyHistory(symbols, expectedSession, fetcher = fetch, timeoutMs = DEFAULT_TIMEOUT_MS) {
+  const rows = [];
+  const warnings = [];
+  await Promise.all(symbols.map(async symbol => {
+    try {
+      rows.push(...await fetchStooqDailySymbol(symbol, expectedSession, fetcher, timeoutMs));
+    } catch (error) {
+      warnings.push({
+        provider: "STOOQ_HISTORY",
+        symbols: 1,
+        sample: [symbol],
+        warning: error.message
+      });
+    }
+  }));
+  return { rows, warnings };
+}
+
 async function fetchYahooQuotes(symbols, fetcher = fetch, timeoutMs = DEFAULT_TIMEOUT_MS) {
   const publicEndpoint = "https://query1.finance.yahoo.com/v7/finance/quote";
   const params = new URLSearchParams({
@@ -243,17 +294,24 @@ export async function refreshDailyBars({
   for (let offset = 0; offset < symbols.length; offset += chunkSize) {
     const chunk = symbols.slice(offset, offset + chunkSize);
     const result = await fetchStooqQuotesAdaptive(chunk, fetcher, timeoutMs);
-    warnings.push(...result.warnings.map(warning => ({ ...warning, offset })));
-    for (const row of result.rows) {
+    let stooqRows = result.rows;
+    let stooqWarnings = result.warnings;
+    if (!stooqRows.length) {
+      const history = await fetchStooqDailyHistory(chunk, expectedSession, fetcher, timeoutMs);
+      stooqRows = history.rows;
+      stooqWarnings = [...stooqWarnings, ...history.warnings];
+    }
+    warnings.push(...stooqWarnings.map(warning => ({ ...warning, offset })));
+    for (const row of stooqRows) {
       quoteMap.set(row.symbol, {
         bar: row.bar,
         provider: "STOOQ",
-        endpoint: STOOQ_QUOTE_ENDPOINT,
+        endpoint: result.rows.length ? STOOQ_QUOTE_ENDPOINT : STOOQ_HISTORY_ENDPOINT,
         fallback_label: "FREE_PRIMARY",
         fallback_reason: null
       });
     }
-    if (result.rows.length) {
+    if (stooqRows.length) {
       consecutiveFailures = 0;
     } else {
       consecutiveFailures += 1;
