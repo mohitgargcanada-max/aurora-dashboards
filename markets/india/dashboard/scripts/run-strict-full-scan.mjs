@@ -24,12 +24,25 @@ function explicitSession() {
   return process.argv.find(arg => /^\d{4}-\d{2}-\d{2}$/.test(arg)) || process.env.AURORA_TARGET_SESSION || null;
 }
 
-async function refreshedSession() {
-  const report = JSON.parse(await readFile(refreshReportPath, "utf8"));
-  if (report.status === "DATA_REFRESH_BLOCKED") {
-    console.error(JSON.stringify(report, null, 2));
-    throw new Error("DATA_REFRESH_BLOCKED");
+async function readRefreshReport() {
+  try {
+    return JSON.parse(await readFile(refreshReportPath, "utf8"));
+  } catch {
+    return null;
   }
+}
+
+async function handleBlockedRefresh() {
+  const report = await readRefreshReport();
+  if (report?.status !== "DATA_REFRESH_BLOCKED") return false;
+  console.error(JSON.stringify(report, null, 2));
+  console.error("DATA_REFRESH_BLOCKED: preserving last-good India dashboard; current scan skipped.");
+  return true;
+}
+
+async function refreshedSession() {
+  const report = await readRefreshReport();
+  if (!report) throw new Error("DAILY_REFRESH_REPORT_NOT_FOUND");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(report.expected_completed_session)) {
     throw new Error("DAILY_REFRESH_REPORT_MISSING_EXPECTED_SESSION");
   }
@@ -37,5 +50,11 @@ async function refreshedSession() {
 }
 
 const session = explicitSession();
-await run(process.execPath, ["scripts/refresh-india-daily-bars.mjs", ...(session ? [session] : [])]);
+try {
+  await run(process.execPath, ["scripts/refresh-india-daily-bars.mjs", ...(session ? [session] : [])]);
+} catch (error) {
+  if (await handleBlockedRefresh()) process.exit(0);
+  throw error;
+}
+if (await handleBlockedRefresh()) process.exit(0);
 await run(process.execPath, ["scripts/run-full-dashboard-scan.mjs", await refreshedSession()]);
