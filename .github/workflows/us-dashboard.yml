@@ -39,6 +39,7 @@ jobs:
         run: node scripts/nyse-time-gate.mjs
 
       - name: Run US dashboard
+        if: github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1'
         env:
           EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN }}
           SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
@@ -47,6 +48,7 @@ jobs:
         run: bash scripts/run-market.sh us
 
       - name: Commit updated US outputs
+        if: github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
