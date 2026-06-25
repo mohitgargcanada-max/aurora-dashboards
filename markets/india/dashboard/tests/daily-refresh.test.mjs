@@ -151,13 +151,61 @@ assert.equal(fallback.inserted, 1);
 assert.equal((await loadSymbol(join(yahooDir, "cache"), "NSE", "RELIANCE")).provider, "YAHOO_DATA_REPAIR");
 assert.equal((await loadSymbol(join(yahooDir, "cache"), "BSE", "07AGG")).data_as_of, "2026-06-22");
 
+const fetchOnceDir = await mkdtemp(join(tmpdir(), "aurora-india-fetch-once-"));
+await seedRecord(join(fetchOnceDir, "cache"), { provider: "YAHOO_DAILY" });
+const fetchOnceCalls = [];
+const fetchOnceReport = await refreshIndiaDailyBars({
+  cacheRoot: join(fetchOnceDir, "cache"),
+  rawRoot: join(fetchOnceDir, "raw"),
+  reportPath: join(fetchOnceDir, "report.json"),
+  expectedSession: "2026-06-23",
+  localSources: [],
+  tryOfficialFetch: false,
+  providerOrder: ["YAHOO", "TAPETIDE"],
+  fetcher: async url => {
+    fetchOnceCalls.push(url);
+    assert.match(url, /RELIANCE\.NS/);
+    return new Response(JSON.stringify({
+      chart: {
+        result: [{
+          timestamp: [Math.floor(new Date("2026-06-23T10:00:00Z").valueOf() / 1000)],
+          indicators: { quote: [{ open: [360], high: [365], low: [355], close: [362], volume: [2000] }] }
+        }]
+      }
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  }
+});
+assert.equal(fetchOnceReport.provider, "YAHOO");
+assert.equal(fetchOnceReport.attempts.length, 1);
+assert.equal(fetchOnceCalls.length, 1);
+assert.equal((await loadSymbol(join(fetchOnceDir, "cache"), "NSE", "RELIANCE")).data_as_of, "2026-06-23");
+
 const tapetideDir = await mkdtemp(join(tmpdir(), "aurora-india-tapetide-"));
 await seedRecord(join(tapetideDir, "cache"), { provider: "TAPETIDE_DAILY" });
-const oldTemplate = process.env.TAPETIDE_DAILY_BAR_URL_TEMPLATE;
-process.env.TAPETIDE_DAILY_BAR_URL_TEMPLATE = "https://tapetide.local/bar?symbol={symbol}&session={session}";
-const tapetideFetch = async url => {
-  assert.match(url, /tapetide\.local/);
-  return new Response(JSON.stringify({ data: { date: "2026-06-23", open: 360, high: 365, low: 355, close: 362, volume: 2000 } }), { status: 200 });
+const oldTapetideToken = process.env.TAPETIDE_TOKEN;
+process.env.TAPETIDE_TOKEN = "tapetide-secret";
+const tapetideFetch = async (url, options) => {
+  assert.equal(url, "https://mcp.tapetide.com/mcp");
+  assert.equal(options.method, "POST");
+  assert.equal(options.headers.authorization, "Bearer tapetide-secret");
+  const body = JSON.parse(options.body);
+  assert.equal(body.method, "tools/call");
+  assert.equal(body.params.name, "get_price_history");
+  assert.deepEqual(body.params.arguments, {
+    symbol: "RELIANCE",
+    exchange: "NSE",
+    interval: "daily",
+    from: "2026-06-23",
+    to: "2026-06-23"
+  });
+  return new Response(JSON.stringify({
+    result: {
+      content: [{
+        type: "text",
+        text: JSON.stringify({ data: [{ date: "2026-06-23", open: 360, high: 365, low: 355, close: 362, volume: 2000 }] })
+      }]
+    }
+  }), { status: 200, headers: { "content-type": "application/json" } });
 };
 fallback = await appendProviderConsistentFallback({
   provider: "TAPETIDE",
@@ -166,8 +214,9 @@ fallback = await appendProviderConsistentFallback({
   fetcher: tapetideFetch
 });
 assert.equal(fallback.inserted, 1);
-if (oldTemplate === undefined) delete process.env.TAPETIDE_DAILY_BAR_URL_TEMPLATE;
-else process.env.TAPETIDE_DAILY_BAR_URL_TEMPLATE = oldTemplate;
+assert.equal((await loadSymbol(join(tapetideDir, "cache"), "NSE", "RELIANCE")).endpoint, "https://mcp.tapetide.com/mcp");
+if (oldTapetideToken === undefined) delete process.env.TAPETIDE_TOKEN;
+else process.env.TAPETIDE_TOKEN = oldTapetideToken;
 
 const eodhdDir = await mkdtemp(join(tmpdir(), "aurora-india-eodhd-"));
 await seedRecord(join(eodhdDir, "cache"), { provider: "EODHD_DAILY" });
@@ -191,6 +240,7 @@ else process.env.EODHD_API_TOKEN = oldToken;
 await rm(directory, { recursive: true, force: true });
 await rm(blockedDir, { recursive: true, force: true });
 await rm(yahooDir, { recursive: true, force: true });
+await rm(fetchOnceDir, { recursive: true, force: true });
 await rm(tapetideDir, { recursive: true, force: true });
 await rm(eodhdDir, { recursive: true, force: true });
 console.log("India daily refresh contract tests passed");
