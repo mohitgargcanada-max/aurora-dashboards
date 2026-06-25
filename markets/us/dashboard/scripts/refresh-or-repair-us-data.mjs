@@ -7,14 +7,24 @@ import { repairUsHistory } from "./repair-us-history-5y.mjs";
 const projectRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const summaryPath = resolve(projectRoot, "data/us-refresh-or-repair-report.json");
 
+function isCurrent(report) {
+  return Boolean(report?.expected_completed_session && report?.latest_data_as_of === report.expected_completed_session);
+}
+
+async function persist(result) {
+  await mkdir(resolve(summaryPath, ".."), { recursive: true });
+  await writeFile(summaryPath, JSON.stringify(result, null, 2), "utf8");
+}
+
 async function main() {
   const allowStale = process.argv.includes("--allow-stale") || process.env.AURORA_ALLOW_STALE_REFRESH === "1";
-  const strictCurrent = process.argv.includes("--strict-current") || process.env.AURORA_STRICT_CURRENT_HISTORY_REPAIR === "1";
+  const strictCurrent = !allowStale;
   const result = { generated_at: new Date().toISOString(), daily_refresh: null, history_repair: null, final_status: null };
   try {
     const daily = await refreshDailyBars({ allowStale: false });
     result.daily_refresh = daily;
     result.final_status = daily.status;
+    if (!isCurrent(daily) && !allowStale) throw new Error("US daily refresh completed but latest bar is not the expected completed session");
     try {
       result.history_repair = await repairUsHistory({ staleOnly: true, strictCurrent: false, allowStale: true });
     } catch (repairAfterDailyError) {
@@ -26,20 +36,23 @@ async function main() {
       const repair = await repairUsHistory({ staleOnly: true, strictCurrent, allowStale });
       result.history_repair = repair;
       result.final_status = repair.status;
+      if (!isCurrent(repair) && !allowStale) {
+        const staleError = new Error("US 5Y history repair finished but did not reach the expected completed session");
+        staleError.report = result;
+        throw staleError;
+      }
     } catch (repairError) {
       result.history_repair = repairError.report || { status: "FAILED", warning: repairError.message };
       result.final_status = "DATA_REFRESH_BLOCKED";
+      await persist(result);
       if (!allowStale) {
-        await mkdir(resolve(summaryPath, ".."), { recursive: true });
-        await writeFile(summaryPath, JSON.stringify(result, null, 2), "utf8");
-        const finalError = new Error("US data refresh and 5Y repair both failed");
+        const finalError = new Error("US data refresh and current-session 5Y repair both failed");
         finalError.report = result;
         throw finalError;
       }
     }
   }
-  await mkdir(resolve(summaryPath, ".."), { recursive: true });
-  await writeFile(summaryPath, JSON.stringify(result, null, 2), "utf8");
+  await persist(result);
   console.log(JSON.stringify(result));
 }
 
