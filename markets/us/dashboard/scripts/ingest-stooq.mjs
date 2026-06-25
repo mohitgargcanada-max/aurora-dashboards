@@ -1,7 +1,7 @@
 import { readdir, readFile, mkdir, writeFile, rename } from "node:fs/promises";
 import { resolve, extname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { normalizeBar, normalizeSymbol, mergeBars, saveSymbol, CACHE_SCHEMA_VERSION } from "../engine/cache-store.mjs";
+import { normalizeBar, normalizeSymbol, mergeBars, saveSymbol, CACHE_SCHEMA_VERSION, DEFAULT_RETAIN_BARS } from "../engine/cache-store.mjs";
 
 const projectRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const sourceRoot = resolve(process.argv[2] || "");
@@ -35,7 +35,7 @@ let rejected = 0;
 const manifest = [];
 for (const path of files) {
   const symbol = normalizeSymbol(path.split("/").at(-1).replace(/\.txt$/i, ""));
-  const bars = mergeBars([], parseCsv(await readFile(path, "utf8")), 420);
+  const bars = mergeBars([], parseCsv(await readFile(path, "utf8")), DEFAULT_RETAIN_BARS);
   if (!symbol || bars.length < 20) { rejected += 1; continue; }
   const record = {
     schema_version: CACHE_SCHEMA_VERSION,
