@@ -61,6 +61,19 @@ jobs:
             }
           }
 
+          function warningSummary(warnings = []) {
+            const byProvider = {};
+            for (const warning of Array.isArray(warnings) ? warnings : []) {
+              const provider = warning.provider || "UNKNOWN";
+              byProvider[provider] ||= { count: 0, samples: [] };
+              byProvider[provider].count += 1;
+              if (byProvider[provider].samples.length < 3) {
+                byProvider[provider].samples.push(warning.warning || "UNKNOWN");
+              }
+            }
+            return byProvider;
+          }
+
           const dashboardPath = "markets/us/AURORA_US_Dashboard.html";
           const statePath = "markets/us/dashboard/data/us-dashboard-state.json";
           const rslePath = "markets/us/dashboard/data/rs-leadership-scan.json";
@@ -80,12 +93,18 @@ jobs:
           if (refresh) {
             console.log(`- Daily refresh status: \`${refresh.status || "UNKNOWN"}\``);
             console.log(`- Expected completed session: \`${refresh.expected_completed_session || "UNKNOWN"}\``);
+            console.log(`- Latest data as of: \`${refresh.latest_data_as_of || "NONE"}\``);
+            console.log(`- Fallback label: \`${refresh.fallback_label || "UNKNOWN"}\``);
             console.log(`- Provider counts: \`${JSON.stringify(refresh.provider_counts || {})}\``);
             console.log(`- Quotes loaded: \`${refresh.quotes_loaded ?? "UNKNOWN"}\``);
-            console.log(`- Inserted/corrected/stale: \`${refresh.inserted ?? "?"}/${refresh.corrected ?? "?"}/${refresh.stale_quote ?? "?"}\``);
-            const warnings = Array.isArray(refresh.warnings) ? refresh.warnings.slice(0, 8) : [];
-            for (const warning of warnings) {
-              console.log(`- Warning: \`${warning.provider || "UNKNOWN"}: ${warning.warning || "UNKNOWN"}\``);
+            console.log(`- Inserted/corrected/unchanged/stale: \`${refresh.inserted ?? "?"}/${refresh.corrected ?? "?"}/${refresh.unchanged ?? "?"}/${refresh.stale_quote ?? "?"}\``);
+            const grouped = warningSummary(refresh.warnings);
+            for (const [provider, info] of Object.entries(grouped)) {
+              console.log(`- Warning summary: \`${provider}: ${info.count} warning(s); samples: ${info.samples.join(" | ")}\``);
+            }
+            const eodhdWarnings = (refresh.warnings || []).filter(w => w.provider === "EODHD").slice(0, 5);
+            for (const warning of eodhdWarnings) {
+              console.log(`- EODHD detail: \`${warning.warning || "UNKNOWN"}\``);
             }
           } else {
             console.log("- Daily refresh report is missing; treat the dashboard as using committed cache/state only.");
@@ -97,12 +116,13 @@ jobs:
           }
           if (state) {
             console.log(`- Dashboard generated_at: \`${state.generated_at || "UNKNOWN"}\``);
-            console.log(`- Dashboard data_as_of: \`${state.data_as_of || state.market_summary?.data_as_of || "UNKNOWN"}\``);
+            console.log(`- Dashboard data_as_of: \`${state.data_as_of || state.market_summary?.data_as_of || state.run?.data_as_of || "UNKNOWN"}\``);
+            console.log(`- Dashboard run status: \`${state.run?.status || "UNKNOWN"}\``);
           }
           NODE
 
       - name: Commit updated US outputs
-        if: github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1'
+        if: always() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
