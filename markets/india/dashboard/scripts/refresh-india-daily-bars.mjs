@@ -22,7 +22,7 @@ const HIGH_PRIORITY_SCAN_LISTS = ["daily_top_1_4", "focus_list", "weekly_univers
 const PROVIDER_ENDPOINTS = {
   OFFICIAL_LOCAL: "local official incoming/raw bhavcopy",
   NSE_OFFICIAL_FETCH: "scripts/fetch-nse-session.sh",
-  TAPETIDE: "TAPETIDE_DAILY_BAR_URL_TEMPLATE",
+  TAPETIDE: "https://mcp.tapetide.com/mcp",
   YAHOO: "https://query1.finance.yahoo.com/v8/finance/chart/",
   EODHD: "https://eodhd.com/api/eod/"
 };
@@ -41,6 +41,12 @@ function fallbackLabel(provider) {
   if (provider === "YAHOO") return "YAHOO_FALLBACK";
   if (provider === "EODHD") return "EODHD_FALLBACK";
   return "OFFICIAL_VERIFIED";
+}
+
+function providerSymbolLimit(provider, maxSymbols) {
+  if (provider !== "TAPETIDE") return maxSymbols;
+  const tapetideLimit = Number(process.env.TAPETIDE_DAILY_FALLBACK_SYMBOL_LIMIT || 50);
+  return Math.max(0, Math.min(maxSymbols, tapetideLimit));
 }
 
 function exchangeSuffix(record, provider) {
@@ -227,8 +233,30 @@ async function prioritySymbols(scanPath = DEFAULT_LAST_GOOD_SCAN_PATH) {
   }
 }
 
+function mcpTextPayload(payload) {
+  const content = payload?.result?.content || payload?.content || [];
+  const text = content.find(item => item?.type === "text" && item.text)?.text;
+  if (!text) return payload;
+  try { return JSON.parse(text); }
+  catch { return { data: text }; }
+}
+
 function parseTapetideBar(payload, expectedSession) {
-  const row = payload?.data?.bar || payload?.data || payload?.bar || payload;
+  const parsed = mcpTextPayload(payload);
+  const data = parsed?.result?.structuredContent || parsed?.structuredContent || parsed?.data || parsed;
+  const rows = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.bars)
+      ? data.bars
+      : Array.isArray(data?.history)
+        ? data.history
+        : Array.isArray(data?.data)
+          ? data.data
+          : null;
+  const row = rows?.find(item => normalizeDate(item.date || item.trading_date || item.TradDt) === expectedSession)
+    || rows?.at(-1)
+    || data?.bar
+    || data;
   return normalizeBar({
     date: row.date || row.trading_date || row.TradDt || expectedSession,
     open: row.open ?? row.open_price,
@@ -238,6 +266,70 @@ function parseTapetideBar(payload, expectedSession) {
     volume: row.volume ?? row.traded_volume,
     turnover: row.turnover ?? row.value
   });
+}
+
+function templateJson(value, replacements) {
+  return JSON.parse(String(value).replace(/\{(symbol|exchange|session)\}/g, (_, key) => replacements[key]));
+}
+
+function tapetideMcpArguments(record, expectedSession) {
+  const symbol = normalizeSymbol(record.symbol);
+  const exchange = String(record.exchange || "NSE").toUpperCase();
+  const template = process.env.TAPETIDE_PRICE_HISTORY_ARGUMENTS_TEMPLATE;
+  if (template) {
+    return templateJson(template, {
+      symbol: JSON.stringify(symbol).slice(1, -1),
+      exchange: JSON.stringify(exchange).slice(1, -1),
+      session: JSON.stringify(expectedSession).slice(1, -1)
+    });
+  }
+  return {
+    symbol,
+    exchange,
+    interval: "daily",
+    from: expectedSession,
+    to: expectedSession
+  };
+}
+
+async function fetchTapetideMcp(record, expectedSession, fetcher, timeoutMs) {
+  const token = process.env.TAPETIDE_TOKEN;
+  if (!token) return { bar: null, warning: "TAPETIDE_NOT_CONFIGURED" };
+  const endpoint = process.env.TAPETIDE_MCP_URL || PROVIDER_ENDPOINTS.TAPETIDE;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetcher(endpoint, {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        accept: "application/json,text/event-stream",
+        "content-type": "application/json",
+        authorization: `Bearer ${token}`,
+        "user-agent": "Mozilla/5.0 AURORA/2.18.2"
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: `aurora-price-history-${normalizeSymbol(record.symbol)}-${expectedSession}`,
+        method: "tools/call",
+        params: {
+          name: process.env.TAPETIDE_PRICE_HISTORY_TOOL || "get_price_history",
+          arguments: tapetideMcpArguments(record, expectedSession)
+        }
+      })
+    });
+    if (!response.ok) throw new Error(`HTTP_${response.status}`);
+    const contentType = response.headers?.get?.("content-type") || "";
+    const text = await response.text();
+    const payload = contentType.includes("text/event-stream")
+      ? JSON.parse(text.split(/\r?\n/).find(line => line.startsWith("data:"))?.slice(5).trim() || "{}")
+      : JSON.parse(text);
+    const bar = parseTapetideBar(payload, expectedSession);
+    if (!bar || bar.date !== expectedSession) return { bar: null, warning: "TAPETIDE_NO_COMPLETED_BAR" };
+    return { bar, endpoint };
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 function parseYahooBar(payload, expectedSession) {
@@ -296,12 +388,7 @@ async function fetchJson(url, fetcher, timeoutMs) {
 function fallbackUrl(provider, record, expectedSession) {
   const symbol = normalizeSymbol(record.symbol);
   if (provider === "TAPETIDE") {
-    const template = process.env.TAPETIDE_DAILY_BAR_URL_TEMPLATE;
-    if (!template) return null;
-    return template
-      .replaceAll("{symbol}", encodeURIComponent(symbol))
-      .replaceAll("{exchange}", encodeURIComponent(record.exchange || "NSE"))
-      .replaceAll("{session}", encodeURIComponent(expectedSession));
+    return null;
   }
   if (provider === "YAHOO") {
     const { start, end } = sessionToUnix(expectedSession);
@@ -316,6 +403,7 @@ function fallbackUrl(provider, record, expectedSession) {
 }
 
 async function fetchFallbackBar(provider, record, expectedSession, fetcher, timeoutMs) {
+  if (provider === "TAPETIDE") return fetchTapetideMcp(record, expectedSession, fetcher, timeoutMs);
   const url = fallbackUrl(provider, record, expectedSession);
   if (!url) return { bar: null, warning: `${provider}_NOT_CONFIGURED` };
   const payload = await fetchJson(url, fetcher, timeoutMs);
@@ -360,8 +448,9 @@ export async function appendProviderConsistentFallback({
     missing_bar: 0,
     warnings: []
   };
+  const providerMaxSymbols = providerSymbolLimit(provider, maxSymbols);
   for (const record of records) {
-    if (report.requested >= maxSymbols) break;
+    if (report.requested >= providerMaxSymbols) break;
     const existingFamily = providerFamily(record.provider);
     if (existingFamily !== provider && !(allowProviderRepair && existingFamily !== "UNKNOWN")) {
       report.skipped_no_blend += 1;
@@ -509,7 +598,7 @@ export async function refreshIndiaDailyBars({
     resolve(rawRoot, expectedSession)
   ],
   tryOfficialFetch = true,
-  providerOrder = ["TAPETIDE", "YAHOO", "EODHD"],
+  providerOrder = ["YAHOO", "TAPETIDE", "EODHD"],
   fetcher = fetch,
   now = new Date()
 } = {}) {
