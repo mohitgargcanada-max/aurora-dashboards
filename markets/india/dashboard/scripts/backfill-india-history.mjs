@@ -10,6 +10,7 @@ const cacheRoot = resolve(projectRoot, "cache/india/ohlcv");
 const reportPath = resolve(projectRoot, "data/india-history-backfill-report.json");
 const expectedSession = process.argv.find(arg => /^\d{4}-\d{2}-\d{2}$/.test(arg)) || process.env.AURORA_TARGET_SESSION || latestCompletedIndiaSession();
 const targetBars = Number(process.env.AURORA_HISTORY_TARGET_BARS || 1260);
+const historyCalendarDays = Number(process.env.AURORA_HISTORY_CALENDAR_DAYS || Math.ceil(targetBars * 1.7));
 const maxSymbols = Number(process.env.AURORA_HISTORY_BACKFILL_SYMBOL_LIMIT || 250);
 const providerOrder = (process.env.AURORA_HISTORY_PROVIDER_ORDER || "YAHOO,TAPETIDE,EODHD").split(",").map(x => x.trim().toUpperCase()).filter(Boolean);
 
@@ -131,7 +132,7 @@ async function fetchJson(url, options = {}) {
 async function fetchProviderHistory(provider, record) {
   const symbol = normalizeSymbol(record.symbol);
   if (provider === "YAHOO") {
-    const { start, end } = sessionToUnix(expectedSession, Math.ceil(targetBars * 1.7));
+    const { start, end } = sessionToUnix(expectedSession, historyCalendarDays);
     const url = `${PROVIDER_ENDPOINTS.YAHOO}${encodeURIComponent(symbol + exchangeSuffix(record, provider))}?period1=${start}&period2=${end}&interval=1d&events=history`;
     return { bars: parseYahooBars(await fetchJson(url)), endpoint: url };
   }
@@ -152,7 +153,7 @@ async function fetchProviderHistory(provider, record) {
         method: "tools/call",
         params: {
           name: process.env.TAPETIDE_PRICE_HISTORY_TOOL || "get_price_history",
-          arguments: { symbol, exchange: record.exchange || "NSE", interval: "daily", days: targetBars + 80 }
+          arguments: { symbol, exchange: record.exchange || "NSE", interval: "daily", days: historyCalendarDays }
         }
       })
     });
@@ -167,7 +168,7 @@ async function fetchProviderHistory(provider, record) {
     const token = process.env.EODHD_API_TOKEN;
     if (!token) return { bars: [], endpoint: PROVIDER_ENDPOINTS.EODHD, warning: "EODHD_NOT_CONFIGURED" };
     const from = new Date(`${expectedSession}T00:00:00Z`);
-    from.setUTCDate(from.getUTCDate() - Math.ceil(targetBars * 1.7));
+    from.setUTCDate(from.getUTCDate() - historyCalendarDays);
     const warnings = [];
     for (const candidate of eodhdSymbolCandidates(record)) {
       const url = `${PROVIDER_ENDPOINTS.EODHD}${encodeURIComponent(candidate)}?from=${from.toISOString().slice(0, 10)}&to=${expectedSession}&period=d&fmt=json&api_token=${encodeURIComponent(token)}`;
@@ -203,6 +204,7 @@ const report = {
   generated_at: new Date().toISOString(),
   expected_session: expectedSession,
   target_bars: targetBars,
+  history_calendar_days: historyCalendarDays,
   provider_order: providerOrder,
   requested_symbols: records.length,
   updated: 0,

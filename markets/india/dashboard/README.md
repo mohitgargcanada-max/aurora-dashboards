@@ -82,6 +82,12 @@ set and priority exceptions before rendering:
 npm run cache:backfill:history -- YYYY-MM-DD
 ```
 
+The history backfill defaults to `AURORA_HISTORY_TARGET_BARS=1260` and requests
+about `target_bars * 1.7` calendar days from Yahoo, TapeTide or EODHD so the
+cache can retain a full 5Y-style daily window after non-trading days. Override
+the fetch window with `AURORA_HISTORY_CALENDAR_DAYS` if a provider requires a
+larger lookback.
+
 ## Discovery Rule
 
 Liquidity, surveillance class and wide thesis stops never remove a symbol from
