@@ -32,8 +32,28 @@ function sessionToUnix(session, daysBack) {
 function exchangeSuffix(record, provider) {
   const exchange = String(record.exchange || "NSE").toUpperCase();
   if (provider === "YAHOO") return exchange === "BSE" ? ".BO" : ".NS";
-  if (provider === "EODHD") return exchange === "BSE" ? ".BSE" : ".NSE";
+  if (provider === "EODHD") return `.${eodhdExchangeCodes(record)[0]}`;
   return "";
+}
+
+function eodhdExchangeCodes(record) {
+  const exchange = String(record.exchange || "NSE").toUpperCase();
+  const envName = exchange === "BSE" ? "AURORA_EODHD_BSE_CODES" : "AURORA_EODHD_NSE_CODES";
+  const defaults = exchange === "BSE" ? ["BSE", "XBOM", "BO"] : ["NSE", "XNSE", "NS"];
+  const configured = (process.env[envName] || "")
+    .split(",")
+    .map(item => item.trim().replace(/^\./, "").toUpperCase())
+    .filter(Boolean);
+  return [...new Set(configured.length ? configured : defaults)];
+}
+
+function eodhdSymbolCandidates(record) {
+  const symbol = normalizeSymbol(record.symbol);
+  return eodhdExchangeCodes(record).map(code => `${symbol}.${code}`);
+}
+
+function sanitizeToken(url) {
+  return url.replace(/api_token=[^&]+/i, "api_token=***");
 }
 
 function parseYahooBars(payload) {
@@ -148,8 +168,18 @@ async function fetchProviderHistory(provider, record) {
     if (!token) return { bars: [], endpoint: PROVIDER_ENDPOINTS.EODHD, warning: "EODHD_NOT_CONFIGURED" };
     const from = new Date(`${expectedSession}T00:00:00Z`);
     from.setUTCDate(from.getUTCDate() - Math.ceil(targetBars * 1.7));
-    const url = `${PROVIDER_ENDPOINTS.EODHD}${encodeURIComponent(symbol + exchangeSuffix(record, provider))}?from=${from.toISOString().slice(0, 10)}&to=${expectedSession}&period=d&fmt=json&api_token=${encodeURIComponent(token)}`;
-    return { bars: parseEodhdBars(await fetchJson(url)), endpoint: url.replace(/api_token=[^&]+/i, "api_token=***") };
+    const warnings = [];
+    for (const candidate of eodhdSymbolCandidates(record)) {
+      const url = `${PROVIDER_ENDPOINTS.EODHD}${encodeURIComponent(candidate)}?from=${from.toISOString().slice(0, 10)}&to=${expectedSession}&period=d&fmt=json&api_token=${encodeURIComponent(token)}`;
+      try {
+        const bars = parseEodhdBars(await fetchJson(url));
+        if (bars.length) return { bars, endpoint: sanitizeToken(url) };
+        warnings.push(`${sanitizeToken(url)}:EODHD_EMPTY_HISTORY`);
+      } catch (error) {
+        warnings.push(`${sanitizeToken(url)}:${error.message}`);
+      }
+    }
+    return { bars: [], endpoint: PROVIDER_ENDPOINTS.EODHD, warning: `EODHD_NO_HISTORY:${warnings.join("|")}` };
   }
   return { bars: [], endpoint: null, warning: `UNKNOWN_PROVIDER_${provider}` };
 }

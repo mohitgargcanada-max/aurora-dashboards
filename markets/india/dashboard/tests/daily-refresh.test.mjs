@@ -261,8 +261,12 @@ const eodhdDir = await mkdtemp(join(tmpdir(), "aurora-india-eodhd-"));
 await seedRecord(join(eodhdDir, "cache"), { provider: "EODHD_DAILY" });
 const oldToken = process.env.EODHD_API_TOKEN;
 process.env.EODHD_API_TOKEN = "secret-token";
+const eodhdCalls = [];
 const eodhdFetch = async url => {
+  eodhdCalls.push(url);
   assert.match(url, /api_token=secret-token/);
+  if (/RELIANCE\.NSE/.test(url)) return new Response(JSON.stringify({ message: "ticker not found" }), { status: 404 });
+  assert.match(url, /RELIANCE\.XNSE/);
   return new Response(JSON.stringify([{ date: "2026-06-23", open: 360, high: 365, low: 355, close: 362, adjusted_close: 362, volume: 2000 }]), { status: 200 });
 };
 fallback = await appendProviderConsistentFallback({
@@ -272,7 +276,10 @@ fallback = await appendProviderConsistentFallback({
   fetcher: eodhdFetch
 });
 assert.equal(fallback.inserted, 1);
-assert.doesNotMatch((await loadSymbol(join(eodhdDir, "cache"), "NSE", "RELIANCE")).endpoint, /secret-token/);
+assert.equal(eodhdCalls.length, 2);
+const eodhdRecord = await loadSymbol(join(eodhdDir, "cache"), "NSE", "RELIANCE");
+assert.doesNotMatch(eodhdRecord.endpoint, /secret-token/);
+assert.match(eodhdRecord.endpoint, /RELIANCE\.XNSE/);
 if (oldToken === undefined) delete process.env.EODHD_API_TOKEN;
 else process.env.EODHD_API_TOKEN = oldToken;
 

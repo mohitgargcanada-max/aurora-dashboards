@@ -91,8 +91,28 @@ function providerSymbolLimit(provider, maxSymbols) {
 function exchangeSuffix(record, provider) {
   const exchange = String(record.exchange || "NSE").toUpperCase();
   if (provider === "YAHOO") return exchange === "BSE" ? ".BO" : ".NS";
-  if (provider === "EODHD") return exchange === "BSE" ? ".BSE" : ".NSE";
+  if (provider === "EODHD") return `.${eodhdExchangeCodes(record)[0]}`;
   return "";
+}
+
+function eodhdExchangeCodes(record) {
+  const exchange = String(record.exchange || "NSE").toUpperCase();
+  const envName = exchange === "BSE" ? "AURORA_EODHD_BSE_CODES" : "AURORA_EODHD_NSE_CODES";
+  const defaults = exchange === "BSE" ? ["BSE", "XBOM", "BO"] : ["NSE", "XNSE", "NS"];
+  const configured = (process.env[envName] || "")
+    .split(",")
+    .map(item => item.trim().replace(/^\./, "").toUpperCase())
+    .filter(Boolean);
+  return [...new Set([...(configured.length ? configured : defaults)])];
+}
+
+function eodhdSymbolCandidates(record) {
+  const symbol = normalizeSymbol(record.symbol);
+  return eodhdExchangeCodes(record).map(code => `${symbol}.${code}`);
+}
+
+function sanitizeToken(url) {
+  return url.replace(/api_token=[^&]+/i, "api_token=***");
 }
 
 function isEquityRecord(record) {
@@ -586,10 +606,36 @@ function fallbackUrl(provider, record, expectedSession) {
   return null;
 }
 
+function eodhdFallbackUrls(record, expectedSession) {
+  const token = process.env.EODHD_API_TOKEN;
+  if (!token) return [];
+  return eodhdSymbolCandidates(record).map(symbol =>
+    `${PROVIDER_ENDPOINTS.EODHD}${encodeURIComponent(symbol)}?from=${expectedSession}&to=${expectedSession}&period=d&fmt=json&api_token=${encodeURIComponent(token)}`
+  );
+}
+
+async function fetchEodhdFallbackBar(record, expectedSession, fetcher, timeoutMs) {
+  const urls = eodhdFallbackUrls(record, expectedSession);
+  if (!urls.length) return { bar: null, warning: "EODHD_NOT_CONFIGURED" };
+  const warnings = [];
+  for (const url of urls) {
+    try {
+      const payload = await fetchJson(url, fetcher, timeoutMs);
+      const bar = parseEodhdBar(payload, expectedSession);
+      if (bar?.date === expectedSession) return { bar, endpoint: sanitizeToken(url) };
+      warnings.push(`${sanitizeToken(url)}:EODHD_NO_COMPLETED_BAR`);
+    } catch (error) {
+      warnings.push(`${sanitizeToken(url)}:${error.message}`);
+    }
+  }
+  return { bar: null, endpoint: sanitizeToken(urls.at(-1)), warning: `EODHD_NO_COMPLETED_BAR:${warnings.join("|")}` };
+}
+
 async function fetchFallbackBar(provider, record, expectedSession, fetcher, timeoutMs, connectorPrefetch = new Map()) {
   const prefetched = connectorPrefetch.get(providerSymbolKey(provider, record));
   if (prefetched) return prefetched;
   if (provider === "TAPETIDE") return fetchTapetideMcp(record, expectedSession, fetcher, timeoutMs);
+  if (provider === "EODHD") return fetchEodhdFallbackBar(record, expectedSession, fetcher, timeoutMs);
   const url = fallbackUrl(provider, record, expectedSession);
   if (!url) return { bar: null, warning: `${provider}_NOT_CONFIGURED` };
   const payload = await fetchJson(url, fetcher, timeoutMs);
@@ -599,7 +645,7 @@ async function fetchFallbackBar(provider, record, expectedSession, fetcher, time
       ? parseYahooBar(payload, expectedSession)
       : parseEodhdBar(payload, expectedSession);
   if (!bar || bar.date !== expectedSession) return { bar: null, warning: `${provider}_NO_COMPLETED_BAR` };
-  return { bar, endpoint: url.replace(/api_token=[^&]+/i, "api_token=***") };
+  return { bar, endpoint: sanitizeToken(url) };
 }
 
 export async function appendProviderConsistentFallback({

@@ -25,7 +25,7 @@ npm run cache:audit
 ```
 
 The archive may contain many daily files. Each source is SHA-256 recorded and
-copied into the immutable raw cache. Normalized records retain the latest 420
+copied into the immutable raw cache. Normalized records retain the latest 1260
 bars per exchange and symbol.
 
 Benchmark, sector and India VIX histories are cached separately under
@@ -56,6 +56,13 @@ The daily route is:
 4. Yahoo `.NS` / `.BO` one-day fallback when validated;
 5. EODHD one-day fallback only as the final repair route.
 
+EODHD India historical fallback uses `/api/eod/{SYMBOL}.{EXCHANGE}` with
+`from`, `to`, `period=d`, and `fmt=json`. NSE and BSE exchange-code candidates
+are tried in order and the first validated completed-session bar is accepted.
+Override the default candidates with `AURORA_EODHD_NSE_CODES` or
+`AURORA_EODHD_BSE_CODES` if the subscribed EODHD package exposes a different
+India code.
+
 If the official host blocks automated downloading, download that day's official
 bhavcopy in a browser and place it in the dated raw directory. No historical
 refetch is needed. If no route can refresh the completed session, the command
@@ -66,6 +73,13 @@ Use this only for diagnostics or historical replays:
 
 ```bash
 npm run scan:full:cache-only -- YYYY-MM-DD
+```
+
+For multi-year-high coverage, backfill longer histories for the active weekday
+set and priority exceptions before rendering:
+
+```bash
+npm run cache:backfill:history -- YYYY-MM-DD
 ```
 
 ## Discovery Rule
