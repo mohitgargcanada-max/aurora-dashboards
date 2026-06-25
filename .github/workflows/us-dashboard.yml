@@ -3,7 +3,6 @@ name: AURORA US Dashboard
 on:
   workflow_dispatch:
   schedule:
-    # GitHub cron is UTC. These two slots cover New York 9am across EST/EDT.
     - cron: "0 13 * * 0-5"
     - cron: "0 14 * * 0-5"
 
@@ -45,69 +44,68 @@ jobs:
           SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
-        run: bash scripts/run-market.sh us
+        run: |
+          cd markets/us/dashboard
+          node scripts/refresh-or-repair-us-data.mjs
+          node scripts/scan-universe.mjs
+          node scripts/enrich-sector-classification.mjs
+          node scripts/scan-universe.mjs
+          node scripts/scan-rs-leadership.mjs
+          node scripts/render-canonical.mjs
+          npm test
+          node tests/history-repair.test.mjs
+          npm run build
+          npm run validate
+          if npm run visual:validate; then
+            echo "US visual validation passed."
+          else
+            echo "US visual validation blocked or failed; dashboard generation still completed." >&2
+          fi
 
       - name: Summarize US dashboard outputs
         if: always() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
         run: |
           node <<'NODE' >> "$GITHUB_STEP_SUMMARY"
           const fs = require("fs");
-
-          function readJson(path) {
-            try {
-              return JSON.parse(fs.readFileSync(path, "utf8"));
-            } catch {
-              return null;
-            }
-          }
-
+          function readJson(path) { try { return JSON.parse(fs.readFileSync(path, "utf8")); } catch { return null; } }
           function warningSummary(warnings = []) {
             const byProvider = {};
             for (const warning of Array.isArray(warnings) ? warnings : []) {
               const provider = warning.provider || "UNKNOWN";
               byProvider[provider] ||= { count: 0, samples: [] };
               byProvider[provider].count += 1;
-              if (byProvider[provider].samples.length < 3) {
-                byProvider[provider].samples.push(warning.warning || "UNKNOWN");
-              }
+              if (byProvider[provider].samples.length < 3) byProvider[provider].samples.push(warning.warning || "UNKNOWN");
             }
             return byProvider;
           }
-
           const dashboardPath = "markets/us/AURORA_US_Dashboard.html";
           const statePath = "markets/us/dashboard/data/us-dashboard-state.json";
           const rslePath = "markets/us/dashboard/data/rs-leadership-scan.json";
           const refreshPath = "markets/us/dashboard/data/us-daily-refresh-report.json";
+          const historyPath = "markets/us/dashboard/data/us-history-repair-report.json";
+          const wrapperPath = "markets/us/dashboard/data/us-refresh-or-repair-report.json";
           const refresh = readJson(refreshPath);
+          const history = readJson(historyPath);
+          const wrapper = readJson(wrapperPath);
           const state = readJson(statePath);
           const rsle = readJson(rslePath);
-
           console.log("## AURORA US Dashboard");
           console.log("");
           console.log(`- Dashboard HTML: \`${dashboardPath}\` ${fs.existsSync(dashboardPath) ? "present" : "missing"}`);
           console.log(`- Dashboard state: \`${statePath}\` ${state ? "present" : "missing/unreadable"}`);
           console.log(`- RSLE data: \`${rslePath}\` ${rsle ? "present" : "missing/unreadable"}`);
           console.log(`- Daily refresh report: \`${refreshPath}\` ${refresh ? "present" : "missing/unreadable"}`);
+          console.log(`- 5Y history repair report: \`${historyPath}\` ${history ? "present" : "missing/unreadable"}`);
+          console.log(`- Refresh-or-repair report: \`${wrapperPath}\` ${wrapper ? "present" : "missing/unreadable"}`);
           console.log("");
           console.log("### Data Provenance");
-          if (refresh) {
-            console.log(`- Daily refresh status: \`${refresh.status || "UNKNOWN"}\``);
-            console.log(`- Expected completed session: \`${refresh.expected_completed_session || "UNKNOWN"}\``);
-            console.log(`- Latest data as of: \`${refresh.latest_data_as_of || "NONE"}\``);
-            console.log(`- Fallback label: \`${refresh.fallback_label || "UNKNOWN"}\``);
-            console.log(`- Provider counts: \`${JSON.stringify(refresh.provider_counts || {})}\``);
-            console.log(`- Quotes loaded: \`${refresh.quotes_loaded ?? "UNKNOWN"}\``);
-            console.log(`- Inserted/corrected/unchanged/stale: \`${refresh.inserted ?? "?"}/${refresh.corrected ?? "?"}/${refresh.unchanged ?? "?"}/${refresh.stale_quote ?? "?"}\``);
-            const grouped = warningSummary(refresh.warnings);
-            for (const [provider, info] of Object.entries(grouped)) {
-              console.log(`- Warning summary: \`${provider}: ${info.count} warning(s); samples: ${info.samples.join(" | ")}\``);
-            }
-            const eodhdWarnings = (refresh.warnings || []).filter(w => w.provider === "EODHD").slice(0, 5);
-            for (const warning of eodhdWarnings) {
-              console.log(`- EODHD detail: \`${warning.warning || "UNKNOWN"}\``);
-            }
-          } else {
-            console.log("- Daily refresh report is missing; treat the dashboard as using committed cache/state only.");
+          for (const [label, report] of [["Daily", refresh], ["History", history], ["Wrapper", wrapper]]) {
+            if (!report) continue;
+            console.log(`- ${label} status: \`${report.status || report.final_status || "UNKNOWN"}\``);
+            console.log(`- ${label} latest data as of: \`${report.latest_data_as_of || "NONE"}\``);
+            console.log(`- ${label} provider counts: \`${JSON.stringify(report.provider_counts || {})}\``);
+            const grouped = warningSummary(report.warnings || report.history_repair?.warnings || report.daily_refresh?.warnings);
+            for (const [provider, info] of Object.entries(grouped)) console.log(`- ${label} warning summary: \`${provider}: ${info.count}; samples: ${info.samples.join(" | ")}\``);
           }
           if (rsle) {
             console.log(`- RSLE data_as_of: \`${rsle.data_as_of || "UNKNOWN"}\``);
