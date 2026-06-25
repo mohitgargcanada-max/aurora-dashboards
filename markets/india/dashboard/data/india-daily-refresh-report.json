@@ -2,201 +2,118 @@
   "status": "DATA_REFRESH_BLOCKED",
   "provider": "NONE",
   "endpoint": null,
-  "retrieved_at": "2026-06-24T20:50:35.031Z",
+  "retrieved_at": "2026-06-25T07:00:11.003Z",
   "expected_completed_session": "2026-06-24",
   "latest_data_as_of": null,
   "fallback_label": "NOT_AVAILABLE",
   "fallback_reason": "NO_PROVIDER_REFRESHED_EXPECTED_COMPLETED_SESSION_WITH_VALID_PROVIDER_CONSISTENCY",
   "coverage": {
     "total_records": 8008,
-    "current_records": 241,
-    "valid_current_records": 241,
-    "current_coverage_pct": 3.01
+    "current_records": 472,
+    "valid_current_records": 472,
+    "current_coverage_pct": 5.89
   },
   "attempts": [
     {
-      "provider": "TAPETIDE",
-      "endpoint": "TAPETIDE_DAILY_BAR_URL_TEMPLATE",
+      "provider": "YAHOO",
+      "endpoint": "https://query1.finance.yahoo.com/v8/finance/chart/",
       "requested": 250,
+      "inserted": 231,
+      "corrected": 0,
+      "unchanged": 0,
+      "invalid": 0,
+      "skipped_no_blend": 0,
+      "missing_bar": 1,
+      "warnings": [
+        {
+          "symbol": "MONOLITH",
+          "warning": "HTTP_404"
+        },
+        {
+          "symbol": "GCHOTELS",
+          "warning": "HTTP_404"
+        },
+        {
+          "symbol": "FRESHARA",
+          "warning": "HTTP_404"
+        },
+        {
+          "symbol": "CUDML",
+          "warning": "HTTP_404"
+        },
+        {
+          "symbol": "ZOMATO",
+          "warning": "HTTP_404"
+        },
+        {
+          "symbol": "TATAMOTORS",
+          "warning": "HTTP_404"
+        },
+        {
+          "symbol": "HBLPOWER",
+          "warning": "HTTP_404"
+        },
+        {
+          "symbol": "IDFC",
+          "warning": "HTTP_404"
+        },
+        {
+          "symbol": "LTIM",
+          "warning": "HTTP_404"
+        },
+        {
+          "symbol": "GMRINFRA",
+          "warning": "HTTP_404"
+        },
+        {
+          "symbol": "LLOYDSE",
+          "warning": "HTTP_404"
+        },
+        {
+          "symbol": "SWANENERGY",
+          "warning": "HTTP_404"
+        },
+        {
+          "symbol": "ADANI",
+          "warning": "HTTP_404"
+        },
+        {
+          "symbol": "CENTURYTEX",
+          "warning": "HTTP_404"
+        },
+        {
+          "symbol": "GSPL",
+          "warning": "YAHOO_NO_COMPLETED_BAR"
+        },
+        {
+          "symbol": "GET&D",
+          "warning": "HTTP_404"
+        },
+        {
+          "symbol": "AMIORG",
+          "warning": "HTTP_404"
+        },
+        {
+          "symbol": "ISEC",
+          "warning": "HTTP_404"
+        },
+        {
+          "symbol": "PEL",
+          "warning": "HTTP_404"
+        }
+      ]
+    },
+    {
+      "provider": "TAPETIDE",
+      "endpoint": "https://mcp.tapetide.com/mcp",
+      "requested": 50,
       "inserted": 0,
       "corrected": 0,
       "unchanged": 0,
       "invalid": 0,
       "skipped_no_blend": 0,
-      "missing_bar": 250,
+      "missing_bar": 50,
       "warnings": [
-        {
-          "symbol": "NETWEB",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "APOLLO",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "IDEA",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ATGL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ZEEL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ADANIENT",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ADANIGREEN",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ADANIENSOL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ADANIPORTS",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TVSMOTOR",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "MOTHERSON",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "LAURUSLABS",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ANGELONE",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TATACOMM",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "RAIN",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "THERMAX",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SYRMA",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "HBLENGINE",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ACUTAAS",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NAVINFLUOR",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TIINDIA",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "HONASA",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "REFEX",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "FINCABLES",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SANSERA",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "DEEPAKFERT",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "DREDGECORP",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "RATEGAIN",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "IOLCP",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "IXIGO",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "IDEAFORGE",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "LLOYDSENT",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SKMEGGPROD",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "RELIGARE",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SASKEN",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "CENTUM",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "THYROCARE",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ADVAIT",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "VIMTALABS",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SATIN",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PRUDENT",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "INDOTECH",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "DJML",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
         {
           "symbol": "MONOLITH",
           "warning": "TAPETIDE_NOT_CONFIGURED"
@@ -210,43 +127,7 @@
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "PRIMO",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
           "symbol": "CUDML",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "HMVL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NINSYS",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PLASTIBLEN",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "MOTOGENFIN",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "HDFCBANK",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "RELIANCE",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ICICIBANK",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "INFY",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
@@ -254,399 +135,7 @@
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "MTARTECH",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "BHARTIARTL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "BSE",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SBIN",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "VAML",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TCS",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
           "symbol": "TATAMOTORS",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "MCX",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "IFCI",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "M&M",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "COALINDIA",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "BAJFINANCE",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "AXISBANK",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ADANIPOWER",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "HSCL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "HFCL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "OLAELEC",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "LT",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "HINDALCO",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ETERNAL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PARAS",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "WOCKPHARMA",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TEJASNET",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "GROWW",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "POWERINDIA",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "WIPRO",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SUZLON",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "VEDL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "DIXON",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "DATAPATTNS",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NATIONALUM",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TATASTEEL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SILVERBEES",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "FEDERALBNK",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "KOTAKBANK",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SHRIRAMFIN",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "MARUTI",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TMPV",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "INDIGO",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PINELABS",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "COFORGE",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ITC",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "BEL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NTPC",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ASHOKLEY",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "HINDUNILVR",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "MEESHO",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SUNPHARMA",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "AEGISLOG",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "BHEL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "GVT&D",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TRENT",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "HCLTECH",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ONGC",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "HAL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ULTRACEMCO",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "JPPOWER",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ATHERENERG",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "CANBK",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "EICHERMOT",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "BAJAJ-AUTO",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "BANKBARODA",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "CARTRADE",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SAIL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TMCV",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "CGPOWER",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "HYUNDAI",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "POWERGRID",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TECHM",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ASIANPAINT",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TITAN",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "KALYANKJIL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NHPC",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "YESBANK",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "AMBER",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "LENSKART",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "APOLLOHOSP",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "WAAREEENER",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "KAYNES",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "MAXHEALTH",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "INDIANB",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PERSISTENT",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "VBL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "RVNL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "CUPID",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SAMMAANCAP",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "CUMMINSIND",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "VEDPOWER",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SWIGGY",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "GOLDBEES",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "LIQUIDBEES",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NESTLEIND",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "BPCL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NMDC",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "JSLL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NIACL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "JIOFIN",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ASTRAMICRO",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NLCINDIA",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
@@ -654,287 +143,7 @@
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "INDUSTOWER",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "POLICYBZR",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "HEROMOTOCO",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TORNTPHARM",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "POLYCAB",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PFC",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SOLARINDS",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "DLF",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "GRSE",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "OFSS",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "CHOLAFIN",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "HINDPETRO",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "APARINDS",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "GMRAIRPORT",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "CDSL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "HDFCAMC",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "HINDZINC",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ENRIN",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "DIVISLAB",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "VOGL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ICICIAMC",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NBCC",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ABB",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NYKAA",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "DMART",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
           "symbol": "IDFC",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "UNIONBANK",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NAUKRI",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "CIPLA",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "IDFCFIRSTB",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "MUTHOOTFIN",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "CMRGREEN",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TATAPOWER",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PAYTM",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "LLOYDSENGG",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "BHARATCOAL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "IDBI",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "BHARATFORG",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SCI",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PNB",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TATACONSUM",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "JUBLFOOD",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "LICI",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "VISL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ZENTEC",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "BDL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "GRASIM",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "JSWENERGY",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "REDINGTON",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NIFTYBEES",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SIEMENS",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "FORCEMOT",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "EXICOM",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "OIL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "LTM",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "LUPIN",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "IOC",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PGEL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "HINDCOPPER",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "DRREDDY",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "INDUSINDBK",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SPARC",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "AUROPHARMA",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NEWGEN",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "LIQUIDCASE",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "RECLTD",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "BANDHANBNK",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "MSTCLTD",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "GAIL",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PREMIERENE",
-          "warning": "TAPETIDE_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "RBLBANK",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
@@ -942,137 +151,168 @@
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "LODHA",
+          "symbol": "GMRINFRA",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "MAZDOCK",
+          "symbol": "LLOYDSE",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "RPTECH",
+          "symbol": "SWANENERGY",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "JSWSTEEL",
+          "symbol": "ADANI",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "STLTECH",
+          "symbol": "CENTURYTEX",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "PWL",
+          "symbol": "GSPL",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "ANANTRAJ",
+          "symbol": "GET&D",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "BRITANNIA",
+          "symbol": "AMIORG",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "OLECTRA",
+          "symbol": "ISEC",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "HDFCLIFE",
+          "symbol": "PEL",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "AUBANK",
+          "symbol": "CUB",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "VOLTAS",
+          "symbol": "LXCHEM",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "COCHINSHIP",
+          "symbol": "NIITLTD",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "BAJAJFINSV",
+          "symbol": "NIBE",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "TATACAP",
+          "symbol": "KIMS",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "RRKABEL",
+          "symbol": "SHREEJISPG",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "SBILIFE",
+          "symbol": "JSL",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "BOSCHLTD",
+          "symbol": "STARHEALTH",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "ZYDUSLIFE",
+          "symbol": "VINCOFE",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "MARICO",
+          "symbol": "FIRSTCRY",
           "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "GLENMARK",
+          "symbol": "MINDACORP",
           "warning": "TAPETIDE_NOT_CONFIGURED"
-        }
-      ]
-    },
-    {
-      "provider": "YAHOO",
-      "endpoint": "https://query1.finance.yahoo.com/v8/finance/chart/",
-      "requested": 250,
-      "inserted": 241,
-      "corrected": 0,
-      "unchanged": 0,
-      "invalid": 0,
-      "skipped_no_blend": 0,
-      "missing_bar": 0,
-      "warnings": [
-        {
-          "symbol": "MONOLITH",
-          "warning": "HTTP_404"
         },
         {
-          "symbol": "GCHOTELS",
-          "warning": "HTTP_404"
+          "symbol": "SUPREMEIND",
+          "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "FRESHARA",
-          "warning": "HTTP_404"
+          "symbol": "PARADEEP",
+          "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "CUDML",
-          "warning": "HTTP_404"
+          "symbol": "BALKRISIND",
+          "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "ZOMATO",
-          "warning": "HTTP_404"
+          "symbol": "IGL",
+          "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "TATAMOTORS",
-          "warning": "HTTP_404"
+          "symbol": "NAZARA",
+          "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "HBLPOWER",
-          "warning": "HTTP_404"
+          "symbol": "EMSLIMITED",
+          "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "IDFC",
-          "warning": "HTTP_404"
+          "symbol": "LIQUIDIETF",
+          "warning": "TAPETIDE_NOT_CONFIGURED"
         },
         {
-          "symbol": "LTIM",
-          "warning": "HTTP_404"
+          "symbol": "TIMETECHNO",
+          "warning": "TAPETIDE_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "UJJIVANSFB",
+          "warning": "TAPETIDE_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "KIRLPNU",
+          "warning": "TAPETIDE_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "KEC",
+          "warning": "TAPETIDE_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "BSOFT",
+          "warning": "TAPETIDE_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "IRCTC",
+          "warning": "TAPETIDE_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "HDFCGOLD",
+          "warning": "TAPETIDE_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "FINPIPE",
+          "warning": "TAPETIDE_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "CYIENT",
+          "warning": "TAPETIDE_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "GVPIL",
+          "warning": "TAPETIDE_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SURYAROSNI",
+          "warning": "TAPETIDE_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SEDEMAC",
+          "warning": "TAPETIDE_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SENORES",
+          "warning": "TAPETIDE_NOT_CONFIGURED"
         }
       ]
     },
@@ -1124,427 +364,7 @@
           "warning": "EODHD_NOT_CONFIGURED"
         },
         {
-          "symbol": "CPPLUS",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "INOXWIND",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ANANDRATHI",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "INDHOTEL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "EMMVEE",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "JYOTICNC",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PREMEXPLN",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
           "symbol": "GMRINFRA",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "AMBUJACEM",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "APLAPOLLO",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "EXIDEIND",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "FORTIS",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "AEQUS",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "JBMA",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TDPOWERSYS",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "GODREJCP",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PIDILITIND",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TATSILV",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "DIACABS",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "BANKINDIA",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "HCC",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "RUBICON",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "IIFL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "LGEINDIA",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "CHENNPETRO",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "GMDCLTD",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "MAHABANK",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "LTF",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TARIL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SRF",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "JAINREC",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "JINDALSTEL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PATANJALI",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "GLAND",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ABCAPITAL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "WABAG",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TITAGARH",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ICICIGI",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "BELRISE",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "MMTC",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "BLISSGVS",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "MARKSANS",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "KEI",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "JNKINDIA",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "MANKIND",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "VMM",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "THANGAMAYL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "BIOCON",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SHAILY",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NAM-INDIA",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "GESHIP",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TATATECH",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "DELHIVERY",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "MRPL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "MPHASIS",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "BALAMINES",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "FCL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TATAELXSI",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "UPL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ARE&M",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SONATSOFTW",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "LALPATHLAB",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "360ONE",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "AEROFLEX",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "RADICO",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "INOXINDIA",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "GRANULES",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "COLPAL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "FACT",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PAGEIND",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "UNITDSPR",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "HAVELLS",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "GOCOLORS",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PANACEABIO",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PIIND",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "RPOWER",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "AZAD",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ACMESOLAR",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "KPITTECH",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PRESTIGE",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "GODREJPROP",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SAREGAMA",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "IREDA",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "CMPDI",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ALKEM",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "CEMPRO",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "WALCHANNAG",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NATCOPHARM",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "DABUR",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ENGINERSIN",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "DOMS",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TRITURBINE",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "MFSL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "WELCORP",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "E2E",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ASTRAL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SUPRIYA",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "HDFCSILVER",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PETRONET",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "MOTILALOFS",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SILVERIETF",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "IRFC",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ICICIPRULI",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "KFINTECH",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "KISSHT",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "KERNEX",
           "warning": "EODHD_NOT_CONFIGURED"
         },
         {
@@ -1552,43 +372,7 @@
           "warning": "EODHD_NOT_CONFIGURED"
         },
         {
-          "symbol": "PHOENIXLTD",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SONACOMS",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "BBOX",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "KIRLOSENG",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "EPACKPEB",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "AIIL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "CAMS",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
           "symbol": "SWANENERGY",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "RICOAUTO",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "CONCOR",
           "warning": "EODHD_NOT_CONFIGURED"
         },
         {
@@ -1596,135 +380,7 @@
           "warning": "EODHD_NOT_CONFIGURED"
         },
         {
-          "symbol": "FIVESTAR",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "LLOYDSME",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "CRAFTSMAN",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
           "symbol": "CENTURYTEX",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SOUTHBANK",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "UNOMINDA",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "THOMASCOOK",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "JSWINFRA",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "CCL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "MANAPPURAM",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "CONCORDBIO",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "KWIL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ITDC",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "MRF",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "AARTIIND",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NUVAMA",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "BLUESTARCO",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "LIQUID1",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "COROMANDEL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PNBHOUSING",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "UNICHEMLAB",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "JKTYRE",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "GICRE",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PIRAMALFIN",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SCHNEIDER",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "VIYASH",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "AVANTIFEED",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NSLNISP",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "KARURVYSYA",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SKYGOLD",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "KPRMILL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NELCO",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "QUADFUTURE",
           "warning": "EODHD_NOT_CONFIGURED"
         },
         {
@@ -1732,155 +388,7 @@
           "warning": "EODHD_NOT_CONFIGURED"
         },
         {
-          "symbol": "PTCIL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PANAMAPET",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TATAGOLD",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "GRMOVER",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "BANKBEES",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SHILPAMED",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "MIDHANI",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SHREECEM",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "POONAWALLA",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "RBA",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ASHAPURMIN",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "AIAENG",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "GODFRYPHLP",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "AGIIL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "LICHSGFIN",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "OBEROIRLTY",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "DECNGOLD",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SBICARD",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NH",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "JINDALSAW",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "JWL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NRBBEARING",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SHYAMMETL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
           "symbol": "GET&D",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "AFCONS",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "VIKRAMSOLR",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SKIPPER",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "CROMPTON",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PAISALO",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "EIEL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ITCHOTELS",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ITBEES",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TENNIND",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "VIPIND",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "BATAINDIA",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SBC",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "CGCL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "GOLDIETF",
           "warning": "EODHD_NOT_CONFIGURED"
         },
         {
@@ -1888,155 +396,7 @@
           "warning": "EODHD_NOT_CONFIGURED"
         },
         {
-          "symbol": "CENTRALBK",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
           "symbol": "ISEC",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "GOLDIAM",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "HDBFS",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SWSOLAR",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "BORORENEW",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "GOKEX",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TATACHEM",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "M&MFIN",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "FRACTAL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "GENESYS",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "KTKBANK",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "RAMCOSYS",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "J&KBANK",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "AVALON",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TORNTPOWER",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NSDL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "URBANCO",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SANDHAR",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "PCJEWELLER",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "MOREPENLAB",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "SOTL",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "JBCHEPHARM",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "TECHNOE",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "EASEMYTRIP",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "EDELWEISS",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "DELTACORP",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "GRAPHITE",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "IEX",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "APOLLOTYRE",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "NEULANDLAB",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "MOSCHIP",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "JSWCEMENT",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "CHAMBLFERT",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "ASTERDM",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "MANINDS",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "CLEANMAX",
-          "warning": "EODHD_NOT_CONFIGURED"
-        },
-        {
-          "symbol": "UNIVCABLES",
           "warning": "EODHD_NOT_CONFIGURED"
         },
         {
@@ -2044,47 +404,927 @@
           "warning": "EODHD_NOT_CONFIGURED"
         },
         {
-          "symbol": "MOTISONS",
+          "symbol": "CUB",
           "warning": "EODHD_NOT_CONFIGURED"
         },
         {
-          "symbol": "SETFGOLD",
+          "symbol": "LXCHEM",
           "warning": "EODHD_NOT_CONFIGURED"
         },
         {
-          "symbol": "KSHINTL",
+          "symbol": "NIITLTD",
           "warning": "EODHD_NOT_CONFIGURED"
         },
         {
-          "symbol": "SAGILITY",
+          "symbol": "NIBE",
           "warning": "EODHD_NOT_CONFIGURED"
         },
         {
-          "symbol": "AWL",
+          "symbol": "KIMS",
           "warning": "EODHD_NOT_CONFIGURED"
         },
         {
-          "symbol": "BLUEJET",
+          "symbol": "SHREEJISPG",
           "warning": "EODHD_NOT_CONFIGURED"
         },
         {
-          "symbol": "KIRLOSBROS",
+          "symbol": "JSL",
           "warning": "EODHD_NOT_CONFIGURED"
         },
         {
-          "symbol": "SAILIFE",
+          "symbol": "STARHEALTH",
           "warning": "EODHD_NOT_CONFIGURED"
         },
         {
-          "symbol": "VIDYAWIRES",
+          "symbol": "VINCOFE",
           "warning": "EODHD_NOT_CONFIGURED"
         },
         {
-          "symbol": "GABRIEL",
+          "symbol": "FIRSTCRY",
           "warning": "EODHD_NOT_CONFIGURED"
         },
         {
-          "symbol": "GRWRHITECH",
+          "symbol": "MINDACORP",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SUPREMEIND",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "PARADEEP",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "BALKRISIND",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "IGL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "NAZARA",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "EMSLIMITED",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "LIQUIDIETF",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "TIMETECHNO",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "UJJIVANSFB",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "KIRLPNU",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "KEC",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "BSOFT",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "IRCTC",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "HDFCGOLD",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "FINPIPE",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "CYIENT",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "GVPIL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SURYAROSNI",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SEDEMAC",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SENORES",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "ELGIEQUIP",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "TV18BRDCST",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "PACEDIGITK",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "JMFINANCIL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SUVEN",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "CAPLIPOINT",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "BAJAJHLDNG",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "NETWORK18",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SUNDARMFIN",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "LIQUIDADD",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "POCL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SHADOWFAX",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "CARBORUNIV",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "EPACK",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "ESCORTS",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "CHOICEIN",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "GPIL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "ABSLAMC",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "AVANTEL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "FSL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "POWERMECH",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "LEMONTREE",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "WELSPUNLIV",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "HUDCO",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "COCKERILL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "DALBHARAT",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "TEGA",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "TIMEX",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "TFCILTD",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "ANTHEM",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "PPLPHARMA",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "BAJAJHFL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "KPIL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "BEML",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "ICIL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "RAYMONDREL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SPAL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "BRIGADE",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "BALUFORGE",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "LIQUIDPLUS",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SYNGENE",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "NTPCGREEN",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "STALLION",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "V2RETAIL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "JAYNECOIND",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "TARSONS",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "MCLOUD",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "USHAMART",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "CEATLTD",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "HEG",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SBCL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "FLUOROCHEM",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "BAJAJCON",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "JKCEMENT",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SILVERETF",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "VOLTAMP",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "BERGEPAINT",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "GREAVESCOT",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "ZENSARTECH",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "ANURAS",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "ALKYLAMINE",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "LTTS",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "PRAJIND",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "CLEAN",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "RELAXO",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SUBROS",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "IPCALAB",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "ONESOURCE",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SHAKTIPUMP",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "AXISCADES",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "JAMNAAUTO",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "PNBGILTS",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "AJANTPHARM",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "MSUMI",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "KSCL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SBISILVER",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "VINDHYATEL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "IFBIND",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "QUESS",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "RAYMOND",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "RATNAVEER",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "VIKRAN",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "BLS",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "DEVYANI",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "EQUITASBNK",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "ARVIND",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "BLUESTONE",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "RHIM",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "ASHOKA",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SCHAEFFLER",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "EIDPARRY",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "CESC",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "UCOBANK",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SUDEEPPHRM",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "EBGNG",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "ITDCEM",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "AETHER",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "YATHARTH",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "GODIGIT",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "GPPL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "ELECON",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "INTELLECT",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "ACE",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "TRUALT",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "POLYMED",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "TRANSRAILL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "AFFLE",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "OMNI",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "HLEGLAS",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "IGARASHI",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "CAMLINFINE",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "LIQUIDBETF",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "JUNIORBEES",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "BALRAMCHIN",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "TTML",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "GEPIL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "GLAXO",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "NCC",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "PARACABLES",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "HAPPSTMNDS",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "LUMAXTECH",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "INOXGREEN",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "MASTERTR",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SWANCORP",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "CHOLAHLDNG",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "STUDDS",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SHANTIGOLD",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "HONAUT",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "HEXT",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "RCF",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "GUJGASLTD",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "IWEL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "AAVAS",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "VIJAYA",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SEPC",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "PSUBNKBEES",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "ABFRL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "JINDRILL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "PCBL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SILVER",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "EMCURE",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SAPPHIRE",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "GRAVITA",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "IRB",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "GOODLUCK",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "TBOTEK",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "COHANCE",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "DSSL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "PVTBANIETF",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "GNFC",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "TEXRAIL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SUNDARMHLD",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "PRIVISCL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "TATAINVEST",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "PRECWIRE",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "ENDURANCE",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SANDUMA",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "HDFCSML250",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "MEDANTA",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "WEBELSOLAR",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "JSFB",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "ITI",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "MARSONS",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "CREDITACC",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "IMFA",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "MGL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "CLSEL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "NOCIL",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SILVERCASE",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "ECLERX",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "CASHIETF",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "LIQUID",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "INDSWFTLAB",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "MARINE",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "BLACKBUCK",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SUSAN",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "INDOTHAI",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "VADILALIND",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "HARIOMPIPE",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "MON100",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "RHETAN",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "NACLIND",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SUDARSCHEM",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "AXISGOLD",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "HORIZON",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "QPOWER",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "MOBIKWIK",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "KMEW",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "KPIGREEN",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SUVENPHAR",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "TMB",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "IRCON",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "IIFLCAPS",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "GILLETTE",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "INFOBEAN",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "DCXINDIA",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "SERVOTECH",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "GOLD1",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "TI",
+          "warning": "EODHD_NOT_CONFIGURED"
+        },
+        {
+          "symbol": "POWERICA",
           "warning": "EODHD_NOT_CONFIGURED"
         }
       ]
@@ -2101,7 +1341,7 @@
     "warning": "DATA_REFRESH_BLOCKED: this pack is from the last-good scan and must not be treated as current data.",
     "blocked_session": "2026-06-24",
     "source_scan_data_as_of": "2026-06-22",
-    "source_scan_generated_at": "2026-06-24T05:16:33.388Z",
+    "source_scan_generated_at": "2026-06-24T19:35:03.249Z",
     "market_context": {
       "benchmark": "NIFTY500",
       "benchmark_close": 23269.8,
