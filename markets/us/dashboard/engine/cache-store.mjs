@@ -36,7 +36,9 @@ export function normalizeBar(row) {
   return bar;
 }
 
-export function mergeBars(existing, incoming, retain = 420) {
+export const DEFAULT_RETAIN_BARS = 1300;
+
+export function mergeBars(existing, incoming, retain = DEFAULT_RETAIN_BARS) {
   const byDate = new Map();
   for (const row of [...existing, ...incoming]) {
     const bar = normalizeBar(row);
