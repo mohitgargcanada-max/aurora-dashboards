@@ -45,7 +45,7 @@ export function normalizeBar(row) {
   return bar;
 }
 
-export function mergeBars(existing, incoming, retain = 420) {
+export function mergeBars(existing, incoming, retain = 1260) {
   const byDate = new Map();
   for (const row of [...existing, ...incoming]) {
     const bar = normalizeBar(row);

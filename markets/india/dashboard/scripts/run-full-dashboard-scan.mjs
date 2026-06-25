@@ -1,6 +1,7 @@
 import { readFile, readdir, rename, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { latestCompletedIndiaSession } from "../engine/trading-calendar.mjs";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const cacheRoot = resolve(root, "cache/india/ohlcv");
@@ -9,12 +10,17 @@ const dataRoot = resolve(root, "data");
 const universePath = resolve(dataRoot, "india-universe.json");
 const dashboardPath = resolve(root, "..", "AURORA_India_Unified_Dashboard.html");
 const scanPath = resolve(dataRoot, "india-full-dashboard-scan.json");
-const expectedSession = process.argv[2] || "2026-06-22";
+const expectedSession = process.argv[2] || process.env.AURORA_TARGET_SESSION || latestCompletedIndiaSession();
 
 const NSE_EQUITY_SERIES = new Set(["EQ", "BE", "SM", "ST", "BZ"]);
 const BSE_EQUITY_GROUPS = new Set(["A", "B", "T", "TS", "X", "XT", "Z", "ZP", "M", "MT", "MS"]);
 const LIQUIDITY_MIN_INR = 16_000_000;
 const INDIA_REFERENCE_BASKET = ["RELIANCE", "TCS", "HDFCBANK", "ICICIBANK", "BHARTIARTL", "SBIN", "INFY", "LT", "ITC", "HINDUNILVR"];
+const MYH_DEFINITIONS = [
+  { label: "MYH_5Y", sessions: 1260 },
+  { label: "MYH_3Y", sessions: 756 },
+  { label: "MYH_2Y", sessions: 504 }
+];
 
 const clamp = (value, low = 0, high = 100) => Math.max(low, Math.min(high, Number.isFinite(value) ? value : low));
 const round = (value, digits = 2) => Number.isFinite(value) ? Number(value.toFixed(digits)) : null;
@@ -123,6 +129,37 @@ function adr(bars, period = 20) {
   const xs = bars.slice(-period);
   if (xs.length < Math.min(period, 10)) return null;
   return mean(xs.map(x => x.high - x.low));
+}
+
+function multiYearHighLayer(bars) {
+  const supported = MYH_DEFINITIONS.find(definition => bars.length >= definition.sessions);
+  if (!supported) {
+    return {
+      myh_label: "MYH_HISTORY_INSUFFICIENT",
+      myh_state: "NOT_AVAILABLE",
+      myh_level: null,
+      myh_gap_pct: null,
+      myh_lookback_sessions: bars.length
+    };
+  }
+  const window = bars.slice(-supported.sessions);
+  const prior = window.slice(0, -1);
+  const lastBar = latest(window);
+  const priorHigh = Math.max(...prior.map(x => x.high));
+  const windowHigh = Math.max(...window.map(x => x.high));
+  const gap = priorHigh > 0 ? (priorHigh - lastBar.close) / priorHigh * 100 : null;
+  let state = "NOT_AVAILABLE";
+  if (Number.isFinite(priorHigh) && lastBar.close >= priorHigh) state = "MYH_BREAKOUT_CONFIRMED";
+  else if (Number.isFinite(priorHigh) && lastBar.high >= priorHigh) state = "MYH_BREAKOUT_FAILED";
+  else if (Number.isFinite(gap) && gap <= 3) state = "MYH_NEAR_HIGH";
+  return {
+    myh_label: supported.label,
+    myh_state: state,
+    myh_level: round(priorHigh),
+    myh_gap_pct: round(gap),
+    myh_lookback_sessions: supported.sessions,
+    myh_window_high: round(windowHigh)
+  };
 }
 
 function weightedRsRaw(closes, offset = 0) {
@@ -556,6 +593,27 @@ function riskBucket(row) {
   return "RISK_TOO_WIDE";
 }
 
+function triggerStatus(row) {
+  if (!Number.isFinite(row.trigger) || !Number.isFinite(row.price)) return "TRIGGER_UNKNOWN";
+  const triggerGap = row.trigger_gap_pct;
+  if (row.price >= row.trigger * 1.03) return "ABOVE_TRIGGER_EXTENDED_WAIT_RETEST";
+  if (row.price >= row.trigger) return "ABOVE_TRIGGER_CLOSE_ACCEPTED";
+  if (Number.isFinite(row.day_high) && row.day_high >= row.trigger) return "TRIGGER_TOUCHED_NO_CLOSE_ACCEPTANCE";
+  if (triggerGap >= 0 && triggerGap <= 1.5) return "NEAR_TRIGGER";
+  if (triggerGap > 1.5 && triggerGap <= 5) return "BELOW_TRIGGER_WATCH";
+  return "AWAY_FROM_TRIGGER_REPAIR";
+}
+
+function freshExecutionCandidate(row) {
+  return Number.isFinite(row.trigger_gap_pct)
+    && row.trigger_gap_pct >= -3
+    && row.trigger_gap_pct <= 3
+    && row.trigger_status !== "ABOVE_TRIGGER_EXTENDED_WAIT_RETEST"
+    && row.trigger_status !== "TRIGGER_TOUCHED_NO_CLOSE_ACCEPTANCE"
+    && row.final_bucket !== "RSNH_WATCH_ONLY"
+    && row.final_bucket !== "REPAIR_WATCH";
+}
+
 function weeklyScore(row, marketContext) {
   const technical = clamp(((row.leadership_score ?? 0) * 0.55 + (row.tactical_score ?? 0) * 0.45) / 85 * 100);
   const rs = row.rs_rating ?? ({ PASS: 90, PARTIAL: 70, FAIL: 35 }[row.rs_trifecta_label] ?? 40);
@@ -693,6 +751,7 @@ for (const file of files) {
   const trigger = (bpx.basepivot_price ?? roughPivot) * 1.001;
   const entryReference = Math.max(price, trigger);
   const pbx = pbxLayer(bars, price, e10, e21, s50, ve2);
+  const myh = multiYearHighLayer(bars);
   const tacticalSupports = [
     latest(bars).low * 0.995,
     Number.isFinite(e10) ? e10 * 0.995 : null,
@@ -725,6 +784,8 @@ for (const file of files) {
     rows: bars.length,
     adaptive_history: bars.length < 252,
     price: round(price),
+    day_high: round(latest(bars).high),
+    day_low: round(latest(bars).low),
     day_change_pct: round(pctChange(closes, 1) * 100),
     addv20_inr: round(addv20, 0),
     rs_1w_rel: round(((1 + (pctChange(closes, 5) ?? 0)) / (1 + (pctChange(benchmarkCloses, 5) ?? 0)) - 1) * 100),
@@ -750,6 +811,7 @@ for (const file of files) {
     ...bpx,
     ...rmvp,
     ...pbx,
+    ...myh,
     inside_bar: insideBar,
     pullback_ok: pbx.pbx_valid_pullback,
     trigger: round(trigger),
@@ -791,6 +853,7 @@ for (const row of featureRows) {
   row.setup_label = classify(row);
   row.final_bucket = finalBucket(row);
   row.risk_bucket = riskBucket(row);
+  row.trigger_status = triggerStatus(row);
   row.rmv_tight_label = rmvLabel(row.rmv15);
   row.leadership_score = round(
     (row.rs_rating ?? 40) * 0.24 + (row.rs_1w_pct ?? 40) * 0.10 + (row.rs_1m_pct ?? 40) * 0.12 + (row.rs_3m_pct ?? row.rs_short_rating ?? 40) * 0.12 +
@@ -1003,6 +1066,8 @@ function userNote(row) {
   else if (row.rs_trifecta_label === "PASS") pieces.push("RS Trifecta pass");
   else if (row.rs_trifecta_label === "PARTIAL") pieces.push("RS Trifecta partial");
   if (row.rsnh) pieces.push("near/new RS high");
+  if (row.myh_state === "MYH_BREAKOUT_CONFIRMED") pieces.push(`${row.myh_label} breakout confirmed`);
+  if (row.myh_state === "MYH_NEAR_HIGH") pieces.push(`${row.myh_label} near high`);
   if (row.rs21_state?.includes("RECLAIM")) pieces.push("RS21 reclaim");
   else if (row.rs21_state === "RS21_ACCELERATING") pieces.push("RS above EMA21 and accelerating");
   if (row.setup_label === "TRIGGER_READY") pieces.push("price is near trigger");
@@ -1050,7 +1115,7 @@ for (const row of weeklyEligible) {
 }
 
 const focusList = weeklyUniverse
-  .filter(x => x.weekly_tier === "WEEKLY_FOCUS" && x.addv20_inr >= LIQUIDITY_MIN_INR && x.entry_risk_pct <= 7 && !["WATCHLIST_ONLY", "DEFENSE_MODE"].includes(marketContext.final_market_permission))
+  .filter(x => x.weekly_tier === "WEEKLY_FOCUS" && freshExecutionCandidate(x) && x.addv20_inr >= LIQUIDITY_MIN_INR && x.entry_risk_pct <= 7 && !["WATCHLIST_ONLY", "DEFENSE_MODE"].includes(marketContext.final_market_permission))
   .map(x => ({ ...x, execution_focus_score: executionFocusScore(x, marketContext) }))
   .filter(x => x.execution_focus_score >= 70 && !["AVOID_FRESH_LONG", "NO_CHASE"].includes(x.final_bucket))
   .sort((a, b) => b.execution_focus_score - a.execution_focus_score);
@@ -1063,6 +1128,15 @@ const developing20 = rows.filter(x => x.source_lane !== "BSE_EXCLUSIVE_CAUTION")
 const bseOverlay = rows.filter(x => x.source_lane === "BSE_EXCLUSIVE_CAUTION").slice(0, 20).map((x, i) => ({ ...x, rank: i + 1 }));
 const stockSectorThemeRows = stockSectorThemeLeadership({ weeklyUniverse, dailyTop, rsleTop20, developing20 });
 const nearRsHigh = rows.filter(x => x.rs_high_gap_pct >= -1.5).slice(0, 25);
+const multiYearHighs = rows
+  .filter(x => ["MYH_BREAKOUT_CONFIRMED", "MYH_NEAR_HIGH", "MYH_BREAKOUT_FAILED"].includes(x.myh_state))
+  .sort((a, b) => {
+    const stateScore = { MYH_BREAKOUT_CONFIRMED: 3, MYH_NEAR_HIGH: 2, MYH_BREAKOUT_FAILED: 1 };
+    return (stateScore[b.myh_state] ?? 0) - (stateScore[a.myh_state] ?? 0)
+      || (a.myh_gap_pct ?? 999) - (b.myh_gap_pct ?? 999)
+      || b.total_score - a.total_score;
+  })
+  .slice(0, 25);
 const pullbacks = rows.filter(x => x.setup_label === "PULLBACK").slice(0, 25);
 const compression = rows.filter(x => x.setup_label === "COMPRESSION").slice(0, 25);
 const basePivots = rows.filter(x => ["BASEPIVOT_QUALITY_A", "BASEPIVOT_QUALITY_B"].includes(x.basepivot_quality)).slice(0, 25);
@@ -1089,6 +1163,7 @@ const result = {
   bse_exclusive_overlay_20: bseOverlay,
   stock_sector_theme_leadership: stockSectorThemeRows,
   near_rs_high: nearRsHigh,
+  multi_year_highs: multiYearHighs,
   pullbacks,
   compression,
   basepivots: basePivots,
@@ -1143,9 +1218,11 @@ const signalFields = [
   ["Theme", sectorCell],
   ["AURORA Bucket", x => `<span class="status ${escape(x.final_bucket)}">${escape(x.final_bucket)}</span><small>${escape(x.weekly_tier ?? x.execution_tier ?? "")}</small>`],
   ["Setup", setupCell],
-  ["Price", x => `${money(x.price)}<small>${num(x.day_change_pct)}%</small>`],
+  ["Price", x => `${money(x.price)}<small>${num(x.day_change_pct)}% · H ${money(x.day_high)} / L ${money(x.day_low)}</small>`],
+  ["Trigger State", x => `${money(x.trigger)}<small>${num(x.trigger_gap_pct)}% gap</small><small>${escape(x.trigger_status)}</small>`],
   ["Score", x => `${num(x.total_score)}<small>L ${num(x.leadership_score)} · T ${num(x.tactical_score)}</small><small>WWL ${num(x.weekly_watchlist_score)} ${escape(x.weekly_score_label ?? "")}</small>`],
   ["RS", rsCell],
+  ["MYH", x => `${escape(x.myh_label)}<small>${escape(x.myh_state)} · gap ${num(x.myh_gap_pct)}%</small><small>Level ${money(x.myh_level)} · ${num(x.myh_lookback_sessions, 0)} sessions</small>`],
   ["RRG", x => `${escape(x.rrg.quadrant)}<small>Ratio ${num(x.rrg.ratio)} · Mom ${num(x.rrg.momentum)}</small>`],
   ["RMV", x => `${num(x.rmv5)} / ${num(x.rmv15)} / ${num(x.rmv25)}<small>${x.compression ? "compression" : "no compression"}</small>`],
   ["BasePivot / RMVP", x => `${money(x.basepivot_price)}<small>${escape(x.basepivot_quality)} · ${escape(x.basepivot_status)}</small><small>RMVP ${money(x.rmvp_price)} · ${escape(x.rmvp_quality)}</small><small>Base ${escape(x.base_stage_risk)} · ${escape(x.pattern_proxy)}</small>`],
@@ -1243,7 +1320,7 @@ const rejectedFields = [
 ];
 
 const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AURORA India Unified Dashboard</title><style>
-:root{--ink:#17201c;--muted:#66716b;--paper:#f7f8f5;--panel:#fff;--line:#d9ddd7;--green:#146b45;--greenbg:#e8f4ed;--amber:#895b00;--amberbg:#fff3d4;--red:#9b2f2f;--redbg:#fae9e7;--blue:#195a78;--bluebg:#e6f2f7}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.45 Inter,Arial,sans-serif}header.hero{background:#153f2d;color:white;padding:22px 28px;border-bottom:4px solid #d8ad42}.hero h1{margin:0;font-size:26px}.hero p{margin:5px 0 0;color:#deebe3}.nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.nav a{color:white;text-decoration:none;border:1px solid #72917f;padding:6px 10px;border-radius:4px}.wrap{padding:20px 28px 42px}.summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.metric{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px}.metric b{display:block;font-size:17px;margin-top:4px}.metric small,td small{display:block;color:var(--muted);margin-top:3px}h2{font-size:19px;margin:28px 0 10px}.notice{background:var(--amberbg);border-left:4px solid #c38b16;padding:10px 12px;border-radius:4px}.goodnote{background:var(--greenbg);border-left:4px solid var(--green);padding:10px 12px;border-radius:4px}.table-wrap{overflow:auto;border:1px solid var(--line);background:white;border-radius:6px}table{border-collapse:collapse;width:100%;min-width:1560px}th,td{text-align:left;vertical-align:top;padding:8px 9px;border-bottom:1px solid var(--line);font-size:12px}th{background:#edf1ec;position:sticky;top:0;z-index:1;white-space:nowrap}.status{display:inline-block;padding:3px 6px;border-radius:4px;font-size:11px;font-weight:700;background:var(--bluebg);color:var(--blue);white-space:nowrap}.TRIGGER_READY,.STANDARD_ENTRY{color:var(--green);background:var(--greenbg)}.PULLBACK,.COMPRESSION,.RMVP_EARLY_ENTRY,.RS21_RECLAIM_ENTRY{color:var(--blue);background:var(--bluebg)}.NO_CHASE_RISK{color:var(--red);background:var(--redbg)}input{padding:8px;border:1px solid var(--line);border-radius:4px;min-width:260px}.foot{color:var(--muted);margin-top:18px}@media(max-width:900px){.summary{grid-template-columns:1fr 1fr}.wrap{padding:16px}header.hero{padding:18px}table{min-width:1280px}}</style></head><body><header class="hero"><h1>AURORA India Unified Dashboard</h1><p>Full local scan · Completed session ${escape(expectedSession)} · NSE core + BSE-exclusive overlay · Free-first cache only</p><nav class="nav"><a href="#market">Market</a><a href="#guide">Column Guide</a><a href="#weekly">Weekly Universe</a><a href="#focus">Focus</a><a href="#top">Daily Top</a><a href="#rsle">RSLE Top 20</a><a href="#developing">Developing 20</a><a href="#bse">BSE Overlay</a><a href="#rrg">RRG</a><a href="#stocksectors">Theme Leadership</a><a href="#rrglegend">RRG Map</a><a href="#rshigh">Near RS High</a><a href="#pullbacks">PBX Pullback</a><a href="#basepivots">BasePivot</a><a href="#rmvp">RMVP</a><a href="#ve2">VE2 Volume</a><a href="#compression">Compression</a><a href="#risk">No-Chase</a><a href="#rejected">Rejected/Data Repair</a><a href="#provenance">Provenance</a></nav></header><main class="wrap">
+:root{--ink:#17201c;--muted:#66716b;--paper:#f7f8f5;--panel:#fff;--line:#d9ddd7;--green:#146b45;--greenbg:#e8f4ed;--amber:#895b00;--amberbg:#fff3d4;--red:#9b2f2f;--redbg:#fae9e7;--blue:#195a78;--bluebg:#e6f2f7}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.45 Inter,Arial,sans-serif}header.hero{background:#153f2d;color:white;padding:22px 28px;border-bottom:4px solid #d8ad42}.hero h1{margin:0;font-size:26px}.hero p{margin:5px 0 0;color:#deebe3}.nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.nav a{color:white;text-decoration:none;border:1px solid #72917f;padding:6px 10px;border-radius:4px}.wrap{padding:20px 28px 42px}.summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.metric{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px}.metric b{display:block;font-size:17px;margin-top:4px}.metric small,td small{display:block;color:var(--muted);margin-top:3px}h2{font-size:19px;margin:28px 0 10px}.notice{background:var(--amberbg);border-left:4px solid #c38b16;padding:10px 12px;border-radius:4px}.goodnote{background:var(--greenbg);border-left:4px solid var(--green);padding:10px 12px;border-radius:4px}.table-wrap{overflow:auto;border:1px solid var(--line);background:white;border-radius:6px}table{border-collapse:collapse;width:100%;min-width:1660px}th,td{text-align:left;vertical-align:top;padding:8px 9px;border-bottom:1px solid var(--line);font-size:12px}th{background:#edf1ec;position:sticky;top:0;z-index:1;white-space:nowrap}.status{display:inline-block;padding:3px 6px;border-radius:4px;font-size:11px;font-weight:700;background:var(--bluebg);color:var(--blue);white-space:nowrap}.TRIGGER_READY,.STANDARD_ENTRY{color:var(--green);background:var(--greenbg)}.PULLBACK,.COMPRESSION,.RMVP_EARLY_ENTRY,.RS21_RECLAIM_ENTRY{color:var(--blue);background:var(--bluebg)}.NO_CHASE_RISK{color:var(--red);background:var(--redbg)}input{padding:8px;border:1px solid var(--line);border-radius:4px;min-width:260px}.foot{color:var(--muted);margin-top:18px}@media(max-width:900px){.summary{grid-template-columns:1fr 1fr}.wrap{padding:16px}header.hero{padding:18px}table{min-width:1280px}}</style></head><body><header class="hero"><h1>AURORA India Unified Dashboard</h1><p>Full local scan · Completed session ${escape(expectedSession)} · NSE core + BSE-exclusive overlay · Free-first cache only</p><nav class="nav"><a href="#market">Market</a><a href="#guide">Column Guide</a><a href="#weekly">Weekly Universe</a><a href="#focus">Focus</a><a href="#top">Daily Top</a><a href="#rsle">RSLE Top 20</a><a href="#developing">Developing 20</a><a href="#bse">BSE Overlay</a><a href="#rrg">RRG</a><a href="#stocksectors">Theme Leadership</a><a href="#rrglegend">RRG Map</a><a href="#rshigh">Near RS High</a><a href="#myh">Multi-Year High</a><a href="#pullbacks">PBX Pullback</a><a href="#basepivots">BasePivot</a><a href="#rmvp">RMVP</a><a href="#ve2">VE2 Volume</a><a href="#compression">Compression</a><a href="#risk">No-Chase</a><a href="#rejected">Rejected/Data Repair</a><a href="#provenance">Provenance</a></nav></header><main class="wrap">
 <section class="summary"><div class="metric">Run state<b>FULL_LOCAL_SCAN</b><small>No paid API calls</small></div><div class="metric">Session<b>${escape(expectedSession)}</b><small>latest completed bar</small></div><div class="metric">Market Cycle<b>${escape(marketContext.oneil_style_market_label)}</b><small>${escape(marketContext.mc2_cycle_state)}</small></div><div class="metric">Daily Top<b>${dailyTop.length}</b><small>maximum four, no padding</small></div><div class="metric">Market Permission<b>${escape(marketContext.final_market_permission)}</b><small>${escape(marketContext.market_dimmer_label)}</small></div></section>
 <h2 id="market">Market Summary Strength Stack</h2><p class="goodnote">Benchmark: NIFTY500 via cached index history. Market context is recalculated every scan using AURORA-MC2 plus an O'Neil-style user-facing cycle label. Unknown inputs receive conservative partial score, not a silent upgrade.</p><div class="table-wrap"><table><thead><tr>${marketFields.map(([label]) => `<th>${label}</th>`).join("")}</tr></thead><tbody>${rowsHtml(marketRows, marketFields)}</tbody></table></div>
 <h2 id="guide">Column Guide</h2><div class="table-wrap"><table><thead><tr>${columnGuideFields.map(([label]) => `<th>${label}</th>`).join("")}</tr></thead><tbody>${rowsHtml(columnGuideRows, columnGuideFields)}</tbody></table></div>
@@ -1258,6 +1335,7 @@ ${table("BSE-Exclusive Overlay", "bse", bseOverlay, "Short-history BSE-only disc
 <h2 id="stocksectors">Stock Theme Leadership</h2><p class="notice">Shortlist-derived Aurora theme production. Weekly counts show durable weekly-candidate presence; Daily Top shows immediate execution candidates; RSLE shows RS-led tactical leadership; Developing shows the next watchlist layer. Weighted Presence is only a theme-clustering score, not a buy signal.</p><div class="table-wrap"><table><thead><tr>${stockSectorThemeFields.map(([label]) => `<th>${label}</th>`).join("")}</tr></thead><tbody>${rowsHtml(result.stock_sector_theme_leadership, stockSectorThemeFields)}</tbody></table></div>
 <h2 id="rrglegend">RRG Quadrant Map</h2><div class="table-wrap"><table><thead><tr>${rrgLegendFields.map(([label]) => `<th>${label}</th>`).join("")}</tr></thead><tbody>${rowsHtml(rrgLegendRows, rrgLegendFields)}</tbody></table></div>
 ${table("Near RS High", "rshigh", nearRsHigh.slice(0, 20), "Stocks whose RS line is within 1.5% of its recent RS high.")}
+${table("AURORA-MYH Multi-Year High", "myh", multiYearHighs.slice(0, 20), "AURORA-MYH leadership lane from the master scan: MYH_2Y / MYH_3Y / MYH_5Y with MYH_NEAR_HIGH, MYH_BREAKOUT_CONFIRMED, or MYH_BREAKOUT_FAILED. Requires enough retained history; not a standalone buy signal.")}
 ${table("PBX Pullback", "pullbacks", pullbacks.slice(0, 20), "Power Pullback Engine candidates using depth, duration, MA defense, reversal quality, and failure cluster.")}
 ${table("BasePivot / Patterns", "basepivots", basePivots.slice(0, 20), "BPX structural pivot candidates. BPX identifies structure; VE2 validates fuel.")}
 ${table("RMVP / Early Entry", "rmvp", rmvpEntries.slice(0, 20), "Low-cheat RMV pivot candidates with tight tactical support.")}
@@ -1275,6 +1353,7 @@ console.log(JSON.stringify({
   data_as_of: expectedSession,
   candidates: result.scanned_candidates,
   daily_top: dailyTop.map(x => x.symbol),
+  myh: multiYearHighs.map(x => x.symbol).slice(0, 10),
   rsle_top5: rsleTop20.slice(0, 5).map(x => x.symbol),
   bse_overlay_count: bseOverlay.length,
   rejected: rejected.length

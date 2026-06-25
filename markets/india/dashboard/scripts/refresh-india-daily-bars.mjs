@@ -12,13 +12,39 @@ const DEFAULT_CACHE_ROOT = resolve(projectRoot, "cache/india/ohlcv");
 const DEFAULT_RAW_ROOT = resolve(projectRoot, "cache/india/raw");
 const DEFAULT_REPORT_PATH = resolve(projectRoot, "data/india-daily-refresh-report.json");
 const DEFAULT_LAST_GOOD_SCAN_PATH = resolve(projectRoot, "data/india-full-dashboard-scan.json");
+const DEFAULT_CONNECTOR_PREFETCH_PATH = resolve(projectRoot, "data/india-provider-prefetch-bars.json");
+const DEFAULT_WEEKDAY_PRIORITY_SYMBOLS_PATH = resolve(projectRoot, "config/india_weekday_priority_symbols.json");
+const DEFAULT_SECTOR_ROTATION_REFRESH_PATH = resolve(projectRoot, "config/india_sector_rotation_refresh.json");
+const DEFAULT_UNIVERSE_PATH = resolve(projectRoot, "data/india-universe.json");
 const DEFAULT_MIN_CURRENT_COVERAGE = 0.25;
 const DEFAULT_TIMEOUT_MS = 15_000;
+const DEFAULT_PROVIDER_SYMBOL_LIMITS = {
+  YAHOO: 3000,
+  TAPETIDE: 250,
+  EODHD: 250
+};
+const LIQUIDITY_MIN_INR = 16_000_000;
 
 const OFFICIAL_PROVIDER_FAMILY = new Set(["NSE_OFFICIAL_BHAVCOPY", "BSE_OFFICIAL_BHAVCOPY"]);
 const NSE_EQUITY_SERIES = new Set(["EQ", "BE", "SM", "ST", "BZ"]);
 const BSE_EQUITY_SERIES = new Set(["A", "B", "T", "TS", "X", "XT", "Z", "ZP", "M", "MT", "MS", "EQ"]);
 const HIGH_PRIORITY_SCAN_LISTS = ["daily_top_1_4", "focus_list", "weekly_universe", "rsle_top20", "developing_watchlist_20"];
+const DEFAULT_SECTOR_INDEX_MAP = {
+  NSEBANK: ["Financials"],
+  NIFTYFINSERVICE: ["Financials"],
+  CNXIT: ["Information Technology"],
+  CNXPHARMA: ["Health Care"],
+  NIFTYHEALTHCARE: ["Health Care"],
+  CNXAUTO: ["Consumer Discretionary"],
+  CNXFMCG: ["Consumer Staples"],
+  CNXMETAL: ["Materials"],
+  CNXENERGY: ["Energy", "Utilities"],
+  NIFOILGAS: ["Energy"],
+  NIFTYREAL: ["Real Estate"],
+  NIFTYINFRA: ["Industrials", "Utilities"],
+  NIFTYPSU: ["Financials", "Energy", "Utilities", "Industrials"],
+  CNXMEDIA: ["Communication Services"]
+};
 const PROVIDER_ENDPOINTS = {
   OFFICIAL_LOCAL: "local official incoming/raw bhavcopy",
   NSE_OFFICIAL_FETCH: "scripts/fetch-nse-session.sh",
@@ -43,10 +69,23 @@ function fallbackLabel(provider) {
   return "OFFICIAL_VERIFIED";
 }
 
+function numericEnv(name, fallback) {
+  const raw = process.env[name];
+  if (raw === undefined || raw === "") return fallback;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : fallback;
+}
+
 function providerSymbolLimit(provider, maxSymbols) {
-  if (provider !== "TAPETIDE") return maxSymbols;
-  const tapetideLimit = Number(process.env.TAPETIDE_DAILY_FALLBACK_SYMBOL_LIMIT || 50);
-  return Math.max(0, Math.min(maxSymbols, tapetideLimit));
+  const providerKey = String(provider || "").toUpperCase();
+  const providerEnvName = `${providerKey}_DAILY_FALLBACK_SYMBOL_LIMIT`;
+  const providerEnvValue = process.env[providerEnvName];
+  const defaultLimit = providerEnvValue !== undefined && providerEnvValue !== ""
+    ? numericEnv(providerEnvName, DEFAULT_PROVIDER_SYMBOL_LIMITS[providerKey] ?? 250)
+    : Number.isFinite(Number(maxSymbols))
+      ? Number(maxSymbols)
+      : DEFAULT_PROVIDER_SYMBOL_LIMITS[providerKey] ?? 250;
+  return Math.max(0, defaultLimit);
 }
 
 function exchangeSuffix(record, provider) {
@@ -72,9 +111,93 @@ function averageTurnover(record, days = 20) {
   return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
 }
 
+function inferGicsSector(symbol, name = "") {
+  const text = `${symbol || ""} ${name || ""}`.toUpperCase();
+  const rules = [
+    [/BANK|FINANCE|CAPITAL|SECURIT|BROKING|WEALTH|CREDIT|MICROFIN|INSURANCE|LIFE|ASSET|AMC|EXCHANGE/, "Financials"],
+    [/PHARMA|LAB|HEALTH|HOSPITAL|DIAGNOSTIC|LIFE SCI|BIO|MEDIC|THERAPEUT|VACCINE/, "Health Care"],
+    [/SOFT|TECH|INFOTECH|DIGITAL|DATA|COMPUT|NETWORK|ELECTRON|EMS|SEMICON|CLOUD|AI|SYSTEMS/, "Information Technology"],
+    [/MOTOR|AUTO|TYRE|TIRE|VEHICLE|WHEEL|COMPONENT|FORG|GEAR|BEARING|TRACTOR/, "Consumer Discretionary"],
+    [/HOTEL|TRAVEL|TOUR|AIR|RETAIL|FASHION|FOOTWEAR|JEWEL|GEMS|TEXTILE|APPAREL|CONSUMER/, "Consumer Discretionary"],
+    [/FOOD|FMCG|BEVERAGE|DAIRY|AGRO|SUGAR|TEA|COFFEE|TOBACCO|CARE/, "Consumer Staples"],
+    [/POWER|ENERGY|GREEN|RENEW|SOLAR|WIND|GRID|GAS|TRANSMISSION|UTILITY/, "Utilities"],
+    [/OIL|PETRO|REFIN|COAL|LNG|DRILL|OFFSHORE/, "Energy"],
+    [/CHEM|FERT|CEMENT|STEEL|METAL|MINERAL|CARBON|PAINT|PAPER|PLASTIC|RUBBER|GLASS|MATERIAL/, "Materials"],
+    [/REALTY|REAL ESTATE|REIT|PROPERTY|DEVELOP/, "Real Estate"],
+    [/PORT|LOGISTIC|RAIL|WAGON|SHIP|DEFEN|AERO|ENGINEER|INFRA|CONSTRUCT|CAPITAL|MACHINE|ELECTRICAL|CABLE|TRANSFORM|INDUSTR/, "Industrials"],
+    [/MEDIA|ENTERTAIN|TELECOM|COMMUNICATION|BROADCAST|CABLE TV/, "Communication Services"]
+  ];
+  return rules.find(([pattern]) => pattern.test(text))?.[1] || null;
+}
+
+async function universeNameLookup(universePath = DEFAULT_UNIVERSE_PATH) {
+  const byKey = new Map();
+  const byIsin = new Map();
+  try {
+    const universe = JSON.parse(await readFile(universePath, "utf8"));
+    for (const company of universe?.companies || []) {
+      for (const listing of company.listings || []) {
+        const name = listing.name || company.name || listing.symbol;
+        byKey.set(`${String(listing.exchange || "").toUpperCase()}__${normalizeSymbol(listing.symbol)}`, name);
+        if (listing.isin || company.isin) byIsin.set(listing.isin || company.isin, name);
+      }
+    }
+  } catch {
+    // Symbol-only sector inference remains available when universe metadata is absent.
+  }
+  return { byKey, byIsin };
+}
+
+async function readJsonOptional(path, fallback = {}) {
+  try { return JSON.parse(await readFile(path, "utf8")); }
+  catch { return fallback; }
+}
+
+function normalizeSectorIndexMap(config) {
+  return { ...DEFAULT_SECTOR_INDEX_MAP, ...(config?.sector_index_map || {}) };
+}
+
+function targetRotationSectors(scan, config) {
+  if (config?.enabled === false) return new Set();
+  const quadrants = new Set(config?.include_quadrants || ["LEADING", "IMPROVING"]);
+  const map = normalizeSectorIndexMap(config);
+  const sectors = new Set();
+  for (const row of scan?.sector_rrg || []) {
+    if (!quadrants.has(row?.quadrant)) continue;
+    for (const sector of map[String(row.symbol || "").toUpperCase()] || []) sectors.add(sector);
+  }
+  return sectors;
+}
+
+async function addSectorRotationSymbols(symbols, scan, cacheRoot, configPath = DEFAULT_SECTOR_ROTATION_REFRESH_PATH) {
+  const config = await readJsonOptional(configPath, { enabled: false });
+  const sectors = targetRotationSectors(scan, config);
+  if (!sectors.size) return { sectors: [], added: 0 };
+  const maxSymbols = Math.max(0, Number(config.max_symbols ?? 750));
+  const minAddv20 = Math.max(0, Number(config.min_addv20_inr ?? LIQUIDITY_MIN_INR));
+  const names = await universeNameLookup();
+  const candidates = [];
+  for (const record of await cachedRecords(cacheRoot)) {
+    if (!isEquityRecord(record)) continue;
+    const key = `${String(record.exchange || "").toUpperCase()}__${normalizeSymbol(record.symbol)}`;
+    const name = record.name || names.byKey.get(key) || names.byIsin.get(record.isin) || record.symbol;
+    const sector = inferGicsSector(record.symbol, name);
+    const addv20 = averageTurnover(record);
+    if (sector && sectors.has(sector) && addv20 >= minAddv20) candidates.push({ symbol: normalizeSymbol(record.symbol), addv20 });
+  }
+  candidates.sort((a, b) => b.addv20 - a.addv20 || a.symbol.localeCompare(b.symbol));
+  const before = symbols.size;
+  for (const item of candidates.slice(0, maxSymbols)) symbols.add(item.symbol);
+  return { sectors: [...sectors], added: symbols.size - before };
+}
+
 function sessionToUnix(session) {
   const start = Math.floor(new Date(`${session}T00:00:00+05:30`).valueOf() / 1000);
   return { start, end: start + 86400 };
+}
+
+function providerSymbolKey(provider, record) {
+  return `${providerFamily(provider)}__${String(record.exchange || "NSE").toUpperCase()}__${normalizeSymbol(record.symbol)}`;
 }
 
 async function exists(path) {
@@ -92,6 +215,14 @@ async function walk(path) {
     else if ([".csv", ".zip"].includes(extname(entry.name).toLowerCase())) output.push(child);
   }
   return output;
+}
+
+function isZipBuffer(buffer) {
+  return buffer.length >= 4
+    && buffer[0] === 0x50
+    && buffer[1] === 0x4b
+    && [0x03, 0x05, 0x07].includes(buffer[2])
+    && [0x04, 0x06, 0x08].includes(buffer[3]);
 }
 
 function archiveCsv(path) {
@@ -112,7 +243,18 @@ export async function appendOfficialSource({
   let rejectedRows = 0;
   for (const path of files) {
     const buffer = await readFile(path);
-    const inputs = extname(path).toLowerCase() === ".zip" ? archiveCsv(path) : [{ name: basename(path), text: buffer.toString("utf8") }];
+    const isZip = extname(path).toLowerCase() === ".zip";
+    if (isZip && !isZipBuffer(buffer)) {
+      sourceFiles.push({
+        file: basename(path),
+        sha256: createHash("sha256").update(buffer).digest("hex"),
+        bytes: buffer.length,
+        accepted_rows: 0,
+        warning: "INVALID_ZIP_SKIPPED"
+      });
+      continue;
+    }
+    const inputs = isZip ? archiveCsv(path) : [{ name: basename(path), text: buffer.toString("utf8") }];
     let accepted = 0;
     for (const input of inputs) {
       for (const raw of parseCsv(input.text)) {
@@ -144,7 +286,7 @@ export async function appendOfficialSource({
   for (const item of grouped.values()) {
     const existing = await loadSymbol(cacheRoot, item.exchange, item.symbol);
     const old = existing?.bars?.find(bar => bar.date === expectedSession);
-    const bars = mergeBars(existing?.bars || [], item.bars, 420);
+    const bars = mergeBars(existing?.bars || [], item.bars);
     const validation = validateSeries(bars, { minimumBars: Math.min(252, bars.length), expectedSession });
     if (!validation.ok) { invalid += 1; continue; }
     const provider = item.exchange === "NSE" ? "NSE_OFFICIAL_BHAVCOPY" : "BSE_OFFICIAL_BHAVCOPY";
@@ -218,19 +360,61 @@ async function cachedRecords(cacheRoot) {
   return records;
 }
 
-async function prioritySymbols(scanPath = DEFAULT_LAST_GOOD_SCAN_PATH) {
+export async function buildWeekdayPrioritySymbols({
+  scanPath = DEFAULT_LAST_GOOD_SCAN_PATH,
+  cacheRoot = DEFAULT_CACHE_ROOT,
+  priorityConfigPath = DEFAULT_WEEKDAY_PRIORITY_SYMBOLS_PATH,
+  sectorRotationConfigPath = DEFAULT_SECTOR_ROTATION_REFRESH_PATH
+} = {}) {
+  const symbols = new Set();
+  let scan = null;
   try {
-    const scan = JSON.parse(await readFile(scanPath, "utf8"));
-    const symbols = new Set();
+    scan = JSON.parse(await readFile(scanPath, "utf8"));
     for (const list of HIGH_PRIORITY_SCAN_LISTS) {
       for (const item of scan[list] || []) {
         if (item?.symbol) symbols.add(normalizeSymbol(item.symbol));
       }
     }
-    return symbols;
   } catch {
-    return new Set();
+    // A missing last-good scan should not block explicit priority refresh symbols.
   }
+  try {
+    const config = JSON.parse(await readFile(priorityConfigPath, "utf8"));
+    const rows = [
+      ...(Array.isArray(config?.symbols) ? config.symbols : []),
+      ...(Array.isArray(config?.weekday_priority_symbols) ? config.weekday_priority_symbols : []),
+      ...(Array.isArray(config?.theme_exception_symbols) ? config.theme_exception_symbols : [])
+    ];
+    for (const item of rows) {
+      const symbol = typeof item === "string" ? item : item?.symbol;
+      if (symbol) symbols.add(normalizeSymbol(symbol));
+    }
+  } catch {
+    // Optional config; active scan lists are sufficient when no exceptions exist.
+  }
+  if (scan) await addSectorRotationSymbols(symbols, scan, cacheRoot, sectorRotationConfigPath);
+  return symbols;
+}
+
+async function connectorPrefetchBars(prefetchPath, expectedSession) {
+  if (!prefetchPath || !await exists(prefetchPath)) return new Map();
+  const payload = JSON.parse(await readFile(prefetchPath, "utf8"));
+  const rows = Array.isArray(payload) ? payload : payload.bars || payload.records || [];
+  const output = new Map();
+  for (const row of rows) {
+    const provider = providerFamily(row.provider);
+    const exchange = String(row.exchange || "NSE").toUpperCase();
+    const symbol = normalizeSymbol(row.symbol);
+    if (!symbol || provider === "UNKNOWN") continue;
+    const bar = normalizeBar(row.bar || row);
+    if (!bar || bar.date !== expectedSession) continue;
+    output.set(`${provider}__${exchange}__${symbol}`, {
+      bar,
+      endpoint: row.endpoint || `CONNECTOR_PREFETCH:${prefetchPath}`,
+      warning: row.warning || null
+    });
+  }
+  return output;
 }
 
 function mcpTextPayload(payload) {
@@ -402,7 +586,9 @@ function fallbackUrl(provider, record, expectedSession) {
   return null;
 }
 
-async function fetchFallbackBar(provider, record, expectedSession, fetcher, timeoutMs) {
+async function fetchFallbackBar(provider, record, expectedSession, fetcher, timeoutMs, connectorPrefetch = new Map()) {
+  const prefetched = connectorPrefetch.get(providerSymbolKey(provider, record));
+  if (prefetched) return prefetched;
   if (provider === "TAPETIDE") return fetchTapetideMcp(record, expectedSession, fetcher, timeoutMs);
   const url = fallbackUrl(provider, record, expectedSession);
   if (!url) return { bar: null, warning: `${provider}_NOT_CONFIGURED` };
@@ -423,11 +609,13 @@ export async function appendProviderConsistentFallback({
   lastGoodScanPath = DEFAULT_LAST_GOOD_SCAN_PATH,
   fetcher = fetch,
   timeoutMs = DEFAULT_TIMEOUT_MS,
-  maxSymbols = Number(process.env.AURORA_DAILY_FALLBACK_SYMBOL_LIMIT || 250),
-  allowProviderRepair = process.env.AURORA_ALLOW_DATA_REPAIR_FALLBACK !== "0"
+  maxSymbols = process.env.AURORA_DAILY_FALLBACK_SYMBOL_LIMIT ? Number(process.env.AURORA_DAILY_FALLBACK_SYMBOL_LIMIT) : Infinity,
+  allowProviderRepair = process.env.AURORA_ALLOW_DATA_REPAIR_FALLBACK !== "0",
+  connectorPrefetchPath = process.env.AURORA_PROVIDER_PREFETCH_PATH || DEFAULT_CONNECTOR_PREFETCH_PATH
 } = {}) {
   const retrievedAt = new Date().toISOString();
-  const priorities = await prioritySymbols(lastGoodScanPath);
+  const priorities = await buildWeekdayPrioritySymbols({ scanPath: lastGoodScanPath, cacheRoot });
+  const connectorPrefetch = await connectorPrefetchBars(connectorPrefetchPath, expectedSession);
   const records = (await cachedRecords(cacheRoot))
     .filter(record => record.data_as_of !== expectedSession && isEquityRecord(record))
     .sort((a, b) => {
@@ -458,11 +646,11 @@ export async function appendProviderConsistentFallback({
     }
     report.requested += 1;
     try {
-      const { bar, endpoint, warning } = await fetchFallbackBar(provider, record, expectedSession, fetcher, timeoutMs);
+      const { bar, endpoint, warning } = await fetchFallbackBar(provider, record, expectedSession, fetcher, timeoutMs, connectorPrefetch);
       if (warning) report.warnings.push({ symbol: record.symbol, warning });
       if (!bar) { report.missing_bar += 1; continue; }
       const old = record.bars.find(row => row.date === expectedSession);
-      const bars = mergeBars(record.bars, [bar], 420);
+      const bars = mergeBars(record.bars, [bar]);
       const validation = validateSeries(bars, { minimumBars: Math.min(252, bars.length), expectedSession });
       if (!validation.ok) { report.invalid += 1; continue; }
       await saveSymbol(cacheRoot, {
@@ -730,7 +918,8 @@ export async function refreshIndiaDailyBars({
   throw error;
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+const invokedAsScript = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (invokedAsScript) {
   const expectedSession = process.argv.find(arg => /^\d{4}-\d{2}-\d{2}$/.test(arg)) || process.env.AURORA_TARGET_SESSION || latestCompletedIndiaSession();
   try {
     const report = await refreshIndiaDailyBars({ expectedSession });
