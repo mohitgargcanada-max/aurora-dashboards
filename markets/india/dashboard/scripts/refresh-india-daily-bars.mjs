@@ -1,5 +1,5 @@
+import AdmZip from "adm-zip";
 import { createHash } from "node:crypto";
-import { execFileSync } from "node:child_process";
 import { copyFile, mkdir, readFile, readdir, rename, stat, writeFile } from "node:fs/promises";
 import { basename, extname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -246,8 +246,13 @@ function isZipBuffer(buffer) {
 }
 
 function archiveCsv(path) {
-  const names = execFileSync("unzip", ["-Z1", path], { encoding: "utf8" }).trim().split(/\r?\n/).filter(x => /\.csv$/i.test(x));
-  return names.map(name => ({ name: `${basename(path)}::${name}`, text: execFileSync("unzip", ["-p", path, name], { encoding: "utf8", maxBuffer: 100 * 1024 * 1024 }) }));
+  const zip = new AdmZip(path);
+  return zip.getEntries()
+    .filter(entry => !entry.isDirectory && /\.csv$/i.test(entry.entryName))
+    .map(entry => ({
+      name: `${basename(path)}::${entry.entryName}`,
+      text: entry.getData().toString("utf8")
+    }));
 }
 
 export async function appendOfficialSource({
