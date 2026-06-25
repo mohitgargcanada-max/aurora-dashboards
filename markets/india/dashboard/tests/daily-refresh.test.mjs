@@ -77,6 +77,20 @@ const official = await appendOfficialSource({
 assert.equal(official.inserted, 1);
 assert.equal((await loadSymbol(cacheRoot, "NSE", "RELIANCE")).data_as_of, "2026-06-23");
 
+const invalidZipDir = await mkdtemp(join(tmpdir(), "aurora-india-invalid-zip-"));
+await seedRecord(join(invalidZipDir, "cache"));
+await mkdir(join(invalidZipDir, "incoming"), { recursive: true });
+await writeFile(join(invalidZipDir, "incoming", "EQ_ISINCODE_230626.zip"), "not a real zip", "utf8");
+const invalidZipAttempt = await appendOfficialSource({
+  sourceRoot: join(invalidZipDir, "incoming"),
+  expectedSession: "2026-06-23",
+  cacheRoot: join(invalidZipDir, "cache"),
+  rawRoot: join(invalidZipDir, "raw"),
+  retrievedAt: "2026-06-24T00:00:00.000Z"
+});
+assert.equal(invalidZipAttempt.inserted, 0);
+assert.equal(invalidZipAttempt.source_files[0].warning, "INVALID_ZIP_SKIPPED");
+
 const blockedDir = await mkdtemp(join(tmpdir(), "aurora-india-blocked-"));
 await seedRecord(join(blockedDir, "cache"));
 await mkdir(join(blockedDir, "data"), { recursive: true });
@@ -180,6 +194,31 @@ assert.equal(fetchOnceReport.attempts.length, 1);
 assert.equal(fetchOnceCalls.length, 1);
 assert.equal((await loadSymbol(join(fetchOnceDir, "cache"), "NSE", "RELIANCE")).data_as_of, "2026-06-23");
 
+const prefetchDir = await mkdtemp(join(tmpdir(), "aurora-india-prefetch-"));
+await seedRecord(join(prefetchDir, "cache"), { provider: "TAPETIDE_DAILY" });
+const prefetchPath = join(prefetchDir, "prefetch.json");
+await writeFile(prefetchPath, JSON.stringify({
+  expected_session: "2026-06-23",
+  bars: [{
+    provider: "TAPETIDE",
+    exchange: "NSE",
+    symbol: "RELIANCE",
+    endpoint: "CONNECTOR_PREFETCH:tapetide",
+    bar: { date: "2026-06-23", open: 360, high: 365, low: 355, close: 362, volume: 2000 }
+  }]
+}), "utf8");
+fallback = await appendProviderConsistentFallback({
+  provider: "TAPETIDE",
+  expectedSession: "2026-06-23",
+  cacheRoot: join(prefetchDir, "cache"),
+  connectorPrefetchPath: prefetchPath,
+  fetcher: async () => {
+    throw new Error("FETCHER_SHOULD_NOT_BE_CALLED_FOR_PREFETCHED_BAR");
+  }
+});
+assert.equal(fallback.inserted, 1);
+assert.equal((await loadSymbol(join(prefetchDir, "cache"), "NSE", "RELIANCE")).endpoint, "CONNECTOR_PREFETCH:tapetide");
+
 const tapetideDir = await mkdtemp(join(tmpdir(), "aurora-india-tapetide-"));
 await seedRecord(join(tapetideDir, "cache"), { provider: "TAPETIDE_DAILY" });
 const oldTapetideToken = process.env.TAPETIDE_TOKEN;
@@ -222,8 +261,12 @@ const eodhdDir = await mkdtemp(join(tmpdir(), "aurora-india-eodhd-"));
 await seedRecord(join(eodhdDir, "cache"), { provider: "EODHD_DAILY" });
 const oldToken = process.env.EODHD_API_TOKEN;
 process.env.EODHD_API_TOKEN = "secret-token";
+const eodhdCalls = [];
 const eodhdFetch = async url => {
+  eodhdCalls.push(url);
   assert.match(url, /api_token=secret-token/);
+  if (/RELIANCE\.NSE/.test(url)) return new Response(JSON.stringify({ message: "ticker not found" }), { status: 404 });
+  assert.match(url, /RELIANCE\.XNSE/);
   return new Response(JSON.stringify([{ date: "2026-06-23", open: 360, high: 365, low: 355, close: 362, adjusted_close: 362, volume: 2000 }]), { status: 200 });
 };
 fallback = await appendProviderConsistentFallback({
@@ -233,14 +276,19 @@ fallback = await appendProviderConsistentFallback({
   fetcher: eodhdFetch
 });
 assert.equal(fallback.inserted, 1);
-assert.doesNotMatch((await loadSymbol(join(eodhdDir, "cache"), "NSE", "RELIANCE")).endpoint, /secret-token/);
+assert.equal(eodhdCalls.length, 2);
+const eodhdRecord = await loadSymbol(join(eodhdDir, "cache"), "NSE", "RELIANCE");
+assert.doesNotMatch(eodhdRecord.endpoint, /secret-token/);
+assert.match(eodhdRecord.endpoint, /RELIANCE\.XNSE/);
 if (oldToken === undefined) delete process.env.EODHD_API_TOKEN;
 else process.env.EODHD_API_TOKEN = oldToken;
 
 await rm(directory, { recursive: true, force: true });
+await rm(invalidZipDir, { recursive: true, force: true });
 await rm(blockedDir, { recursive: true, force: true });
 await rm(yahooDir, { recursive: true, force: true });
 await rm(fetchOnceDir, { recursive: true, force: true });
+await rm(prefetchDir, { recursive: true, force: true });
 await rm(tapetideDir, { recursive: true, force: true });
 await rm(eodhdDir, { recursive: true, force: true });
 console.log("India daily refresh contract tests passed");

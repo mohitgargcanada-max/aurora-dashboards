@@ -66,7 +66,7 @@ let updated = 0;
 const symbolManifest = [];
 for (const item of grouped.values()) {
   const existing = await loadSymbol(cacheRoot, item.exchange, item.symbol);
-  const bars = mergeBars(existing?.bars || [], item.bars, 420);
+  const bars = mergeBars(existing?.bars || [], item.bars);
   const record = {
     schema_version: CACHE_SCHEMA_VERSION,
     market: "INDIA",

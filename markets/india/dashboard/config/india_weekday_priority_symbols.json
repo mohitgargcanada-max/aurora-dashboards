@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "market": "INDIA",
+  "purpose": "Symbols that must be refreshed Monday-Friday even if they are temporarily absent from the prior weekly/focus lists. Sunday full-universe discovery remains the source of truth for broad additions.",
+  "symbols": [
+    {
+      "exchange": "NSE",
+      "symbol": "DATAPATTNS",
+      "theme": "defence_electronics",
+      "reason": "User-priority defence leader; keep current for pullback/compression capture."
+    },
+    {
+      "exchange": "NSE",
+      "symbol": "ZENTEC",
+      "theme": "defence_electronics",
+      "reason": "User-priority defence leader; keep current for pullback/retest capture."
+    }
+  ]
+}

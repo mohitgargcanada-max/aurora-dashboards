@@ -1,7 +1,7 @@
 {
   "schema_version": "3.0",
   "market": "INDIA",
-  "history_bars_retained": 420,
+  "history_bars_retained": 1260,
   "minimum_complete_bars": 252,
   "discovery_policy": {
     "liquidity_is_discovery_gate": false,

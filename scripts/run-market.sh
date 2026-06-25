@@ -32,7 +32,27 @@ case "$market" in
     ;;
   india)
     cd "$repo_root/markets/india/dashboard"
-    npm run scan:full
+    scan_mode="${AURORA_INDIA_SCAN_MODE:-auto}"
+    if [[ "$scan_mode" == "auto" ]]; then
+      india_day="$(TZ=Asia/Kolkata date +%u)"
+      if [[ "$india_day" == "7" ]]; then
+        scan_mode="full"
+      else
+        scan_mode="weekday"
+      fi
+    fi
+    case "$scan_mode" in
+      full)
+        npm run scan:full
+        ;;
+      weekday)
+        npm run scan:weekday
+        ;;
+      *)
+        echo "Unknown AURORA_INDIA_SCAN_MODE: $scan_mode" >&2
+        exit 2
+        ;;
+    esac
     npm test
     ;;
   canada)

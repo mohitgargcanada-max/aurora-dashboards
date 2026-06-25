@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "market": "INDIA",
+  "enabled": true,
+  "purpose": "Weekday refresh expansion: active AURORA lists plus stocks mapped to currently LEADING or IMPROVING sector RRG lanes. This prevents rotation leaders from being missed between Sunday full-universe scans.",
+  "include_quadrants": ["LEADING", "IMPROVING"],
+  "max_symbols": 750,
+  "min_addv20_inr": 16000000,
+  "allow_stale_sector_rrg": true,
+  "sector_index_map": {
+    "NSEBANK": ["Financials"],
+    "NIFTYFINSERVICE": ["Financials"],
+    "CNXIT": ["Information Technology"],
+    "CNXPHARMA": ["Health Care"],
+    "NIFTYHEALTHCARE": ["Health Care"],
+    "CNXAUTO": ["Consumer Discretionary"],
+    "CNXFMCG": ["Consumer Staples"],
+    "CNXMETAL": ["Materials"],
+    "CNXENERGY": ["Energy", "Utilities"],
+    "NIFOILGAS": ["Energy"],
+    "NIFTYREAL": ["Real Estate"],
+    "NIFTYINFRA": ["Industrials", "Utilities"],
+    "NIFTYPSU": ["Financials", "Energy", "Utilities", "Industrials"],
+    "CNXMEDIA": ["Communication Services"]
+  }
+}
