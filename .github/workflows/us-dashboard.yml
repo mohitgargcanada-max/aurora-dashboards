@@ -40,7 +40,8 @@ jobs:
       - name: Run US dashboard
         if: github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1'
         env:
-          EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN }}
+          EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN || secrets.EODHD_API_KEY }}
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY || secrets.EODHD_API_TOKEN }}
           SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
