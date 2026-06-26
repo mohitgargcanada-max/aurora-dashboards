@@ -132,12 +132,29 @@ jobs:
             values.EODHD_API_KEY ||= eodhdEntry[1];
           }
           const delimiter = `AURORA_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-          const lines = [];
+          const lines = [
+            `AURORAKEYS_PRESENT=${process.env.AURORAKEYS ? "1" : "0"}`,
+            `EODHD_SECRET_RESOLVED=${eodhdEntry ? "1" : "0"}`
+          ];
           for (const [key, value] of Object.entries(values)) {
             if (!allowed.has(key) || !value) continue;
             lines.push(`${key}<<${delimiter}`, String(value), delimiter);
           }
           if (lines.length) fs.appendFileSync(process.env.GITHUB_ENV, `${lines.join("\n")}\n`);
+          NODE
+
+      - name: Diagnose Aurora secret routing
+        env:
+          AURORAKEYS: ${{ secrets.AURORAKEYS }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          import { resolveEodhdToken } from "./markets/us/dashboard/scripts/aurora-env.mjs";
+          const runtimeResolved = Boolean(resolveEodhdToken(process.env));
+          fs.appendFileSync(process.env.GITHUB_ENV, `EODHD_RUNTIME_RESOLVED=${runtimeResolved ? "1" : "0"}\n`);
+          console.log(`AURORAKEYS_PRESENT=${process.env.AURORAKEYS_PRESENT || "0"}`);
+          console.log(`EODHD_SECRET_RESOLVED=${process.env.EODHD_SECRET_RESOLVED || "0"}`);
+          console.log(`EODHD_RUNTIME_RESOLVED=${runtimeResolved ? "1" : "0"}`);
           NODE
 
       - name: Run US dashboard
@@ -199,6 +216,9 @@ jobs:
           console.log(`- Refresh-or-repair report: \`${wrapperPath}\` ${wrapper ? "present" : "missing/unreadable"}`);
           console.log("");
           console.log("### Data Provenance");
+          console.log(`- AURORAKEYS secret present: \`${process.env.AURORAKEYS_PRESENT === "1" ? "YES" : "NO"}\``);
+          console.log(`- EODHD secret resolved by loader: \`${process.env.EODHD_SECRET_RESOLVED === "1" ? "YES" : "NO"}\``);
+          console.log(`- EODHD runtime resolved by scripts: \`${process.env.EODHD_RUNTIME_RESOLVED === "1" ? "YES" : "NO"}\``);
           for (const [label, report] of [["Daily", refresh], ["History", history], ["Wrapper", wrapper]]) {
             if (!report) continue;
             console.log(`- ${label} status: \`${report.status || report.final_status || "UNKNOWN"}\``);
