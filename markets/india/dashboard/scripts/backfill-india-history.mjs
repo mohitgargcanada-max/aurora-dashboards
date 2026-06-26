@@ -12,7 +12,7 @@ const expectedSession = process.argv.find(arg => /^\d{4}-\d{2}-\d{2}$/.test(arg)
 const targetBars = Number(process.env.AURORA_HISTORY_TARGET_BARS || 1260);
 const historyCalendarDays = Number(process.env.AURORA_HISTORY_CALENDAR_DAYS || Math.ceil(targetBars * 1.7));
 const maxSymbols = Number(process.env.AURORA_HISTORY_BACKFILL_SYMBOL_LIMIT || 250);
-const providerOrder = (process.env.AURORA_HISTORY_PROVIDER_ORDER || "YAHOO,TAPETIDE,EODHD").split(",").map(x => x.trim().toUpperCase()).filter(Boolean);
+const providerOrder = (process.env.AURORA_HISTORY_PROVIDER_ORDER || "YAHOO,TAPETIDE").split(",").map(x => x.trim().toUpperCase()).filter(Boolean);
 
 const PROVIDER_ENDPOINTS = {
   YAHOO: "https://query1.finance.yahoo.com/v8/finance/chart/",
