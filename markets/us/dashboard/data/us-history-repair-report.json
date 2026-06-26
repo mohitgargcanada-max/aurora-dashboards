@@ -5,7 +5,7 @@
     "STOOQ",
     "EODHD"
   ],
-  "retrieved_at": "2026-06-26T21:43:32.701Z",
+  "retrieved_at": "2026-06-26T21:59:04.638Z",
   "from": "2021-06-25",
   "expected_completed_session": "2026-06-25",
   "latest_data_as_of": "2026-06-25",
@@ -34,7 +34,7 @@
     {
       "symbol": "AACBR",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AACI",
@@ -51,7 +51,7 @@
     {
       "symbol": "AACI",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AACIU",
@@ -68,7 +68,7 @@
     {
       "symbol": "AACIU",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AACIW",
@@ -85,7 +85,7 @@
     {
       "symbol": "AACIW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AACO",
@@ -102,7 +102,7 @@
     {
       "symbol": "AACO",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AACOU",
@@ -119,7 +119,7 @@
     {
       "symbol": "AACOU",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AACOW",
@@ -136,7 +136,7 @@
     {
       "symbol": "AACOW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AACPU",
@@ -153,7 +153,7 @@
     {
       "symbol": "AACPU",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AAEQ",
@@ -170,7 +170,7 @@
     {
       "symbol": "AAEQ",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AALG",
@@ -187,7 +187,7 @@
     {
       "symbol": "AALG",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AAOG",
@@ -204,7 +204,7 @@
     {
       "symbol": "AAOG",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AAOX",
@@ -221,7 +221,7 @@
     {
       "symbol": "AAOX",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AAUA",
@@ -238,7 +238,7 @@
     {
       "symbol": "AAUA",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AAUS",
@@ -255,7 +255,7 @@
     {
       "symbol": "AAUS",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ABI",
@@ -272,7 +272,7 @@
     {
       "symbol": "ABI",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ABLVW",
@@ -289,7 +289,7 @@
     {
       "symbol": "ABLVW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ABNG",
@@ -306,7 +306,7 @@
     {
       "symbol": "ABNG",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ABNY",
@@ -323,7 +323,7 @@
     {
       "symbol": "ABNY",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ABR-D",
@@ -339,7 +339,7 @@
     {
       "symbol": "ABR-D",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ABR-E",
@@ -355,7 +355,7 @@
     {
       "symbol": "ABR-E",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ABR-F",
@@ -371,7 +371,7 @@
     {
       "symbol": "ABR-F",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ABUF",
@@ -388,7 +388,7 @@
     {
       "symbol": "ABUF",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ABVWF",
@@ -405,7 +405,7 @@
     {
       "symbol": "ABVWF",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ACAA",
@@ -422,7 +422,7 @@
     {
       "symbol": "ACAA",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ACAAU",
@@ -439,7 +439,7 @@
     {
       "symbol": "ACAAU",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ACCL",
@@ -456,7 +456,7 @@
     {
       "symbol": "ACCL",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ACEI",
@@ -473,7 +473,7 @@
     {
       "symbol": "ACEI",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ACEP",
@@ -490,7 +490,7 @@
     {
       "symbol": "ACEP",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ACGCU",
@@ -507,7 +507,7 @@
     {
       "symbol": "ACGCU",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ACHR-WS",
@@ -523,7 +523,7 @@
     {
       "symbol": "ACHR-WS",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ACII",
@@ -540,7 +540,7 @@
     {
       "symbol": "ACII",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ACKY",
@@ -557,7 +557,7 @@
     {
       "symbol": "ACKY",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ACONW",
@@ -574,7 +574,7 @@
     {
       "symbol": "ACONW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ACP-A",
@@ -590,7 +590,7 @@
     {
       "symbol": "ACP-A",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ACR-C",
@@ -606,7 +606,7 @@
     {
       "symbol": "ACR-C",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ACR-D",
@@ -622,7 +622,7 @@
     {
       "symbol": "ACR-D",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ACTS",
@@ -639,7 +639,7 @@
     {
       "symbol": "ACTS",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ACYN",
@@ -656,7 +656,7 @@
     {
       "symbol": "ACYN",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ACYS",
@@ -673,7 +673,7 @@
     {
       "symbol": "ACYS",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ADAC",
@@ -690,7 +690,7 @@
     {
       "symbol": "ADAC",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ADACU",
@@ -707,7 +707,7 @@
     {
       "symbol": "ADACU",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ADACW",
@@ -724,7 +724,7 @@
     {
       "symbol": "ADACW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ADAMH",
@@ -741,7 +741,7 @@
     {
       "symbol": "ADAMH",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ADAMO",
@@ -758,7 +758,7 @@
     {
       "symbol": "ADAMO",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ADBU",
@@ -775,7 +775,7 @@
     {
       "symbol": "ADBU",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ADC-A",
@@ -791,7 +791,7 @@
     {
       "symbol": "ADC-A",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ADSEW",
@@ -808,7 +808,7 @@
     {
       "symbol": "ADSEW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AEAQ",
@@ -825,7 +825,7 @@
     {
       "symbol": "AEAQ",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AEAQU",
@@ -842,7 +842,7 @@
     {
       "symbol": "AEAQU",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AEAQW",
@@ -859,7 +859,7 @@
     {
       "symbol": "AEAQW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AEBI",
@@ -876,7 +876,7 @@
     {
       "symbol": "AEBI",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AENTW",
@@ -893,7 +893,7 @@
     {
       "symbol": "AENTW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AERO",
@@ -910,7 +910,7 @@
     {
       "symbol": "AERO",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AERTW",
@@ -927,7 +927,7 @@
     {
       "symbol": "AERTW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AEXA",
@@ -944,7 +944,7 @@
     {
       "symbol": "AEXA",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AFJKR",
@@ -961,7 +961,7 @@
     {
       "symbol": "AFJKR",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AFOS",
@@ -978,7 +978,7 @@
     {
       "symbol": "AFOS",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AFRIW",
@@ -995,7 +995,7 @@
     {
       "symbol": "AFRIW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AGBK",
@@ -1012,7 +1012,7 @@
     {
       "symbol": "AGBK",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AGCC",
@@ -1029,7 +1029,7 @@
     {
       "symbol": "AGCC",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AGIQ",
@@ -1046,7 +1046,7 @@
     {
       "symbol": "AGIQ",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AGM-D",
@@ -1062,7 +1062,7 @@
     {
       "symbol": "AGM-D",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AGM-E",
@@ -1078,7 +1078,7 @@
     {
       "symbol": "AGM-E",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AGM-F",
@@ -1094,7 +1094,7 @@
     {
       "symbol": "AGM-F",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AGM-G",
@@ -1110,7 +1110,7 @@
     {
       "symbol": "AGM-G",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AGM-I",
@@ -1126,7 +1126,7 @@
     {
       "symbol": "AGM-I",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AGMB",
@@ -1143,7 +1143,7 @@
     {
       "symbol": "AGMB",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AGNCZ",
@@ -1160,7 +1160,7 @@
     {
       "symbol": "AGNCZ",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AGRZ",
@@ -1177,7 +1177,7 @@
     {
       "symbol": "AGRZ",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AHL-D",
@@ -1193,7 +1193,7 @@
     {
       "symbol": "AHL-D",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AHL-E",
@@ -1209,7 +1209,7 @@
     {
       "symbol": "AHL-E",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AHL-F",
@@ -1225,7 +1225,7 @@
     {
       "symbol": "AHL-F",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AHMA",
@@ -1242,7 +1242,7 @@
     {
       "symbol": "AHMA",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AHT-D",
@@ -1258,7 +1258,7 @@
     {
       "symbol": "AHT-D",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AHT-F",
@@ -1274,7 +1274,7 @@
     {
       "symbol": "AHT-F",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AHT-G",
@@ -1290,7 +1290,7 @@
     {
       "symbol": "AHT-G",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AHT-H",
@@ -1306,7 +1306,7 @@
     {
       "symbol": "AHT-H",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AHT-I",
@@ -1322,7 +1322,7 @@
     {
       "symbol": "AHT-I",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AIAI",
@@ -1339,7 +1339,7 @@
     {
       "symbol": "AIAI",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AIB",
@@ -1356,7 +1356,7 @@
     {
       "symbol": "AIB",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AIBZ",
@@ -1373,7 +1373,7 @@
     {
       "symbol": "AIBZ",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AIDX",
@@ -1390,7 +1390,7 @@
     {
       "symbol": "AIDX",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AIIA",
@@ -1407,7 +1407,7 @@
     {
       "symbol": "AIIA",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AIIOW",
@@ -1424,7 +1424,7 @@
     {
       "symbol": "AIIOW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AIIR",
@@ -1441,7 +1441,7 @@
     {
       "symbol": "AIIR",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AIMS",
@@ -1458,7 +1458,7 @@
     {
       "symbol": "AIMS",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AINT",
@@ -1475,7 +1475,7 @@
     {
       "symbol": "AINT",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AIPO",
@@ -1492,7 +1492,7 @@
     {
       "symbol": "AIPO",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AIRJW",
@@ -1509,7 +1509,7 @@
     {
       "symbol": "AIRJW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AISPW",
@@ -1526,7 +1526,7 @@
     {
       "symbol": "AISPW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AIUP",
@@ -1543,7 +1543,7 @@
     {
       "symbol": "AIUP",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AKRE",
@@ -1560,7 +1560,7 @@
     {
       "symbol": "AKRE",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AKTS",
@@ -1577,7 +1577,7 @@
     {
       "symbol": "AKTS",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALB-A",
@@ -1593,7 +1593,7 @@
     {
       "symbol": "ALB-A",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALBG",
@@ -1610,7 +1610,7 @@
     {
       "symbol": "ALBG",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALCY",
@@ -1627,7 +1627,7 @@
     {
       "symbol": "ALCY",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALCYW",
@@ -1644,7 +1644,7 @@
     {
       "symbol": "ALCYW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALDB",
@@ -1661,7 +1661,7 @@
     {
       "symbol": "ALDB",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALDFW",
@@ -1678,7 +1678,7 @@
     {
       "symbol": "ALDFW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALFUW",
@@ -1695,7 +1695,7 @@
     {
       "symbol": "ALFUW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALH",
@@ -1712,7 +1712,7 @@
     {
       "symbol": "ALH",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALIS",
@@ -1729,7 +1729,7 @@
     {
       "symbol": "ALIS",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALISR",
@@ -1746,7 +1746,7 @@
     {
       "symbol": "ALISR",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALISU",
@@ -1763,7 +1763,7 @@
     {
       "symbol": "ALISU",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALL-B",
@@ -1779,7 +1779,7 @@
     {
       "symbol": "ALL-B",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALL-H",
@@ -1795,7 +1795,7 @@
     {
       "symbol": "ALL-H",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALL-I",
@@ -1811,7 +1811,7 @@
     {
       "symbol": "ALL-I",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALL-J",
@@ -1827,7 +1827,7 @@
     {
       "symbol": "ALL-J",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALMR",
@@ -1844,7 +1844,7 @@
     {
       "symbol": "ALMR",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALOVU",
@@ -1861,7 +1861,7 @@
     {
       "symbol": "ALOVU",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALOVW",
@@ -1878,7 +1878,7 @@
     {
       "symbol": "ALOVW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALPS",
@@ -1895,7 +1895,7 @@
     {
       "symbol": "ALPS",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALRG",
@@ -1912,7 +1912,7 @@
     {
       "symbol": "ALRG",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALTG-A",
@@ -1928,7 +1928,7 @@
     {
       "symbol": "ALTG-A",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALUB",
@@ -1945,7 +1945,7 @@
     {
       "symbol": "ALUB",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ALVOW",
@@ -1962,7 +1962,7 @@
     {
       "symbol": "ALVOW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AMA",
@@ -1979,7 +1979,7 @@
     {
       "symbol": "AMA",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AMAN",
@@ -1996,7 +1996,7 @@
     {
       "symbol": "AMAN",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AMAU",
@@ -2013,7 +2013,7 @@
     {
       "symbol": "AMAU",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AMBQ",
@@ -2030,7 +2030,7 @@
     {
       "symbol": "AMBQ",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AMH-G",
@@ -2046,7 +2046,7 @@
     {
       "symbol": "AMH-G",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AMH-H",
@@ -2062,7 +2062,7 @@
     {
       "symbol": "AMH-H",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AMKL",
@@ -2079,7 +2079,7 @@
     {
       "symbol": "AMKL",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AMODW",
@@ -2096,7 +2096,7 @@
     {
       "symbol": "AMODW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AMPGR",
@@ -2113,7 +2113,7 @@
     {
       "symbol": "AMPGR",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AMPGZ",
@@ -2130,7 +2130,7 @@
     {
       "symbol": "AMPGZ",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AMPU",
@@ -2147,7 +2147,7 @@
     {
       "symbol": "AMPU",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AMPX-WS",
@@ -2163,7 +2163,7 @@
     {
       "symbol": "AMPX-WS",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AMSS",
@@ -2180,7 +2180,7 @@
     {
       "symbol": "AMSS",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AMUN",
@@ -2197,7 +2197,7 @@
     {
       "symbol": "AMUN",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AMYY",
@@ -2214,7 +2214,7 @@
     {
       "symbol": "AMYY",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AMZO",
@@ -2231,7 +2231,7 @@
     {
       "symbol": "AMZO",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ANDG",
@@ -2248,7 +2248,7 @@
     {
       "symbol": "ANDG",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ANEL",
@@ -2265,7 +2265,7 @@
     {
       "symbol": "ANEL",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ANG-D",
@@ -2281,7 +2281,7 @@
     {
       "symbol": "ANG-D",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ANGHW",
@@ -2298,7 +2298,7 @@
     {
       "symbol": "ANGHW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ANGX",
@@ -2315,7 +2315,7 @@
     {
       "symbol": "ANGX",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ANNAW",
@@ -2332,7 +2332,7 @@
     {
       "symbol": "ANNAW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ANPA",
@@ -2349,7 +2349,7 @@
     {
       "symbol": "ANPA",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ANSCW",
@@ -2366,7 +2366,7 @@
     {
       "symbol": "ANSCW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ANV",
@@ -2383,7 +2383,7 @@
     {
       "symbol": "ANV",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "AOTS",
@@ -2400,7 +2400,7 @@
     {
       "symbol": "AOTS",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "APAC",
@@ -2417,7 +2417,7 @@
     {
       "symbol": "APAC",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "APACU",
@@ -2434,7 +2434,7 @@
     {
       "symbol": "APACU",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "APADR",
@@ -2451,7 +2451,7 @@
     {
       "symbol": "APADR",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "APADU",
@@ -2468,7 +2468,7 @@
     {
       "symbol": "APADU",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "APC",
@@ -2485,7 +2485,7 @@
     {
       "symbol": "APC",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "APHU",
@@ -2502,7 +2502,7 @@
     {
       "symbol": "APHU",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "APLX",
@@ -2519,7 +2519,7 @@
     {
       "symbol": "APLX",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "APLZ",
@@ -2536,7 +2536,7 @@
     {
       "symbol": "APLZ",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "APO-A",
@@ -2552,7 +2552,7 @@
     {
       "symbol": "APO-A",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "APRB",
@@ -2569,7 +2569,7 @@
     {
       "symbol": "APRB",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "APXT",
@@ -2586,7 +2586,7 @@
     {
       "symbol": "APXT",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "APXTU",
@@ -2603,7 +2603,7 @@
     {
       "symbol": "APXTU",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "APXTW",
@@ -2620,7 +2620,7 @@
     {
       "symbol": "APXTW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ARBEW",
@@ -2637,7 +2637,7 @@
     {
       "symbol": "ARBEW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ARCI",
@@ -2654,7 +2654,7 @@
     {
       "symbol": "ARCI",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ARCIU",
@@ -2671,7 +2671,7 @@
     {
       "symbol": "ARCIU",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ARCIW",
@@ -2688,7 +2688,7 @@
     {
       "symbol": "ARCIW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ARCLU",
@@ -2705,7 +2705,7 @@
     {
       "symbol": "ARCLU",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ARES-B",
@@ -2721,7 +2721,7 @@
     {
       "symbol": "ARES-B",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ARKD",
@@ -2738,7 +2738,7 @@
     {
       "symbol": "ARKD",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ARLI",
@@ -2755,7 +2755,7 @@
     {
       "symbol": "ARLI",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ARMY",
@@ -2772,7 +2772,7 @@
     {
       "symbol": "ARMY",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ARQQW",
@@ -2789,7 +2789,7 @@
     {
       "symbol": "ARQQW",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ARR-C",
@@ -2805,7 +2805,7 @@
     {
       "symbol": "ARR-C",
       "provider": "EODHD",
-      "warning": "EODHD_TOKEN_OR_CONNECTOR_MISSING"
+      "warning": "HTTP_401"
     },
     {
       "symbol": "ARTC",
