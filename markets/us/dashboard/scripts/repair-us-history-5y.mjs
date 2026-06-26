@@ -143,7 +143,7 @@ export async function repairUsHistory({ cacheRoot = cacheDefault, reportPath = r
   for (const row of rows) {
     warnings.push(...(row.warnings || []));
     if (row.status === "REFRESHED") { refreshed += 1; providerCounts[row.provider] = (providerCounts[row.provider] || 0) + 1; latestDataAsOf = !latestDataAsOf || row.data_as_of > latestDataAsOf ? row.data_as_of : latestDataAsOf; }
-    else if (row.status === "SKIPPED") { skippedCurrent += 1; latestDataAsOf = !latestDataAsOf || row.data_as_of > latestDataAsOf ? row.data_asOf : latestDataAsOf; }
+    else if (row.status === "SKIPPED") { skippedCurrent += 1; latestDataAsOf = !latestDataAsOf || row.data_as_of > latestDataAsOf ? row.data_as_of : latestDataAsOf; }
     else failed += 1;
   }
   const status = refreshed ? "UPDATED" : latestDataAsOf ? "ALREADY_CURRENT_OR_UNCHANGED" : "DATA_REFRESH_BLOCKED";
