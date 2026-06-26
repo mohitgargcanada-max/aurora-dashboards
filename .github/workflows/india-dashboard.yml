@@ -7,10 +7,19 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages-india-dashboard
+  cancel-in-progress: false
 
 jobs:
   scan:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -38,3 +47,22 @@ jobs:
           else
             echo "No India dashboard changes to commit."
           fi
+
+      - name: Prepare GitHub Pages artifact
+        if: success()
+        run: bash scripts/prepare-india-pages-artifact.sh public
+
+      - name: Configure GitHub Pages
+        if: success()
+        uses: actions/configure-pages@v5
+
+      - name: Upload GitHub Pages artifact
+        if: success()
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy GitHub Pages
+        if: success()
+        id: deployment
+        uses: actions/deploy-pages@v4
