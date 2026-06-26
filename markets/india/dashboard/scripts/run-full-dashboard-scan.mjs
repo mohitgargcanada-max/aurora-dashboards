@@ -2,6 +2,7 @@ import { readFile, readdir, rename, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { latestCompletedIndiaSession } from "../engine/trading-calendar.mjs";
+import { auditIndexRecords, deriveExpectedCompletedSession, INDIA_PROVIDER_ROUTE, rejectionReasonCounts } from "../engine/freshness-guard.mjs";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const cacheRoot = resolve(root, "cache/india/ohlcv");
@@ -10,7 +11,12 @@ const dataRoot = resolve(root, "data");
 const universePath = resolve(dataRoot, "india-universe.json");
 const dashboardPath = resolve(root, "..", "AURORA_India_Unified_Dashboard.html");
 const scanPath = resolve(dataRoot, "india-full-dashboard-scan.json");
-const expectedSession = process.argv[2] || process.env.AURORA_TARGET_SESSION || latestCompletedIndiaSession();
+const expectedSession = await deriveExpectedCompletedSession({
+  refreshReportPath: resolve(dataRoot, "india-daily-refresh-report.json"),
+  explicitSession: process.argv[2] || process.env.AURORA_TARGET_SESSION || latestCompletedIndiaSession(),
+  stockCacheRoot: cacheRoot
+});
+if (!expectedSession) throw new Error("Unable to derive expected completed India session");
 
 const NSE_EQUITY_SERIES = new Set(["EQ", "BE", "SM", "ST", "BZ"]);
 const BSE_EQUITY_GROUPS = new Set(["A", "B", "T", "TS", "X", "XT", "Z", "ZP", "M", "MT", "MS"]);
@@ -660,6 +666,53 @@ async function loadJson(path) {
   return JSON.parse(await readFile(path, "utf8"));
 }
 
+async function writeJsonAtomic(path, payload) {
+  await writeFile(`${path}.tmp`, JSON.stringify(payload, null, 2));
+  await rename(`${path}.tmp`, path);
+}
+
+async function loadFallbackDecisionPack() {
+  for (const file of ["india-fallback-decision-pack.json", "india-provider-fallback-decision-pack.json"]) {
+    try {
+      return await loadJson(resolve(dataRoot, file));
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+    }
+  }
+  return null;
+}
+
+async function blockScan(status, details) {
+  const fallbackDecisionPack = await loadFallbackDecisionPack();
+  const report = {
+    generated_at: new Date().toISOString(),
+    status,
+    expected_completed_session: expectedSession,
+    provider_route: INDIA_PROVIDER_ROUTE,
+    ...details
+  };
+  if (fallbackDecisionPack) report.fallback_decision_pack = fallbackDecisionPack;
+  await writeJsonAtomic(scanPath, report);
+  console.error(JSON.stringify({ status, scan: scanPath, ...details }, null, 2));
+  process.exit(1);
+}
+
+async function indexFreshnessAudit() {
+  const records = [];
+  for (const file of (await readdir(indexRoot)).filter(x => x.endsWith(".json")).sort()) {
+    records.push({ record: await loadJson(resolve(indexRoot, file)) });
+  }
+  return auditIndexRecords(records, { expectedSession, expectedCount: 18 });
+}
+
+const indexAudit = await indexFreshnessAudit();
+if (indexAudit.stale_count) {
+  await blockScan("DATA_STALE_INDEX_BLOCKED", {
+    latest_index_data_as_of: indexAudit.latest_index_data_as_of,
+    stale_indices: indexAudit.stale_indices
+  });
+}
+
 function buildUniverseLookup(universe) {
   const bySymbol = new Map();
   const byIsin = new Map();
@@ -1143,16 +1196,19 @@ const basePivots = rows.filter(x => ["BASEPIVOT_QUALITY_A", "BASEPIVOT_QUALITY_B
 const rmvpEntries = rows.filter(x => ["RMVP_QUALITY_A", "RMVP_QUALITY_B"].includes(x.rmvp_quality) || x.setup_label === "RMVP_EARLY_ENTRY").slice(0, 25);
 const volumeSignatures = rows.filter(x => ["A", "B"].includes(x.ve2_pattern_volume_grade)).slice(0, 25);
 const noChase = rows.filter(x => x.setup_label === "NO_CHASE_RISK").slice(0, 25);
+const rejectionCounts = rejectionReasonCounts(rejected);
 
 const result = {
   generated_at: new Date().toISOString(),
   data_as_of: expectedSession,
   benchmark: "NIFTY500",
-  provider_route: "OFFICIAL_NSE_BSE_CACHE_PLUS_EODHD_INDEX_FALLBACK",
+  provider_route: INDIA_PROVIDER_ROUTE,
   total_cache_records: files.length,
   feature_matrix_count: featureRows.length,
   scanned_candidates: rows.length,
   rejected_count: rejected.length,
+  rejection_reason_counts: rejectionCounts,
+  top_rejection_reasons: Object.entries(rejectionCounts).slice(0, 10).map(([reason, count]) => ({ reason, count })),
   liquidity_min_inr: LIQUIDITY_MIN_INR,
   market_context: marketContext,
   weekly_universe: weeklyUniverse,
@@ -1174,8 +1230,16 @@ const result = {
   rejected: rejected.slice(0, 250)
 };
 
-await writeFile(`${scanPath}.tmp`, JSON.stringify(result, null, 2));
-await rename(`${scanPath}.tmp`, scanPath);
+if ((result.feature_matrix_count === 0 || result.scanned_candidates === 0) && process.env.AURORA_ALLOW_EMPTY_DASHBOARD_PUBLISH !== "1") {
+  await blockScan("EMPTY_SCAN_BLOCKED", {
+    feature_matrix_count: result.feature_matrix_count,
+    scanned_candidates: result.scanned_candidates,
+    rejected_count: result.rejected_count,
+    rejection_reason_counts: result.rejection_reason_counts
+  });
+}
+
+await writeJsonAtomic(scanPath, result);
 
 function rowsHtml(items, fields) {
   return items.map(x => `<tr>${fields.map(([label, fn]) => `<td>${fn(x)}</td>`).join("")}</tr>`).join("");
@@ -1343,7 +1407,7 @@ ${table("VE2 Volume Signature", "ve2", volumeSignatures.slice(0, 20), "Volume si
 ${table("Compression", "compression", compression.slice(0, 20), "RMV5 < RMV15 <= RMV25 style compression candidates.")}
 ${table("No-Chase / Risk", "risk", noChase.slice(0, 20), "Leadership may be present, but extension/risk says wait for pullback, shelf, or retest.")}
 <h2 id="rejected">Rejected / Data Repair Routes</h2><p class="notice">Rejection blocks promotion, not discovery. The scanner keeps exact failed gate and next promotion condition.</p><div class="table-wrap"><table><thead><tr>${rejectedFields.map(([label]) => `<th>${label}</th>`).join("")}</tr></thead><tbody>${rowsHtml(rejected.slice(0, 150), rejectedFields)}</tbody></table></div>
-<h2 id="provenance">Provenance</h2><div class="table-wrap"><table><tbody><tr><th>Provider route</th><td>${escape(result.provider_route)}</td></tr><tr><th>Benchmark</th><td>${escape(result.benchmark)} · ${escape(benchmarkRecord.provider)} · ${escape(benchmarkRecord.data_as_of)}</td></tr><tr><th>Daily Top Formula</th><td>From WEEKLY_FOCUS only: 20% trigger proximity, 18% RS, 16% RMV/compression tightness, 14% BPX/RMVP structure, 10% VE2 volume, 10% RRG/theme proxy, 7% risk clarity, 5% market permission. Top name must score >=75; additional names must score >=70 and be within 12 points of #1. Never force four.</td></tr><tr><th>Conviction layers</th><td>AXM guards extension; PBX grades pullbacks; BPX/BasePivot and RMVP define structure; VE2 validates volume fuel. None of these create new final buckets.</td></tr><tr><th>Liquidity minimum reference</th><td>${money(LIQUIDITY_MIN_INR)} ADDV20. Not a discovery kill-switch; thin names are cautioned.</td></tr><tr><th>BSE overlay</th><td>Quick-mode short history, unadjusted, BSE exclusive, caution-only until full history/surveillance checks are added.</td></tr><tr><th>Scan JSON</th><td>${escape(scanPath)}</td></tr></tbody></table></div><p class="foot">Decision-support only. Confirm surveillance, series, corporate actions, next-session price/volume behavior, and risk before acting.</p></main><script>document.getElementById('search').addEventListener('input',e=>{const q=e.target.value.toLowerCase();document.querySelectorAll('tbody tr').forEach(r=>r.hidden=!r.textContent.toLowerCase().includes(q))})</script></body></html>`;
+<h2 id="provenance">Provenance</h2><div class="table-wrap"><table><tbody><tr><th>Provider route</th><td>${escape(result.provider_route)}</td></tr><tr><th>Benchmark</th><td>${escape(result.benchmark)} · ${escape(benchmarkRecord.provider)} · ${escape(benchmarkRecord.data_as_of)}</td></tr><tr><th>Top rejection reasons</th><td>${escape(result.top_rejection_reasons.map(x => `${x.reason}:${x.count}`).join(", "))}</td></tr><tr><th>Daily Top Formula</th><td>From WEEKLY_FOCUS only: 20% trigger proximity, 18% RS, 16% RMV/compression tightness, 14% BPX/RMVP structure, 10% VE2 volume, 10% RRG/theme proxy, 7% risk clarity, 5% market permission. Top name must score >=75; additional names must score >=70 and be within 12 points of #1. Never force four.</td></tr><tr><th>Conviction layers</th><td>AXM guards extension; PBX grades pullbacks; BPX/BasePivot and RMVP define structure; VE2 validates volume fuel. None of these create new final buckets.</td></tr><tr><th>Liquidity minimum reference</th><td>${money(LIQUIDITY_MIN_INR)} ADDV20. Not a discovery kill-switch; thin names are cautioned.</td></tr><tr><th>BSE overlay</th><td>Quick-mode short history, unadjusted, BSE exclusive, caution-only until full history/surveillance checks are added.</td></tr><tr><th>Scan JSON</th><td>${escape(scanPath)}</td></tr></tbody></table></div><p class="foot">Decision-support only. Confirm surveillance, series, corporate actions, next-session price/volume behavior, and risk before acting.</p></main><script>document.getElementById('search').addEventListener('input',e=>{const q=e.target.value.toLowerCase();document.querySelectorAll('tbody tr').forEach(r=>r.hidden=!r.textContent.toLowerCase().includes(q))})</script></body></html>`;
 
 await writeFile(`${dashboardPath}.tmp`, html);
 await rename(`${dashboardPath}.tmp`, dashboardPath);
