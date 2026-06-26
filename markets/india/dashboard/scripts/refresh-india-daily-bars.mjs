@@ -837,7 +837,10 @@ export async function refreshIndiaDailyBars({
     resolve(rawRoot, expectedSession)
   ],
   tryOfficialFetch = true,
-  providerOrder = ["YAHOO", "TAPETIDE", "EODHD"],
+  providerOrder = (process.env.AURORA_INDIA_DAILY_PROVIDER_ORDER || "YAHOO,TAPETIDE")
+    .split(",")
+    .map(x => x.trim().toUpperCase())
+    .filter(Boolean),
   fetcher = fetch,
   now = new Date()
 } = {}) {
@@ -925,27 +928,47 @@ export async function refreshIndiaDailyBars({
     }
   }
 
+  const providerCounts = {};
+  const providerAttempts = [];
+  let finalProviderAttempt = null;
+
   for (const provider of providerOrder) {
     const attempt = await appendProviderConsistentFallback({ provider, expectedSession, cacheRoot, fetcher });
     attempts.push(attempt);
+    providerAttempts.push(attempt);
+
+    const updatedByProvider = (attempt.inserted || 0) + (attempt.corrected || 0) + (attempt.unchanged || 0);
+    providerCounts[provider] = (providerCounts[provider] || 0) + updatedByProvider;
+    if (updatedByProvider > 0) finalProviderAttempt = attempt;
+
     state = await acceptable();
-    if (state.ok) {
-      const report = {
-        status: "UPDATED",
-        provider,
-        endpoint: PROVIDER_ENDPOINTS[provider],
-        retrieved_at: retrievedAt,
-        expected_completed_session: expectedSession,
-        latest_data_as_of: expectedSession,
-        fallback_label: fallbackLabel(provider),
-        fallback_reason: "PROVIDER_CONSISTENT_DAILY_APPEND",
-        coverage: state.coverage,
-        attempts,
-        warnings
-      };
-      await writeReport(reportPath, report);
-      return report;
-    }
+
+    const providerBudget = providerSymbolLimit(provider, Infinity);
+    const unresolvedInAttempt = (attempt.requested || 0) > updatedByProvider;
+    const exhaustedProviderBudget = Number.isFinite(providerBudget) && (attempt.requested || 0) >= providerBudget;
+
+    if (state.ok && !unresolvedInAttempt && !exhaustedProviderBudget) break;
+  }
+
+  state = await acceptable();
+  if (state.ok) {
+    const finalProvider = finalProviderAttempt?.provider || providerAttempts[providerAttempts.length - 1]?.provider || "YAHOO";
+    const report = {
+      status: "UPDATED",
+      provider: finalProvider,
+      endpoint: PROVIDER_ENDPOINTS[finalProvider] || "provider-fallback-cascade",
+      retrieved_at: retrievedAt,
+      expected_completed_session: expectedSession,
+      latest_data_as_of: expectedSession,
+      fallback_label: fallbackLabel(finalProvider),
+      fallback_reason: providerAttempts.length > 1 ? "PROVIDER_REPAIR_CASCADE_DAILY_APPEND" : "PROVIDER_CONSISTENT_DAILY_APPEND",
+      coverage: state.coverage,
+      provider_counts: providerCounts,
+      attempts,
+      warnings
+    };
+    await writeReport(reportPath, report);
+    return report;
   }
 
   const fallbackDecisionPack = await buildFallbackDecisionPack({ scanPath: lastGoodScanPath, expectedSession });
