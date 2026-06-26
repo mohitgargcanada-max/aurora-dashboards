@@ -55,15 +55,39 @@ jobs:
           node <<'NODE'
           const fs = require("fs");
           const allowed = new Set(["EODHD_API_TOKEN", "EODHD_API_KEY", "SEC_USER_AGENT", "TAVILY_API_KEY", "FIRECRAWL_API_KEY"]);
-          const eodhdAliases = ["EODHD_API_TOKEN", "EODHD_API_KEY", "EODHD_TOKEN", "EODHD_KEY", "EODHD", "EODHD_TOKEN_VALUE", "EODHD_APIKEY", "EODHDAPIKEY", "EODHDTOKEN"].map(normalizeKey);
+          const eodhdAliases = ["EODHD_API_TOKEN", "EODHD_API_KEY", "EODHD_API", "EODHD_TOKEN", "EODHD_KEY", "EODHD", "EODHD_TOKEN_VALUE", "EODHD_SECRET", "EODHD_CREDENTIAL", "EOD_HISTORICAL_DATA_API_KEY", "EOD_HISTORICAL_DATA_TOKEN", "EOD_HISTORICAL_DATA_KEY", "EODHD_APIKEY", "EODHDAPIKEY", "EODHDTOKEN"].map(normalizeKey);
+          const identityFields = ["name", "key", "id", "provider", "service", "source", "connector"];
+          const valueFields = ["value", "secret", "token", "api_token", "apiToken", "api_key", "apiKey", "credential"];
           function normalizeKey(key) {
             return String(key || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
           }
+          function primitiveValue(value) {
+            return value === null || value === undefined || typeof value === "object" ? "" : String(value);
+          }
+          function isEodhdCredentialKey(key) {
+            const normalized = normalizeKey(key);
+            if (eodhdAliases.some(alias => normalized === alias || normalized.endsWith(alias))) return true;
+            const namesEodhd = normalized.includes("EODHD") || normalized.includes("EODHISTORICALDATA");
+            const namesSecret = ["API", "TOKEN", "KEY", "SECRET", "CREDENTIAL"].some(part => normalized.includes(part));
+            return namesEodhd && namesSecret;
+          }
+          function addStructuredSecretAlias(value, out) {
+            if (!value || typeof value !== "object" || Array.isArray(value)) return;
+            const identity = identityFields.map(field => primitiveValue(value[field])).find(Boolean);
+            if (!identity || !isEodhdCredentialKey(identity)) return;
+            const secret = valueFields.map(field => primitiveValue(value[field])).find(Boolean);
+            if (secret) out[identity] = secret;
+          }
           function flatten(value, prefix = "", out = {}) {
-            if (!value || typeof value !== "object" || Array.isArray(value)) return out;
+            if (!value || typeof value !== "object") return out;
+            if (Array.isArray(value)) {
+              value.forEach((item, index) => flatten(item, prefix ? `${prefix}_${index}` : String(index), out));
+              return out;
+            }
+            addStructuredSecretAlias(value, out);
             for (const [key, item] of Object.entries(value)) {
               const path = prefix ? `${prefix}_${key}` : key;
-              if (item && typeof item === "object" && !Array.isArray(item)) flatten(item, path, out);
+              if (item && typeof item === "object") flatten(item, path, out);
               else out[path] = item;
             }
             return out;
@@ -96,8 +120,7 @@ jobs:
           if (process.env.TAVILY_API_KEY) values.TAVILY_API_KEY = process.env.TAVILY_API_KEY;
           if (process.env.FIRECRAWL_API_KEY) values.FIRECRAWL_API_KEY = process.env.FIRECRAWL_API_KEY;
           const eodhdEntry = Object.entries(values).find(([key, value]) => {
-            const normalized = normalizeKey(key);
-            return value && eodhdAliases.some(alias => normalized === alias || normalized.endsWith(alias));
+            return value && isEodhdCredentialKey(key);
           });
           if (eodhdEntry) {
             values.EODHD_API_TOKEN ||= eodhdEntry[1];
