@@ -69,14 +69,32 @@ function flattenObject(value, prefix = "", out = {}) {
   return out;
 }
 
+function unquote(value) {
+  const text = String(value || "").trim();
+  if ((text.startsWith('"') && text.endsWith('"')) || (text.startsWith("'") && text.endsWith("'"))) return text.slice(1, -1);
+  return text;
+}
+
+function expandEmbeddedBundles(out) {
+  const expanded = { ...out };
+  for (const value of Object.values(out)) {
+    const text = primitiveValue(value).trim();
+    if (!text || !/EOD/i.test(text) || !/[{=:\n]/.test(text)) continue;
+    for (const [key, embedded] of Object.entries(parseAuroraKeys(text))) {
+      if (embedded && isCredentialKey(key)) expanded[key] ??= embedded;
+    }
+  }
+  return expanded;
+}
+
 export function parseAuroraKeys(raw = process.env.AURORAKEYS) {
   const text = String(raw || "").trim();
   if (!text) return {};
   try {
     const parsed = JSON.parse(text);
     if (typeof parsed === "string" && parsed.trim()) return { EODHD: parsed.trim() };
-    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return flattenObject(parsed);
-    if (Array.isArray(parsed)) return flattenObject(parsed);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return expandEmbeddedBundles(flattenObject(parsed));
+    if (Array.isArray(parsed)) return expandEmbeddedBundles(flattenObject(parsed));
   } catch {
     // Fall through to dotenv-style parsing.
   }
@@ -87,14 +105,16 @@ export function parseAuroraKeys(raw = process.env.AURORAKEYS) {
     const equalsIndex = trimmed.indexOf("=");
     const colonIndex = trimmed.indexOf(":");
     const index = equalsIndex > 0 ? equalsIndex : colonIndex > 0 ? colonIndex : -1;
-    if (index <= 0) continue;
+    if (index <= 0) {
+      const [key, ...rest] = trimmed.split(/\s+/);
+      if (rest.length && isCredentialKey(key)) out[key] = unquote(rest.join(" "));
+      continue;
+    }
     const key = trimmed.slice(0, index).trim();
-    let value = trimmed.slice(index + 1).trim();
-    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) value = value.slice(1, -1);
-    out[key] = value;
+    out[key] = unquote(trimmed.slice(index + 1));
   }
   if (!Object.keys(out).length && !/\s/.test(text)) return { EODHD: text };
-  return out;
+  return expandEmbeddedBundles(out);
 }
 
 export function resolveEodhdToken(env = process.env) {
