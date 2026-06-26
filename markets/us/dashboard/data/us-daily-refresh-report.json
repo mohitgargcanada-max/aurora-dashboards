@@ -1,0 +1,2732 @@
+{
+  "status": "DATA_REFRESH_BLOCKED",
+  "route_order": [
+    "STOOQ",
+    "YAHOO_FINANCE",
+    "EODHD"
+  ],
+  "provider_counts": {},
+  "fallback_label": "NOT_AVAILABLE",
+  "retrieved_at": "2026-06-25T23:54:19.371Z",
+  "expected_completed_session": "2026-06-25",
+  "latest_data_as_of": null,
+  "symbols_requested": 11952,
+  "quotes_loaded": 0,
+  "inserted": 0,
+  "corrected": 0,
+  "unchanged": 0,
+  "missing_quote": 11952,
+  "stale_quote": 0,
+  "invalid": 0,
+  "warnings": [
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "A"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AA"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAA"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAAU"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AACB"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AACBR"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AACG"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AACI"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AACIU"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AACIW"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AACO"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AACOU"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AACOW"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AACPU"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AADR"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAEQ"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAL"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AALG"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAME"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAMI"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAOG"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAOI"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAON"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAOX"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAP"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAPB"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAPD"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAPG"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAPL"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAPR"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAPU"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAPW"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAPX"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAPY"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AARD"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAT"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAUA"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAUC"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAUS"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAVM"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AAXJ"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AB"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABAT"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABBV"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABCB"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABCL"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABCS"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABEO"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABEQ"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABEV"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABFL"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABG"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABI"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABIG"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABLD"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABLG"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABLS"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABLV"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABLVW"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABM"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABNB"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABNG"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABNY"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABOS"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABOT"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABR"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABR-D"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABR-E"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABR-F"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABSI"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABT"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABTC"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABTS"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABUF"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ABUS"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AAOG"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AALG"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AAOI"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AAON"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AAPB"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AAP"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AAPG"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AAPD"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AAOX"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AAPL"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AAPU"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AAPR"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AAPW"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AAPX"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AARD"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AAPY"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AAUC"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AAVM"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AAUS"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AAXJ"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABI"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABIG"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABG"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABLG"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABLS"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABLV"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABNB"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABM"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABOT"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABNY"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABR-D"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABNG"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABR-E"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABR-F"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABR"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABOS"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 75,
+      "sample": [
+        "ABVC",
+        "ABVEF",
+        "ABVWF",
+        "ABVX",
+        "ABX"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABVX"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABXB"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABVWF"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABXL"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABX"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACA"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABVC"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ABVEF"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACAAU"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACCS"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACCO"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACAA"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACAD"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACEL"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACB"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACCL"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACEI"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACDC"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACLC"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACLO"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACEP"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACM"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACNT"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACMR"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACN"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACNB"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACP-A"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACR-C"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACOG"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACRS"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACP"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACR"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACR-D"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACLS"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACONW"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACRE"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACT"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACON"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACU"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACVA"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACSI"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACVU"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACVF"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACRV"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACWI"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACYN"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACVT"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACTG"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACV"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACTS"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACWX"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACXP"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACWV"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACTU"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ACYS"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AD"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADAC"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADACU"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADACW"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADAG"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADAM"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADAMG"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADAMH"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADAMI"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADAML"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADAMM"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADAMN"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADAMO"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADAMZ"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADBE"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADBG"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADBU"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADC"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADC-A"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADCT"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADEA"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADFI"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADGM"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADI"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADIL"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADIV"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADM"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADMA"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADME"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADNT"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADP"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADPT"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADPV"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADSE"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADSEW"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADSK"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADT"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADTN"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADTX"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADUR"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADUS"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADV"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADVB"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADVE"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADX"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "ADXN"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AEAQ"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AEAQU"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AEAQW"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AEBI"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AEC"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AEE"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AEF"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AEFC"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AEG"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AEHL"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AEHR"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AEI"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AEIS"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AEM"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AEMD"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AENT"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AENTW"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AEO"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AEON"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AEP"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AER"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AERO"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AERT"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AERTW"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AES"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AESI"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AESR"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AETH"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ",
+      "symbols": 1,
+      "sample": [
+        "AEVA"
+      ],
+      "warning": "STOOQ_HTTP_404",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADIL"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADGM"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADM"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADC-A"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADEA"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADFI"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADIV"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADPV"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADSEW"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADME"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADMA"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADNT"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADI"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADT"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADP"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADSE"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADUS"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADV"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADTN"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADVE"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADSK"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADPT"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADVB"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADX"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADUR"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADTX"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ADXN"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AEAQ"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AEC"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AEBI"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AEFC"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AEAQW"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AEE"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AEG"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AEF"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AEAQU"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AEHR"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AEHL"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AEM"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AEIS"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AEMD"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AENTW"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AEP"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AEI"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AES"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AERT"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AERO"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AENT"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AEO"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AEON"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AER"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AEVA"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AESI"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AERTW"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AETH"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AESR"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "offset": 0,
+      "symbols": 75,
+      "warning": "YAHOO_HTTP_401"
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "offset": 75,
+      "symbols": 75,
+      "warning": "YAHOO_HTTP_401"
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "offset": 150,
+      "symbols": 75,
+      "warning": "YAHOO_HTTP_401"
+    },
+    {
+      "provider": "EODHD",
+      "symbols": 11952,
+      "warning": "EODHD_TOKEN_MISSING"
+    }
+  ]
+}
