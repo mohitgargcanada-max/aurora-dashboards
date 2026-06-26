@@ -2,6 +2,7 @@ import { readFile, writeFile, rename } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadSymbol } from "../engine/cache-store.mjs";
+import { providerProvenance } from "./aurora-provenance.mjs";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const statePath = resolve(root, "data/us-dashboard-state.json");
@@ -179,6 +180,7 @@ const spyRecord = await loadSymbol(cacheRoot, "SPY");
 const spy = spyRecord.bars;
 const universe = [...new Map(state.all_candidates.map(x => [x.ticker, x])).values()];
 const liquidRows = [];
+const calculatedRecords = [spyRecord];
 
 for (let offset = 0; offset < universe.length; offset += 64) {
   const batch = universe.slice(offset, offset + 64);
@@ -197,6 +199,7 @@ for (let offset = 0; offset < universe.length; offset += 64) {
     const price = closes.at(-1);
     const addv20 = mean(bars.slice(-20).map(x => x.close * x.volume));
     if (!(addv20 >= LIQUIDITY_MIN)) continue;
+    calculatedRecords.push(record);
     const rsEma21 = emaSeries(rsValues, 21);
     const currentRs = rsValues.at(-1);
     const slope5 = pctChange(rsValues, 5) * 100;
@@ -342,15 +345,18 @@ const rsleDeveloping = rows
   .sort((a, b) => b.rsle_leadership_score - a.rsle_leadership_score || b.rsle_tactical_score - a.rsle_tactical_score || b.avg_dollar_volume_20 - a.avg_dollar_volume_20 || a.ticker.localeCompare(b.ticker))
   .slice(0, 20)
   .map((row, index) => ({ ...row, rsle_rank: index + 21, rsle_list_tier: "RSLE_DEVELOPING_21_40" }));
+const provenance = providerProvenance(calculatedRecords);
 const result = {
   generated_at: new Date().toISOString(),
   data_as_of: state.run.data_as_of,
   benchmark: "SPY",
-  provider: "STOOQ",
-  endpoint: "d_us_txt.zip/local-cache",
-  adjustment_status: "STOOQ_ADJUSTED_OHLC",
+  provider: provenance.provider,
+  provider_counts: provenance.provider_counts,
+  endpoint: provenance.endpoint,
+  adjustment_status: provenance.provider === "CACHE_MULTI_PROVIDER" ? "CACHE_PROVIDER_CONSISTENT_SYMBOL_SERIES" : `${provenance.provider}_ADJUSTED_OHLC`,
   currency: "USD",
-  fallback_label: "FREE_PRIMARY",
+  fallback_label: provenance.fallback_label,
+  provenance_note: "Aggregate provider reflects cache records used by the benchmark and eligible RSLE histories. Symbol-level provider fields are preserved.",
   universe_input_count: universe.length,
   liquid_universe_count: liquidRows.length,
   liquidity_min_usd: LIQUIDITY_MIN,
@@ -376,6 +382,8 @@ await rename(temp, outputPath);
 state.rs_leadership = {
   data_as_of: result.data_as_of,
   benchmark: result.benchmark,
+  provider: result.provider,
+  provider_counts: result.provider_counts,
   liquidity_min_usd: result.liquidity_min_usd,
   top20_tactical: result.top20_tactical,
   developing_21_40: result.developing_21_40,

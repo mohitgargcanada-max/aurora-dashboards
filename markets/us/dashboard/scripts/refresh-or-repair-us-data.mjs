@@ -11,9 +11,26 @@ function isCurrent(report) {
   return Boolean(report?.expected_completed_session && report?.latest_data_as_of === report.expected_completed_session);
 }
 
+export function chooseDataSource(daily, history) {
+  return isCurrent(daily) ? { label: "daily_refresh", report: daily } : { label: "history_repair", report: history };
+}
+
+export function summarizeRefreshOrRepairResult(result) {
+  const source = chooseDataSource(result.daily_refresh, result.history_repair);
+  return {
+    ...result,
+    status: result.final_status,
+    data_source: source.label,
+    expected_completed_session: source.report?.expected_completed_session || result.daily_refresh?.expected_completed_session || result.history_repair?.expected_completed_session || null,
+    latest_data_as_of: source.report?.latest_data_as_of || null,
+    provider_counts: source.report?.provider_counts || {},
+    fallback_label: source.report?.fallback_label || "NOT_AVAILABLE"
+  };
+}
+
 async function persist(result) {
   await mkdir(resolve(summaryPath, ".."), { recursive: true });
-  await writeFile(summaryPath, JSON.stringify(result, null, 2), "utf8");
+  await writeFile(summaryPath, JSON.stringify(summarizeRefreshOrRepairResult(result), null, 2), "utf8");
 }
 
 async function main() {
