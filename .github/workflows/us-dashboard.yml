@@ -180,6 +180,14 @@ jobs:
           git add markets/us/dashboard/data markets/us/dashboard/cache markets/us/AURORA_US_Dashboard.html
           if ! git diff --cached --quiet; then
             git commit -m "Update AURORA US dashboard"
+            for attempt in 1 2 3; do
+              if git push; then
+                exit 0
+              fi
+              echo "US output push rejected; rebasing on origin/${GITHUB_REF_NAME} and retrying (${attempt}/3)." >&2
+              git fetch origin "${GITHUB_REF_NAME}"
+              git rebase "origin/${GITHUB_REF_NAME}"
+            done
             git push
           else
             echo "No US dashboard changes to commit."
