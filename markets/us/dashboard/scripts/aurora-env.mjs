@@ -8,16 +8,26 @@ const EODHD_TOKEN_ALIASES = [
   "EODHD_TOKEN_VALUE",
   "EODHD_SECRET",
   "EODHD_CREDENTIAL",
+  "EOD_API_TOKEN",
+  "EOD_API_KEY",
+  "EOD_TOKEN",
+  "EOD_KEY",
+  "EOD",
   "EOD_HISTORICAL_DATA_API_KEY",
+  "EOD_HISTORICAL_DATA_API_TOKEN",
   "EOD_HISTORICAL_DATA_TOKEN",
   "EOD_HISTORICAL_DATA_KEY",
+  "EOD_HISTORICAL_DATA",
+  "EODH_API_KEY",
+  "EODH_TOKEN",
+  "EODH_KEY",
   "EODHD_APIKEY",
   "EODHDAPIKEY",
   "EODHDTOKEN"
 ];
 
-const IDENTITY_FIELDS = ["name", "key", "id", "provider", "service", "source", "connector"];
-const VALUE_FIELDS = ["value", "secret", "token", "api_token", "apiToken", "api_key", "apiKey", "credential"];
+const IDENTITY_FIELDS = ["name", "provider", "service", "source", "connector", "id", "key"];
+const VALUE_FIELDS = ["value", "secret", "token", "api_token", "apiToken", "api_key", "apiKey", "credential", "key"];
 
 function normalizeKey(key) {
   return String(key || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -27,7 +37,7 @@ function isCredentialKey(key) {
   const normalized = normalizeKey(key);
   const aliases = EODHD_TOKEN_ALIASES.map(normalizeKey);
   if (aliases.some(alias => normalized === alias || normalized.endsWith(alias))) return true;
-  const namesEodhd = normalized.includes("EODHD") || normalized.includes("EODHISTORICALDATA");
+  const namesEodhd = normalized.includes("EODHD") || normalized.includes("EODHISTORICALDATA") || normalized.includes("EOD");
   const namesSecret = ["API", "TOKEN", "KEY", "SECRET", "CREDENTIAL"].some(part => normalized.includes(part));
   return namesEodhd && namesSecret;
 }

@@ -55,9 +55,9 @@ jobs:
           node <<'NODE'
           const fs = require("fs");
           const allowed = new Set(["EODHD_API_TOKEN", "EODHD_API_KEY", "SEC_USER_AGENT", "TAVILY_API_KEY", "FIRECRAWL_API_KEY"]);
-          const eodhdAliases = ["EODHD_API_TOKEN", "EODHD_API_KEY", "EODHD_API", "EODHD_TOKEN", "EODHD_KEY", "EODHD", "EODHD_TOKEN_VALUE", "EODHD_SECRET", "EODHD_CREDENTIAL", "EOD_HISTORICAL_DATA_API_KEY", "EOD_HISTORICAL_DATA_TOKEN", "EOD_HISTORICAL_DATA_KEY", "EODHD_APIKEY", "EODHDAPIKEY", "EODHDTOKEN"].map(normalizeKey);
-          const identityFields = ["name", "key", "id", "provider", "service", "source", "connector"];
-          const valueFields = ["value", "secret", "token", "api_token", "apiToken", "api_key", "apiKey", "credential"];
+          const eodhdAliases = ["EODHD_API_TOKEN", "EODHD_API_KEY", "EODHD_API", "EODHD_TOKEN", "EODHD_KEY", "EODHD", "EODHD_TOKEN_VALUE", "EODHD_SECRET", "EODHD_CREDENTIAL", "EOD_API_TOKEN", "EOD_API_KEY", "EOD_TOKEN", "EOD_KEY", "EOD", "EOD_HISTORICAL_DATA_API_KEY", "EOD_HISTORICAL_DATA_API_TOKEN", "EOD_HISTORICAL_DATA_TOKEN", "EOD_HISTORICAL_DATA_KEY", "EOD_HISTORICAL_DATA", "EODH_API_KEY", "EODH_TOKEN", "EODH_KEY", "EODHD_APIKEY", "EODHDAPIKEY", "EODHDTOKEN"].map(normalizeKey);
+          const identityFields = ["name", "provider", "service", "source", "connector", "id", "key"];
+          const valueFields = ["value", "secret", "token", "api_token", "apiToken", "api_key", "apiKey", "credential", "key"];
           function normalizeKey(key) {
             return String(key || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
           }
@@ -67,7 +67,7 @@ jobs:
           function isEodhdCredentialKey(key) {
             const normalized = normalizeKey(key);
             if (eodhdAliases.some(alias => normalized === alias || normalized.endsWith(alias))) return true;
-            const namesEodhd = normalized.includes("EODHD") || normalized.includes("EODHISTORICALDATA");
+            const namesEodhd = normalized.includes("EODHD") || normalized.includes("EODHISTORICALDATA") || normalized.includes("EOD");
             const namesSecret = ["API", "TOKEN", "KEY", "SECRET", "CREDENTIAL"].some(part => normalized.includes(part));
             return namesEodhd && namesSecret;
           }
