@@ -12,6 +12,9 @@ assert.equal(resolveEodhdToken({ AURORAKEYS: JSON.stringify({ providers: { eodHi
 assert.equal(resolveEodhdToken({ AURORAKEYS: JSON.stringify({ providers: [{ provider: "EODHD", key: "token-j" }] }) }), "token-j");
 assert.equal(resolveEodhdToken({ AURORAKEYS: JSON.stringify({ "EOD Historical Data": "token-k" }) }), "token-k");
 assert.equal(resolveEodhdToken({ AURORAKEYS: JSON.stringify({ aurora: { eod: { token: "token-l" } } }) }), "token-l");
+assert.equal(resolveEodhdToken({ AURORAKEYS: "token-m" }), "token-m");
+assert.equal(resolveEodhdToken({ AURORAKEYS: JSON.stringify("token-n") }), "token-n");
+assert.equal(resolveEodhdToken({ AURORAKEYS: "EOD Historical Data: token-o\n" }), "token-o");
 assert.deepEqual(parseBundledAuroraKeys("EODHD_API_KEY='token-e'\n# comment\n"), { EODHD_API_KEY: "token-e" });
 
 console.log("Aurora env tests passed");

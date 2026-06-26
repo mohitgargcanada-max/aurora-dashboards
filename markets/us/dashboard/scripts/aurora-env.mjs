@@ -74,7 +74,9 @@ export function parseBundledAuroraKeys(raw = process.env.AURORAKEYS) {
   if (!text) return {};
   try {
     const parsed = JSON.parse(text);
+    if (typeof parsed === "string" && parsed.trim()) return { EODHD: parsed.trim() };
     if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return flattenObject(parsed);
+    if (Array.isArray(parsed)) return flattenObject(parsed);
   } catch {
     // Fall through to dotenv-style parsing.
   }
@@ -82,13 +84,16 @@ export function parseBundledAuroraKeys(raw = process.env.AURORAKEYS) {
   for (const line of text.split(/\r?\n/)) {
     const trimmed = line.trim().replace(/^export\s+/i, "");
     if (!trimmed || trimmed.startsWith("#")) continue;
-    const index = trimmed.indexOf("=");
+    const equalsIndex = trimmed.indexOf("=");
+    const colonIndex = trimmed.indexOf(":");
+    const index = equalsIndex > 0 ? equalsIndex : colonIndex > 0 ? colonIndex : -1;
     if (index <= 0) continue;
     const key = trimmed.slice(0, index).trim();
     let value = trimmed.slice(index + 1).trim();
     if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) value = value.slice(1, -1);
     out[key] = value;
   }
+  if (!Object.keys(out).length && !/\s/.test(text)) return { EODHD: text };
   return out;
 }
 
