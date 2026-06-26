@@ -14,6 +14,7 @@ const ymd = d => d.toISOString().slice(0, 10);
 const compact = d => String(d).replaceAll("-", "");
 const stooqSymbol = s => `${normalizeSymbol(s).toLowerCase()}.us`;
 const eodhdSymbol = s => `${normalizeSymbol(s)}.US`;
+const eodhdEnvToken = () => process.env.EODHD_API_TOKEN || process.env.EODHD_API_KEY || "";
 function addYears(date, years) { const copy = new Date(date); copy.setUTCFullYear(copy.getUTCFullYear() + years); return copy; }
 function latestCompletedUsSession(now = new Date()) {
   const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", hour12: false }).formatToParts(now);
@@ -89,7 +90,7 @@ async function fetchStooq(symbol, from, to, fetcher, ms) {
   return { endpoint, bars: parseStooqCsv(text) };
 }
 async function fetchEodhd(symbol, from, to, token, fetcher, ms) {
-  if (!token) throw new Error("EODHD_TOKEN_MISSING");
+  if (!token) throw new Error("EODHD_TOKEN_OR_CONNECTOR_MISSING");
   const endpoint = `https://eodhd.com/api/eod/${encodeURIComponent(eodhdSymbol(symbol))}`;
   const rows = await request(`${endpoint}?from=${from}&to=${to}&period=d&fmt=json&api_token=${encodeURIComponent(token)}`, "json", fetcher, ms);
   return { endpoint, bars: parseEodhdRows(rows) };
@@ -110,7 +111,7 @@ async function mapLimit(items, limit, worker) {
   await Promise.all(Array.from({ length: Math.min(limit, items.length) }, run));
   return result;
 }
-export async function repairUsHistory({ cacheRoot = cacheDefault, reportPath = reportDefault, from = null, to = null, lookbackYears = 5, minBars = minBarsDefault, staleOnly = true, strictCurrent = false, allowStale = false, symbols = null, limit = null, concurrency = concurrencyDefault, timeoutMs = timeoutDefault, eodhdToken = process.env.EODHD_API_TOKEN, fetcher = fetch, now = new Date() } = {}) {
+export async function repairUsHistory({ cacheRoot = cacheDefault, reportPath = reportDefault, from = null, to = null, lookbackYears = 5, minBars = minBarsDefault, staleOnly = true, strictCurrent = false, allowStale = false, symbols = null, limit = null, concurrency = concurrencyDefault, timeoutMs = timeoutDefault, eodhdToken = eodhdEnvToken(), fetcher = fetch, now = new Date() } = {}) {
   const expectedSession = to || latestCompletedUsSession(now);
   const start = from || ymd(addYears(`${expectedSession}T00:00:00Z`, -lookbackYears));
   let universe = symbols?.length ? symbols : await symbolsFromCache(cacheRoot);
@@ -142,7 +143,7 @@ export async function repairUsHistory({ cacheRoot = cacheDefault, reportPath = r
   for (const row of rows) {
     warnings.push(...(row.warnings || []));
     if (row.status === "REFRESHED") { refreshed += 1; providerCounts[row.provider] = (providerCounts[row.provider] || 0) + 1; latestDataAsOf = !latestDataAsOf || row.data_as_of > latestDataAsOf ? row.data_as_of : latestDataAsOf; }
-    else if (row.status === "SKIPPED") { skippedCurrent += 1; latestDataAsOf = !latestDataAsOf || row.data_as_of > latestDataAsOf ? row.data_as_of : latestDataAsOf; }
+    else if (row.status === "SKIPPED") { skippedCurrent += 1; latestDataAsOf = !latestDataAsOf || row.data_as_of > latestDataAsOf ? row.data_asOf : latestDataAsOf; }
     else failed += 1;
   }
   const status = refreshed ? "UPDATED" : latestDataAsOf ? "ALREADY_CURRENT_OR_UNCHANGED" : "DATA_REFRESH_BLOCKED";
