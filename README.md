@@ -15,6 +15,7 @@ GitHub Actions can run the dashboards without ChatGPT being open:
 - Scheduled runs use `.github/workflows/*.yml`.
 - Manual runs use the GitHub Actions `workflow_dispatch` button.
 - Each workflow checks out the repo, runs the market scan, validates output, and commits updated dashboard/state files back to the repo.
+- GitHub Pages publishes generated dashboard artifacts; India is available at `/india/`.
 
 ChatGPT/Codex can still inspect failures, improve logic, and update prompts/specs, but GitHub Actions should be the reliable scheduler.
 
@@ -52,4 +53,3 @@ FIRECRAWL_API_KEY
 ## Cache Policy
 
 Normalized JSON cache/state can be committed when reasonably sized. Large raw history archives should be stored in GitHub Releases, external storage, or Git LFS.
-
