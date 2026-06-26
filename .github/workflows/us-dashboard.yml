@@ -46,8 +46,8 @@ jobs:
       - name: Load bundled Aurora secrets
         env:
           AURORAKEYS: ${{ secrets.AURORAKEYS }}
-          EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN }}
-          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
+          EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN || secrets.EODHD_API_KEY }}
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY || secrets.EODHD_API_TOKEN }}
           SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
@@ -146,6 +146,8 @@ jobs:
       - name: Diagnose Aurora secret routing
         env:
           AURORAKEYS: ${{ secrets.AURORAKEYS }}
+          EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN || secrets.EODHD_API_KEY }}
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY || secrets.EODHD_API_TOKEN }}
         run: |
           node --input-type=module <<'NODE'
           import fs from "node:fs";
@@ -161,6 +163,8 @@ jobs:
         if: github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1'
         env:
           AURORAKEYS: ${{ secrets.AURORAKEYS }}
+          EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN || secrets.EODHD_API_KEY }}
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY || secrets.EODHD_API_TOKEN }}
         run: |
           cd markets/us/dashboard
           node scripts/refresh-or-repair-us-data.mjs

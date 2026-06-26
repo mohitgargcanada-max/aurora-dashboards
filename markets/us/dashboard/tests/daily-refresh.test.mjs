@@ -225,4 +225,57 @@ assert(!JSON.stringify(fallbackReport).includes("secret-token"));
 assert(!JSON.stringify(JSON.parse(await readFile(fallbackReportPath, "utf8"))).includes("api_token"));
 
 await rm(fallbackDirectory, { recursive: true, force: true });
+
+const auroraKeysDirectory = await mkdtemp(join(tmpdir(), "aurora-refresh-aurorakeys-"));
+const auroraKeysReportPath = join(auroraKeysDirectory, "report.json");
+await saveSymbol(auroraKeysDirectory, {
+  schema_version: "2.0",
+  market: "US",
+  symbol: "MSFT",
+  currency: "USD",
+  interval: "1d",
+  provider: "STOOQ",
+  endpoint: "d_us_txt.zip",
+  adjustment_status: "STOOQ_ADJUSTED_OHLC",
+  delayed_or_live: "EOD",
+  fallback_label: "FREE_PRIMARY",
+  data_as_of: "2026-06-22",
+  bars: [
+    { date: "2026-06-22", open: 19, high: 20, low: 18, close: 19.5, adjusted_close: 19.5, volume: 1900 }
+  ]
+});
+const previousToken = process.env.EODHD_API_TOKEN;
+const previousKey = process.env.EODHD_API_KEY;
+const previousAuroraKeys = process.env.AURORAKEYS;
+delete process.env.EODHD_API_TOKEN;
+delete process.env.EODHD_API_KEY;
+process.env.AURORAKEYS = "SEC_USER_AGENT=agent\nEODHD_API_TOKEN=aurora-token\n";
+const auroraKeysFetcher = async url => {
+  if (url.includes("stooq.pl")) return new Response("blocked", { status: 403 });
+  if (url.includes("query1.finance.yahoo.com")) return new Response("blocked", { status: 403 });
+  assert(url.includes("api_token=aurora-token"));
+  return new Response(
+    JSON.stringify([{ code: "MSFT.US", date: "2026-06-23", open: 20, high: 22, low: 19, close: 21, adjusted_close: 21, volume: 2000 }]),
+    { status: 200, headers: { "content-type": "application/json" } }
+  );
+};
+const auroraKeysReport = await refreshDailyBars({
+  cacheRoot: auroraKeysDirectory,
+  reportPath: auroraKeysReportPath,
+  chunkSize: 10,
+  fetcher: auroraKeysFetcher,
+  now: new Date("2026-06-24T13:00:00Z")
+});
+assert.equal(auroraKeysReport.provider_counts.EODHD, 1);
+assert(!JSON.stringify(auroraKeysReport.warnings).includes("EODHD_TOKEN_MISSING"));
+assert(!JSON.stringify(auroraKeysReport).includes("aurora-token"));
+assert(!JSON.stringify(JSON.parse(await readFile(auroraKeysReportPath, "utf8"))).includes("aurora-token"));
+if (previousToken === undefined) delete process.env.EODHD_API_TOKEN;
+else process.env.EODHD_API_TOKEN = previousToken;
+if (previousKey === undefined) delete process.env.EODHD_API_KEY;
+else process.env.EODHD_API_KEY = previousKey;
+if (previousAuroraKeys === undefined) delete process.env.AURORAKEYS;
+else process.env.AURORAKEYS = previousAuroraKeys;
+
+await rm(auroraKeysDirectory, { recursive: true, force: true });
 console.log("Daily refresh contract tests passed");

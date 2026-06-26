@@ -69,7 +69,7 @@ function flattenObject(value, prefix = "", out = {}) {
   return out;
 }
 
-export function parseBundledAuroraKeys(raw = process.env.AURORAKEYS) {
+export function parseAuroraKeys(raw = process.env.AURORAKEYS) {
   const text = String(raw || "").trim();
   if (!text) return {};
   try {
@@ -98,10 +98,15 @@ export function parseBundledAuroraKeys(raw = process.env.AURORAKEYS) {
 }
 
 export function resolveEodhdToken(env = process.env) {
-  const bundled = parseBundledAuroraKeys(env.AURORAKEYS);
-  const merged = { ...bundled, ...env };
-  for (const [key, value] of Object.entries(merged)) {
+  if (env.EODHD_API_TOKEN) return String(env.EODHD_API_TOKEN);
+  if (env.EODHD_API_KEY) return String(env.EODHD_API_KEY);
+  const bundled = parseAuroraKeys(env.AURORAKEYS);
+  if (bundled.EODHD_API_TOKEN) return String(bundled.EODHD_API_TOKEN);
+  if (bundled.EODHD_API_KEY) return String(bundled.EODHD_API_KEY);
+  for (const [key, value] of Object.entries(bundled)) {
     if (value && isCredentialKey(key)) return String(value);
   }
   return null;
 }
+
+export const parseBundledAuroraKeys = parseAuroraKeys;
