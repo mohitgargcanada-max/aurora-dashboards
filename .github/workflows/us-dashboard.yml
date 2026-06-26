@@ -55,16 +55,29 @@ jobs:
           node <<'NODE'
           const fs = require("fs");
           const allowed = new Set(["EODHD_API_TOKEN", "EODHD_API_KEY", "SEC_USER_AGENT", "TAVILY_API_KEY", "FIRECRAWL_API_KEY"]);
+          const eodhdAliases = ["EODHD_API_TOKEN", "EODHD_API_KEY", "EODHD_TOKEN", "EODHD_KEY", "EODHD", "EODHD_TOKEN_VALUE", "EODHD_APIKEY", "EODHDAPIKEY", "EODHDTOKEN"].map(normalizeKey);
+          function normalizeKey(key) {
+            return String(key || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+          }
+          function flatten(value, prefix = "", out = {}) {
+            if (!value || typeof value !== "object" || Array.isArray(value)) return out;
+            for (const [key, item] of Object.entries(value)) {
+              const path = prefix ? `${prefix}_${key}` : key;
+              if (item && typeof item === "object" && !Array.isArray(item)) flatten(item, path, out);
+              else out[path] = item;
+            }
+            return out;
+          }
           function parse(raw) {
             const text = String(raw || "").trim();
             if (!text) return {};
             try {
               const json = JSON.parse(text);
-              return json && typeof json === "object" && !Array.isArray(json) ? json : {};
+              return json && typeof json === "object" && !Array.isArray(json) ? flatten(json) : {};
             } catch {}
             const out = {};
             for (const line of text.split(/\r?\n/)) {
-              const trimmed = line.trim();
+              const trimmed = line.trim().replace(/^export\s+/i, "");
               if (!trimmed || trimmed.startsWith("#")) continue;
               const index = trimmed.indexOf("=");
               if (index <= 0) continue;
@@ -82,8 +95,14 @@ jobs:
           if (process.env.SEC_USER_AGENT) values.SEC_USER_AGENT = process.env.SEC_USER_AGENT;
           if (process.env.TAVILY_API_KEY) values.TAVILY_API_KEY = process.env.TAVILY_API_KEY;
           if (process.env.FIRECRAWL_API_KEY) values.FIRECRAWL_API_KEY = process.env.FIRECRAWL_API_KEY;
-          if (!values.EODHD_API_TOKEN && values.EODHD_API_KEY) values.EODHD_API_TOKEN = values.EODHD_API_KEY;
-          if (!values.EODHD_API_KEY && values.EODHD_API_TOKEN) values.EODHD_API_KEY = values.EODHD_API_TOKEN;
+          const eodhdEntry = Object.entries(values).find(([key, value]) => {
+            const normalized = normalizeKey(key);
+            return value && eodhdAliases.some(alias => normalized === alias || normalized.endsWith(alias));
+          });
+          if (eodhdEntry) {
+            values.EODHD_API_TOKEN ||= eodhdEntry[1];
+            values.EODHD_API_KEY ||= eodhdEntry[1];
+          }
           const delimiter = `AURORA_${Date.now()}_${Math.random().toString(36).slice(2)}`;
           const lines = [];
           for (const [key, value] of Object.entries(values)) {
