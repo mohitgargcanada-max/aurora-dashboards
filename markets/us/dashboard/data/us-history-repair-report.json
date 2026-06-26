@@ -5,17 +5,17 @@
     "STOOQ",
     "EODHD"
   ],
-  "retrieved_at": "2026-06-26T15:26:55.686Z",
+  "retrieved_at": "2026-06-26T17:13:58.503Z",
   "from": "2021-06-25",
   "expected_completed_session": "2026-06-25",
   "latest_data_as_of": "2026-06-25",
   "retain_bars": 1300,
   "symbols_requested": 11952,
-  "refreshed": 3129,
-  "skipped_current": 6563,
+  "refreshed": 2348,
+  "skipped_current": 7344,
   "failed": 2260,
   "provider_counts": {
-    "YAHOO_FINANCE": 3129
+    "YAHOO_FINANCE": 2348
   },
   "fallback_label": "YAHOO_FALLBACK",
   "warnings": [

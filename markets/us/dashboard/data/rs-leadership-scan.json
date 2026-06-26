@@ -1,12 +1,16 @@
 {
-  "generated_at": "2026-06-26T15:27:25.166Z",
+  "generated_at": "2026-06-26T17:14:28.403Z",
   "data_as_of": "2026-06-25",
   "benchmark": "SPY",
-  "provider": "STOOQ",
-  "endpoint": "d_us_txt.zip/local-cache",
-  "adjustment_status": "STOOQ_ADJUSTED_OHLC",
+  "provider": "YAHOO_FINANCE",
+  "provider_counts": {
+    "YAHOO_FINANCE": 2181
+  },
+  "endpoint": "https://query1.finance.yahoo.com/v8/finance/chart/SPY",
+  "adjustment_status": "YAHOO_FINANCE_ADJUSTED_OHLC",
   "currency": "USD",
-  "fallback_label": "FREE_PRIMARY",
+  "fallback_label": "YAHOO_FALLBACK",
+  "provenance_note": "Aggregate provider reflects cache records used by the benchmark and eligible RSLE histories. Symbol-level provider fields are preserved.",
   "universe_input_count": 6350,
   "liquid_universe_count": 2180,
   "liquidity_min_usd": 20000000,
