@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-26T21:25:33.718Z",
+  "generated_at": "2026-06-26T21:39:35.458Z",
   "daily_refresh": {
     "status": "DATA_REFRESH_BLOCKED",
     "route_order": [
@@ -9,7 +9,7 @@
     ],
     "provider_counts": {},
     "fallback_label": "NOT_AVAILABLE",
-    "retrieved_at": "2026-06-26T21:26:24.851Z",
+    "retrieved_at": "2026-06-26T21:41:02.831Z",
     "expected_completed_session": "2026-06-25",
     "latest_data_as_of": null,
     "symbols_requested": 2260,
@@ -700,7 +700,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "ABR-F"
+          "ABNY"
         ],
         "warning": "fetch failed",
         "offset": 0
@@ -709,7 +709,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "ABR-E"
+          "ABR-D"
         ],
         "warning": "fetch failed",
         "offset": 0
@@ -727,7 +727,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "ABVWF"
+          "ACAAU"
         ],
         "warning": "fetch failed",
         "offset": 0
@@ -736,7 +736,16 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "ACAAU"
+          "ACGCU"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "ACEI"
         ],
         "warning": "fetch failed",
         "offset": 0
@@ -763,6 +772,15 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
+          "ABVWF"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
           "ACEP"
         ],
         "warning": "fetch failed",
@@ -772,34 +790,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "ACEI"
-        ],
-        "warning": "fetch failed",
-        "offset": 0
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "ACGCU"
-        ],
-        "warning": "fetch failed",
-        "offset": 0
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "ACHR-WS"
-        ],
-        "warning": "fetch failed",
-        "offset": 0
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "ACII"
+          "ACR-C"
         ],
         "warning": "fetch failed",
         "offset": 0
@@ -826,6 +817,15 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
+          "ACII"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
           "ACP-A"
         ],
         "warning": "fetch failed",
@@ -835,16 +835,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "ACR-C"
-        ],
-        "warning": "fetch failed",
-        "offset": 0
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "ACR-D"
+          "ACHR-WS"
         ],
         "warning": "fetch failed",
         "offset": 0
@@ -862,7 +853,25 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "ACYS"
+          "ACR-D"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "ADAMH"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "ADACW"
         ],
         "warning": "fetch failed",
         "offset": 0
@@ -889,34 +898,16 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
+          "ACYS"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
           "ADAC"
-        ],
-        "warning": "fetch failed",
-        "offset": 0
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "ADAMO"
-        ],
-        "warning": "fetch failed",
-        "offset": 0
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "ADBU"
-        ],
-        "warning": "fetch failed",
-        "offset": 0
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "AEAQ"
         ],
         "warning": "fetch failed",
         "offset": 0
@@ -934,33 +925,6 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "AEBI"
-        ],
-        "warning": "fetch failed",
-        "offset": 0
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "AEAQW"
-        ],
-        "warning": "fetch failed",
-        "offset": 0
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "AENTW"
-        ],
-        "warning": "fetch failed",
-        "offset": 0
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
           "AERTW"
         ],
         "warning": "fetch failed",
@@ -970,7 +934,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "AFOS"
+          "AEXA"
         ],
         "warning": "fetch failed",
         "offset": 0
@@ -988,6 +952,114 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
+          "ADBU"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "ADC-A"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AEBI"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AERO"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AENTW"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "ADAMO"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AEAQ"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "ADSEW"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AEAQW"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AFOS"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AGM-G"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AGCC"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
           "AFRIW"
         ],
         "warning": "fetch failed",
@@ -997,7 +1069,88 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "AGBK"
+          "AGM-F"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AHL-E"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AGNCZ"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AGMB"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AGM-I"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AGRZ"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AHT-D"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AHT-F"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AGIQ"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AHL-F"
         ],
         "warning": "fetch failed",
         "offset": 0
@@ -1021,149 +1174,703 @@
         "offset": 0
       },
       {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AHL-D"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AHMA"
+        ],
+        "warning": "fetch failed",
+        "offset": 0
+      },
+      {
         "provider": "STOOQ",
-        "symbols": 75,
-        "sample": [
-          "AHT-G",
-          "AHT-H",
-          "AHT-I",
-          "AIAI",
-          "AIB"
-        ],
-        "warning": "fetch failed",
-        "offset": 75
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "AIAI"
-        ],
-        "warning": "fetch failed",
-        "offset": 75
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "AIB"
-        ],
-        "warning": "fetch failed",
-        "offset": 75
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "AIIR"
-        ],
-        "warning": "fetch failed",
-        "offset": 75
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "AHT-H"
-        ],
-        "warning": "fetch failed",
-        "offset": 75
-      },
-      {
-        "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
           "AHT-G"
         ],
-        "warning": "fetch failed",
+        "warning": "STOOQ_HTTP_404",
         "offset": 75
       },
       {
-        "provider": "STOOQ_HISTORY",
+        "provider": "STOOQ",
         "symbols": 1,
         "sample": [
-          "AIIOW"
+          "AHT-H"
         ],
-        "warning": "fetch failed",
+        "warning": "STOOQ_HTTP_404",
         "offset": 75
       },
       {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "AIBZ"
-        ],
-        "warning": "fetch failed",
-        "offset": 75
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "AIIA"
-        ],
-        "warning": "fetch failed",
-        "offset": 75
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "AIDX"
-        ],
-        "warning": "fetch failed",
-        "offset": 75
-      },
-      {
-        "provider": "STOOQ_HISTORY",
+        "provider": "STOOQ",
         "symbols": 1,
         "sample": [
           "AHT-I"
         ],
-        "warning": "fetch failed",
+        "warning": "STOOQ_HTTP_404",
         "offset": 75
       },
       {
-        "provider": "STOOQ_HISTORY",
+        "provider": "STOOQ",
         "symbols": 1,
         "sample": [
-          "AINT"
+          "AIAI"
         ],
-        "warning": "fetch failed",
+        "warning": "STOOQ_HTTP_404",
         "offset": 75
       },
       {
-        "provider": "STOOQ_HISTORY",
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AIB"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AIBZ"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AIDX"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AIIA"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AIIOW"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AIIR"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
         "symbols": 1,
         "sample": [
           "AIMS"
         ],
-        "warning": "fetch failed",
+        "warning": "STOOQ_HTTP_404",
         "offset": 75
       },
       {
-        "provider": "STOOQ_HISTORY",
+        "provider": "STOOQ",
         "symbols": 1,
         "sample": [
-          "AIRJW"
+          "AINT"
         ],
-        "warning": "fetch failed",
+        "warning": "STOOQ_HTTP_404",
         "offset": 75
       },
       {
-        "provider": "STOOQ_HISTORY",
+        "provider": "STOOQ",
         "symbols": 1,
         "sample": [
           "AIPO"
         ],
-        "warning": "fetch failed",
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AIRJW"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AISPW"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AIUP"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AKRE"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AKTS"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALB-A"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALBG"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALCY"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALCYW"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALDB"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALDFW"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALFUW"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALH"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALIS"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALISR"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALISU"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALL-B"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALL-H"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALL-I"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALL-J"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALMR"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALOVU"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALOVW"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALPS"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALRG"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALTG-A"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALUB"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ALVOW"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AMA"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AMAN"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AMAU"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AMBQ"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AMH-G"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AMH-H"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AMKL"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AMODW"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AMPGR"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AMPGZ"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AMPU"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AMPX-WS"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AMSS"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AMUN"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AMYY"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AMZO"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ANDG"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ANEL"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ANG-D"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ANGHW"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ANGX"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ANNAW"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ANPA"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ANSCW"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "ANV"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "AOTS"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "APAC"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "APACU"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "APADR"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "APADU"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "APC"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "APHU"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "APLX"
+        ],
+        "warning": "STOOQ_HTTP_404",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ",
+        "symbols": 1,
+        "sample": [
+          "APLZ"
+        ],
+        "warning": "STOOQ_HTTP_404",
         "offset": 75
       },
       {
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "AISPW"
+          "ALDB"
         ],
         "warning": "fetch failed",
         "offset": 75
@@ -1172,7 +1879,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "AIUP"
+          "ALISR"
         ],
         "warning": "fetch failed",
         "offset": 75
@@ -1190,7 +1897,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "ALUB"
+          "ALIS"
         ],
         "warning": "fetch failed",
         "offset": 75
@@ -1199,7 +1906,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "ALB-A"
+          "ALBG"
         ],
         "warning": "fetch failed",
         "offset": 75
@@ -1208,7 +1915,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "AKRE"
+          "ALL-J"
         ],
         "warning": "fetch failed",
         "offset": 75
@@ -1217,7 +1924,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "AMA"
+          "ALDFW"
         ],
         "warning": "fetch failed",
         "offset": 75
@@ -1226,7 +1933,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "ALVOW"
+          "ALL-H"
         ],
         "warning": "fetch failed",
         "offset": 75
@@ -1235,7 +1942,34 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "AMAU"
+          "ALISU"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "ALFUW"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "ALL-B"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "ALH"
         ],
         "warning": "fetch failed",
         "offset": 75
@@ -1253,7 +1987,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "AMH-G"
+          "ALL-I"
         ],
         "warning": "fetch failed",
         "offset": 75
@@ -1262,7 +1996,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "AMAN"
+          "ALCYW"
         ],
         "warning": "fetch failed",
         "offset": 75
@@ -1271,79 +2005,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "AMKL"
-        ],
-        "warning": "fetch failed",
-        "offset": 75
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "AMODW"
-        ],
-        "warning": "fetch failed",
-        "offset": 75
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "AMH-H"
-        ],
-        "warning": "fetch failed",
-        "offset": 75
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "AMPGR"
-        ],
-        "warning": "fetch failed",
-        "offset": 75
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "AMPGZ"
-        ],
-        "warning": "fetch failed",
-        "offset": 75
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "AMPU"
-        ],
-        "warning": "fetch failed",
-        "offset": 75
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "AMSS"
-        ],
-        "warning": "fetch failed",
-        "offset": 75
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "AMYY"
-        ],
-        "warning": "fetch failed",
-        "offset": 75
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "AMPX-WS"
+          "ALOVW"
         ],
         "warning": "fetch failed",
         "offset": 75
@@ -1361,7 +2023,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "ANEL"
+          "AMPGR"
         ],
         "warning": "fetch failed",
         "offset": 75
@@ -1370,34 +2032,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "ANDG"
-        ],
-        "warning": "fetch failed",
-        "offset": 75
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "ANG-D"
-        ],
-        "warning": "fetch failed",
-        "offset": 75
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "ANPA"
-        ],
-        "warning": "fetch failed",
-        "offset": 75
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "ANGHW"
+          "ALPS"
         ],
         "warning": "fetch failed",
         "offset": 75
@@ -1415,7 +2050,106 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "ANGX"
+          "AMAU"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "ALUB"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "ALRG"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AMPU"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AMA"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AMYY"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "ALVOW"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "ALOVU"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AMH-H"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "ANGHW"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "ALMR"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "ALTG-A"
         ],
         "warning": "fetch failed",
         "offset": 75
@@ -1433,7 +2167,97 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "ANSCW"
+          "ANDG"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "ANGX"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AMAN"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AMH-G"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "ANPA"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AMPX-WS"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AMPGZ"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "ANG-D"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AMODW"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AMKL"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AMSS"
         ],
         "warning": "fetch failed",
         "offset": 75
@@ -1443,6 +2267,15 @@
         "symbols": 1,
         "sample": [
           "APAC"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "APACU"
         ],
         "warning": "fetch failed",
         "offset": 75
@@ -1469,7 +2302,16 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "APACU"
+          "ANEL"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "ANSCW"
         ],
         "warning": "fetch failed",
         "offset": 75
@@ -1479,15 +2321,6 @@
         "symbols": 1,
         "sample": [
           "APADR"
-        ],
-        "warning": "fetch failed",
-        "offset": 75
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "APC"
         ],
         "warning": "fetch failed",
         "offset": 75
@@ -1514,7 +2347,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "APLX"
+          "APC"
         ],
         "warning": "fetch failed",
         "offset": 75
@@ -1524,6 +2357,15 @@
         "symbols": 1,
         "sample": [
           "APLZ"
+        ],
+        "warning": "fetch failed",
+        "offset": 75
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "APLX"
         ],
         "warning": "fetch failed",
         "offset": 75
@@ -2207,16 +3049,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "ASB-E"
-        ],
-        "warning": "fetch failed",
-        "offset": 150
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "ARXS"
+          "ARQQW"
         ],
         "warning": "fetch failed",
         "offset": 150
@@ -2226,51 +3059,6 @@
         "symbols": 1,
         "sample": [
           "ARWG"
-        ],
-        "warning": "fetch failed",
-        "offset": 150
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "ARX"
-        ],
-        "warning": "fetch failed",
-        "offset": 150
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "ASBPW"
-        ],
-        "warning": "fetch failed",
-        "offset": 150
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "ASCI"
-        ],
-        "warning": "fetch failed",
-        "offset": 150
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "ASB-F"
-        ],
-        "warning": "fetch failed",
-        "offset": 150
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "ASCE"
         ],
         "warning": "fetch failed",
         "offset": 150
@@ -2297,7 +3085,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "ASMU"
+          "ARXS"
         ],
         "warning": "fetch failed",
         "offset": 150
@@ -2306,7 +3094,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "ASPSW"
+          "ASBPW"
         ],
         "warning": "fetch failed",
         "offset": 150
@@ -2315,7 +3103,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "ASPSZ"
+          "ARMY"
         ],
         "warning": "fetch failed",
         "offset": 150
@@ -2324,34 +3112,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "ASRT"
-        ],
-        "warning": "fetch failed",
-        "offset": 150
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "ASTLW"
-        ],
-        "warning": "fetch failed",
-        "offset": 150
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "ASTN"
-        ],
-        "warning": "fetch failed",
-        "offset": 150
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "ATCL"
+          "ASCE"
         ],
         "warning": "fetch failed",
         "offset": 150
@@ -2369,7 +3130,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "ATH-A"
+          "ASB-E"
         ],
         "warning": "fetch failed",
         "offset": 150
@@ -2378,7 +3139,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "ATH-B"
+          "ASPSZ"
         ],
         "warning": "fetch failed",
         "offset": 150
@@ -2388,15 +3149,6 @@
         "symbols": 1,
         "sample": [
           "ATH-D"
-        ],
-        "warning": "fetch failed",
-        "offset": 150
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "ATH-E"
         ],
         "warning": "fetch failed",
         "offset": 150
@@ -2423,7 +3175,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "AUGO"
+          "ATH-A"
         ],
         "warning": "fetch failed",
         "offset": 150
@@ -2432,7 +3184,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "AUB-A"
+          "ASTN"
         ],
         "warning": "fetch failed",
         "offset": 150
@@ -2441,7 +3193,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "AUSM"
+          "ASMU"
         ],
         "warning": "fetch failed",
         "offset": 150
@@ -2450,7 +3202,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "AUROW"
+          "ASCI"
         ],
         "warning": "fetch failed",
         "offset": 150
@@ -2459,7 +3211,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "AVBC"
+          "ATH-E"
         ],
         "warning": "fetch failed",
         "offset": 150
@@ -2468,7 +3220,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "AVEX"
+          "ASRT"
         ],
         "warning": "fetch failed",
         "offset": 150
@@ -2486,7 +3238,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "AVLN"
+          "ASTLW"
         ],
         "warning": "fetch failed",
         "offset": 150
@@ -2495,16 +3247,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "AVRY"
-        ],
-        "warning": "fetch failed",
-        "offset": 150
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "AVOS"
+          "AVBC"
         ],
         "warning": "fetch failed",
         "offset": 150
@@ -2540,24 +3283,6 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "AXIN"
-        ],
-        "warning": "fetch failed",
-        "offset": 150
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "AXS-E"
-        ],
-        "warning": "fetch failed",
-        "offset": 150
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
           "AXPG"
         ],
         "warning": "fetch failed",
@@ -2567,7 +3292,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "AXTU"
+          "AUROW"
         ],
         "warning": "fetch failed",
         "offset": 150
@@ -2576,7 +3301,25 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "AXTX"
+          "ASPSW"
+        ],
+        "warning": "fetch failed",
+        "offset": 150
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "ATCL"
+        ],
+        "warning": "fetch failed",
+        "offset": 150
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AVRY"
         ],
         "warning": "fetch failed",
         "offset": 150
@@ -2603,7 +3346,178 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
+          "ATH-B"
+        ],
+        "warning": "fetch failed",
+        "offset": 150
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AVOS"
+        ],
+        "warning": "fetch failed",
+        "offset": 150
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AVLN"
+        ],
+        "warning": "fetch failed",
+        "offset": 150
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AUGO"
+        ],
+        "warning": "fetch failed",
+        "offset": 150
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AXTX"
+        ],
+        "warning": "fetch failed",
+        "offset": 150
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AXTU"
+        ],
+        "warning": "fetch failed",
+        "offset": 150
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AXS-E"
+        ],
+        "warning": "fetch failed",
+        "offset": 150
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AUSM"
+        ],
+        "warning": "fetch failed",
+        "offset": 150
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AUB-A"
+        ],
+        "warning": "fetch failed",
+        "offset": 150
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AXIN"
+        ],
+        "warning": "fetch failed",
+        "offset": 150
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "AVEX"
+        ],
+        "warning": "fetch failed",
+        "offset": 150
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "BAC-B"
+        ],
+        "warning": "fetch failed",
+        "offset": 150
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "BAC-K"
+        ],
+        "warning": "fetch failed",
+        "offset": 150
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "BAC-Q"
+        ],
+        "warning": "fetch failed",
+        "offset": 150
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "BAC-S"
+        ],
+        "warning": "fetch failed",
+        "offset": 150
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
           "BA-A"
+        ],
+        "warning": "fetch failed",
+        "offset": 150
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "BAC-M"
+        ],
+        "warning": "fetch failed",
+        "offset": 150
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "BAC-L"
+        ],
+        "warning": "fetch failed",
+        "offset": 150
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "BAC-P"
+        ],
+        "warning": "fetch failed",
+        "offset": 150
+      },
+      {
+        "provider": "STOOQ_HISTORY",
+        "symbols": 1,
+        "sample": [
+          "BAC-N"
         ],
         "warning": "fetch failed",
         "offset": 150
@@ -2630,79 +3544,7 @@
         "provider": "STOOQ_HISTORY",
         "symbols": 1,
         "sample": [
-          "BAC-L"
-        ],
-        "warning": "fetch failed",
-        "offset": 150
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "BAC-K"
-        ],
-        "warning": "fetch failed",
-        "offset": 150
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "BAC-B"
-        ],
-        "warning": "fetch failed",
-        "offset": 150
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "BAC-M"
-        ],
-        "warning": "fetch failed",
-        "offset": 150
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "BAC-N"
-        ],
-        "warning": "fetch failed",
-        "offset": 150
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "BAC-P"
-        ],
-        "warning": "fetch failed",
-        "offset": 150
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "BAC-S"
-        ],
-        "warning": "fetch failed",
-        "offset": 150
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
           "BAC-O"
-        ],
-        "warning": "fetch failed",
-        "offset": 150
-      },
-      {
-        "provider": "STOOQ_HISTORY",
-        "symbols": 1,
-        "sample": [
-          "BAC-Q"
         ],
         "warning": "fetch failed",
         "offset": 150
@@ -2739,7 +3581,7 @@
       "STOOQ",
       "EODHD"
     ],
-    "retrieved_at": "2026-06-26T21:29:11.040Z",
+    "retrieved_at": "2026-06-26T21:43:32.701Z",
     "from": "2021-06-25",
     "expected_completed_session": "2026-06-25",
     "latest_data_as_of": "2026-06-25",
