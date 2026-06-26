@@ -95,6 +95,8 @@ jobs:
 
       - name: Run US dashboard
         if: github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1'
+        env:
+          AURORAKEYS: ${{ secrets.AURORAKEYS }}
         run: |
           cd markets/us/dashboard
           node scripts/refresh-or-repair-us-data.mjs
