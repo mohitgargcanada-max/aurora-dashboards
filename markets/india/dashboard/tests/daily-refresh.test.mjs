@@ -114,6 +114,7 @@ await assert.rejects(
     reportPath: blockedReportPath,
     lastGoodScanPath,
     expectedSession: "2026-06-23",
+    requiredSymbols: [],
     localSources: [],
     tryOfficialFetch: false,
     providerOrder: []
@@ -174,6 +175,7 @@ const fetchOnceReport = await refreshIndiaDailyBars({
   rawRoot: join(fetchOnceDir, "raw"),
   reportPath: join(fetchOnceDir, "report.json"),
   expectedSession: "2026-06-23",
+  requiredSymbols: [],
   localSources: [],
   tryOfficialFetch: false,
   providerOrder: ["YAHOO", "TAPETIDE"],
@@ -194,6 +196,37 @@ assert.equal(fetchOnceReport.provider, "YAHOO");
 assert.equal(fetchOnceReport.attempts.length, 1);
 assert.equal(fetchOnceCalls.length, 1);
 assert.equal((await loadSymbol(join(fetchOnceDir, "cache"), "NSE", "RELIANCE")).data_as_of, "2026-06-23");
+
+const cacheHitDir = await mkdtemp(join(tmpdir(), "aurora-india-cache-hit-"));
+await seedRecord(join(cacheHitDir, "cache"), { dataAsOf: "2026-06-23", provider: "NSE_OFFICIAL_FETCH" });
+await mkdir(join(cacheHitDir, "data"), { recursive: true });
+await writeFile(join(cacheHitDir, "data", "india-full-dashboard-scan.json"), JSON.stringify({
+  data_as_of: "2026-06-23",
+  daily_top_1_4: [{ symbol: "RELIANCE" }]
+}), "utf8");
+await writeFile(join(cacheHitDir, "report.json"), JSON.stringify({
+  status: "UPDATED",
+  expected_completed_session: "2026-06-23",
+  latest_data_as_of: "2026-06-23"
+}), "utf8");
+const cacheHitReport = await refreshIndiaDailyBars({
+  cacheRoot: join(cacheHitDir, "cache"),
+  rawRoot: join(cacheHitDir, "raw"),
+  reportPath: join(cacheHitDir, "report.json"),
+  lastGoodScanPath: join(cacheHitDir, "data", "india-full-dashboard-scan.json"),
+  expectedSession: "2026-06-23",
+  requiredSymbols: ["RELIANCE"],
+  localSources: [],
+  tryOfficialFetch: true,
+  providerOrder: ["YAHOO"],
+  fetcher: async () => {
+    throw new Error("FETCHER_SHOULD_NOT_BE_CALLED_WHEN_CACHE_IS_SAME_DATE");
+  }
+});
+assert.equal(cacheHitReport.provider, "CACHE");
+assert.equal(cacheHitReport.same_date_cache, true);
+assert.equal(cacheHitReport.coverage.required_fresh_symbols, 1);
+assert.equal(cacheHitReport.coverage.required_stale_symbols.length, 0);
 
 const prefetchDir = await mkdtemp(join(tmpdir(), "aurora-india-prefetch-"));
 await seedRecord(join(prefetchDir, "cache"), { provider: "TAPETIDE_DAILY" });
@@ -344,12 +377,23 @@ assert.equal(refreshedIndex.provider, "NSE_OFFICIAL_INDEX_ARCHIVE");
 assert.equal(refreshedIndex.data_as_of, "2026-06-23");
 assert.equal(refreshedHealthcareIndex.provider, "NSE_OFFICIAL_INDEX_ARCHIVE");
 assert.equal(refreshedHealthcareIndex.data_as_of, "2026-06-23");
+const cachedIndexReport = await refreshIndiaIndexCache({
+  indexRoot,
+  expectedSession: "2026-06-23",
+  fetcher: async () => {
+    throw new Error("INDEX_FETCHER_SHOULD_NOT_BE_CALLED_WHEN_CACHE_IS_SAME_DATE");
+  }
+});
+assert.equal(cachedIndexReport.provider, "CACHE");
+assert.equal(cachedIndexReport.same_date_cache, true);
+assert.equal(cachedIndexReport.updated, 0);
 
 await rm(directory, { recursive: true, force: true });
 await rm(invalidZipDir, { recursive: true, force: true });
 await rm(blockedDir, { recursive: true, force: true });
 await rm(yahooDir, { recursive: true, force: true });
 await rm(fetchOnceDir, { recursive: true, force: true });
+await rm(cacheHitDir, { recursive: true, force: true });
 await rm(prefetchDir, { recursive: true, force: true });
 await rm(tapetideDir, { recursive: true, force: true });
 await rm(eodhdDir, { recursive: true, force: true });

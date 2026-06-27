@@ -440,24 +440,54 @@ export async function appendOfficialSource({
   };
 }
 
-async function cacheCoverage(cacheRoot, expectedSession) {
+async function cacheCoverage(cacheRoot, expectedSession, requiredSymbols = new Set()) {
   const files = (await readdir(cacheRoot).catch(() => [])).filter(x => x.endsWith(".json"));
   let current = 0;
   let valid = 0;
+  const required = new Set([...requiredSymbols].map(normalizeSymbol).filter(Boolean));
+  const requiredState = new Map([...required].map(symbol => [symbol, {
+    records: 0,
+    current: 0,
+    valid: 0,
+    latest_data_as_of: null
+  }]));
   for (const file of files) {
     try {
       const record = JSON.parse(await readFile(resolve(cacheRoot, file), "utf8"));
+      const validation = validateSeries(record.bars, { minimumBars: Math.min(252, record.bars?.length || 0), expectedSession });
       if (record.data_as_of === expectedSession) current += 1;
-      if (validateSeries(record.bars, { minimumBars: Math.min(252, record.bars?.length || 0), expectedSession }).ok) valid += 1;
+      if (validation.ok) valid += 1;
+      const requiredRecord = isEquityRecord(record) ? requiredState.get(normalizeSymbol(record.symbol)) : null;
+      if (requiredRecord) {
+        requiredRecord.records += 1;
+        if (!requiredRecord.latest_data_as_of || String(record.data_as_of || "") > requiredRecord.latest_data_as_of) {
+          requiredRecord.latest_data_as_of = record.data_as_of || null;
+        }
+        if (record.data_as_of === expectedSession) requiredRecord.current += 1;
+        if (validation.ok) requiredRecord.valid += 1;
+      }
     } catch {
       // Audit separately reports malformed records.
     }
+  }
+  const requiredMissingSymbols = [];
+  const requiredStaleSymbols = [];
+  let requiredFreshSymbols = 0;
+  for (const [symbol, state] of requiredState) {
+    if (!state.records) requiredMissingSymbols.push(symbol);
+    else if (!state.valid) requiredStaleSymbols.push({ symbol, latest_data_as_of: state.latest_data_as_of, expected_session: expectedSession });
+    else requiredFreshSymbols += 1;
   }
   return {
     total_records: files.length,
     current_records: current,
     valid_current_records: valid,
-    current_coverage_pct: files.length ? Number((100 * current / files.length).toFixed(2)) : 0
+    current_coverage_pct: files.length ? Number((100 * current / files.length).toFixed(2)) : 0,
+    required_symbols: required.size,
+    required_fresh_symbols: requiredFreshSymbols,
+    required_missing_symbols: requiredMissingSymbols,
+    required_stale_symbols: requiredStaleSymbols,
+    required_freshness_coverage_pct: required.size ? Number((100 * requiredFreshSymbols / required.size).toFixed(2)) : null
   };
 }
 
@@ -849,6 +879,7 @@ export async function refreshIndiaIndexCache({
     retrieved_at: retrievedAt,
     expected_completed_session: expectedSession,
     latest_index_data_as_of: records.map(record => record.data_as_of).sort().at(-1) || null,
+    same_date_cache: records.length > 0 && records.every(record => record.data_as_of === expectedSession),
     requested: records.length,
     updated: 0,
     unchanged: records.filter(record => record.data_as_of === expectedSession).length,
@@ -907,6 +938,7 @@ export async function refreshIndiaIndexCache({
   const refreshedRecords = await cachedIndexRecords(indexRoot);
   report.latest_index_data_as_of = refreshedRecords.map(record => record.data_as_of).sort().at(-1) || null;
   report.unchanged = refreshedRecords.filter(record => record.data_as_of === expectedSession).length - report.updated;
+  report.same_date_cache = refreshedRecords.length > 0 && refreshedRecords.every(record => record.data_as_of === expectedSession);
   report.status = refreshedRecords.every(record => record.data_as_of === expectedSession)
     ? "UPDATED"
     : "INDEX_REFRESH_BLOCKED";
@@ -1023,6 +1055,7 @@ export async function refreshIndiaDailyBars({
     resolve(rawRoot, expectedSession)
   ],
   tryOfficialFetch = true,
+  requiredSymbols = null,
   providerOrder = (process.env.AURORA_INDIA_DAILY_PROVIDER_ORDER || "YAHOO,TAPETIDE")
     .split(",")
     .map(x => x.trim().toUpperCase())
@@ -1033,12 +1066,21 @@ export async function refreshIndiaDailyBars({
   const retrievedAt = new Date().toISOString();
   const attempts = [];
   const warnings = [];
-  const acceptable = async () => {
-    const coverage = await cacheCoverage(cacheRoot, expectedSession);
-    return { coverage, ok: coverage.valid_current_records > 0 && (coverage.current_records / Math.max(1, coverage.total_records)) >= minCurrentCoverage };
+  const requiredSymbolSet = requiredSymbols
+    ? new Set([...requiredSymbols].map(normalizeSymbol).filter(Boolean))
+    : await buildWeekdayPrioritySymbols({ scanPath: lastGoodScanPath, cacheRoot });
+  const previousReport = await readJsonOptional(reportPath, null);
+  const previousReportFresh = previousReport
+    && previousReport.status !== "DATA_REFRESH_BLOCKED"
+    && previousReport.expected_completed_session === expectedSession
+    && previousReport.latest_data_as_of === expectedSession;
+  const acceptable = async ({ requirePreviousFreshReport = false } = {}) => {
+    const coverage = await cacheCoverage(cacheRoot, expectedSession, requiredSymbolSet);
+    const coverageOk = coverage.valid_current_records > 0 && (coverage.current_records / Math.max(1, coverage.total_records)) >= minCurrentCoverage;
+    return { coverage, ok: coverageOk && (!requirePreviousFreshReport || previousReportFresh), previous_report_fresh: Boolean(previousReportFresh) };
   };
 
-  let state = await acceptable();
+  let state = await acceptable({ requirePreviousFreshReport: true });
   if (state.ok) {
     const report = {
       status: "ALREADY_CURRENT_OR_UNCHANGED",
@@ -1047,6 +1089,8 @@ export async function refreshIndiaDailyBars({
       retrieved_at: retrievedAt,
       expected_completed_session: expectedSession,
       latest_data_as_of: expectedSession,
+      same_date_cache: true,
+      previous_report_fresh: state.previous_report_fresh,
       fallback_label: "OFFICIAL_VERIFIED",
       fallback_reason: "CACHE_ALREADY_HAS_EXPECTED_COMPLETED_SESSION",
       coverage: state.coverage,
@@ -1071,6 +1115,7 @@ export async function refreshIndiaDailyBars({
           retrieved_at: retrievedAt,
           expected_completed_session: expectedSession,
           latest_data_as_of: expectedSession,
+          same_date_cache: true,
           fallback_label: "OFFICIAL_VERIFIED",
           fallback_reason: "LOCAL_OFFICIAL_DAILY_APPEND",
           coverage: state.coverage,
@@ -1100,6 +1145,7 @@ export async function refreshIndiaDailyBars({
           retrieved_at: retrievedAt,
           expected_completed_session: expectedSession,
           latest_data_as_of: expectedSession,
+          same_date_cache: true,
           fallback_label: "OFFICIAL_VERIFIED",
           fallback_reason: "OFFICIAL_NSE_FETCH_DAILY_APPEND",
           coverage: state.coverage,
@@ -1146,6 +1192,7 @@ export async function refreshIndiaDailyBars({
       retrieved_at: retrievedAt,
       expected_completed_session: expectedSession,
       latest_data_as_of: expectedSession,
+      same_date_cache: true,
       fallback_label: fallbackLabel(finalProvider),
       fallback_reason: providerAttempts.length > 1 ? "PROVIDER_REPAIR_CASCADE_DAILY_APPEND" : "PROVIDER_CONSISTENT_DAILY_APPEND",
       coverage: state.coverage,
@@ -1165,6 +1212,7 @@ export async function refreshIndiaDailyBars({
     retrieved_at: retrievedAt,
     expected_completed_session: expectedSession,
     latest_data_as_of: null,
+    same_date_cache: false,
     fallback_label: "NOT_AVAILABLE",
     fallback_reason: "NO_PROVIDER_REFRESHED_EXPECTED_COMPLETED_SESSION_WITH_VALID_PROVIDER_CONSISTENCY",
     coverage: state.coverage,
