@@ -27,6 +27,9 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Install India dashboard dependencies
+        run: npm ci --prefix markets/india/dashboard
+
       - name: Run India dashboard
         env:
           EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN }}
