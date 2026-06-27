@@ -5,18 +5,18 @@
     "STOOQ",
     "EODHD"
   ],
-  "retrieved_at": "2026-06-27T13:46:40.385Z",
+  "retrieved_at": "2026-06-27T21:13:29.683Z",
   "from": "2021-06-26",
   "expected_completed_session": "2026-06-26",
   "latest_data_as_of": "2026-06-26",
   "retain_bars": 1300,
   "symbols_requested": 11952,
-  "refreshed": 2460,
-  "skipped_current": 7429,
-  "failed": 2063,
+  "refreshed": 2459,
+  "skipped_current": 7431,
+  "failed": 2062,
   "provider_counts": {
-    "YAHOO_FINANCE": 2287,
-    "EODHD": 173
+    "YAHOO_FINANCE": 2329,
+    "EODHD": 130
   },
   "fallback_label": "EODHD_FALLBACK",
   "warnings": [
@@ -1996,18 +1996,6 @@
       "rows": 230
     },
     {
-      "symbol": "AMDY",
-      "provider": "YAHOO_FINANCE",
-      "warning": "OLDER_THAN_EXISTING_CACHE",
-      "rows": 694
-    },
-    {
-      "symbol": "AMDY",
-      "provider": "STOOQ",
-      "warning": "INSUFFICIENT_HISTORY",
-      "rows": 0
-    },
-    {
       "symbol": "AMH-G",
       "provider": "YAHOO_FINANCE",
       "warning": "HTTP_404"
@@ -2599,22 +2587,10 @@
       "rows": 4
     },
     {
-      "symbol": "AQLT",
-      "provider": "YAHOO_FINANCE",
-      "warning": "OLDER_THAN_EXISTING_CACHE",
-      "rows": 383
-    },
-    {
-      "symbol": "AQLT",
-      "provider": "STOOQ",
-      "warning": "INSUFFICIENT_HISTORY",
-      "rows": 0
-    },
-    {
       "symbol": "ARCI",
       "provider": "YAHOO_FINANCE",
       "warning": "INSUFFICIENT_HISTORY",
-      "rows": 71
+      "rows": 72
     },
     {
       "symbol": "ARCI",
@@ -2949,6 +2925,30 @@
       "provider": "STOOQ",
       "warning": "INSUFFICIENT_HISTORY",
       "rows": 0
+    },
+    {
+      "symbol": "ASCI",
+      "provider": "EODHD",
+      "warning": "INSUFFICIENT_HISTORY",
+      "rows": 172
+    },
+    {
+      "symbol": "ASGM",
+      "provider": "YAHOO_FINANCE",
+      "warning": "INSUFFICIENT_HISTORY",
+      "rows": 225
+    },
+    {
+      "symbol": "ASGM",
+      "provider": "STOOQ",
+      "warning": "INSUFFICIENT_HISTORY",
+      "rows": 0
+    },
+    {
+      "symbol": "ASGM",
+      "provider": "EODHD",
+      "warning": "INSUFFICIENT_HISTORY",
+      "rows": 206
     }
   ]
 }
