@@ -56,6 +56,7 @@ async function seedRecord(cacheRoot, {
 
 assert.equal(latestCompletedIndiaSession(new Date("2026-06-24T03:30:00Z")), "2026-06-23");
 assert.equal(latestCompletedIndiaSession(new Date("2026-06-22T03:00:00Z")), "2026-06-19");
+assert.equal(latestCompletedIndiaSession(new Date("2026-06-27T04:00:00Z")), "2026-06-25");
 
 const directory = await mkdtemp(join(tmpdir(), "aurora-india-refresh-"));
 const cacheRoot = join(directory, "cache");
