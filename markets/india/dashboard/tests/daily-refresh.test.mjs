@@ -305,6 +305,24 @@ await writeFile(join(indexRoot, "NIFTY500.json"), JSON.stringify({
   fallback_label: "EODHD_FALLBACK",
   bars: barsThrough("2026-06-22")
 }), "utf8");
+await writeFile(join(indexRoot, "NIFTYHEALTHCARE.json"), JSON.stringify({
+  schema_version: "3.0",
+  market: "INDIA",
+  asset_type: "INDEX",
+  exchange: "INDX",
+  symbol: "NIFTYHEALTHCARE",
+  name: "NIFTY HEALTHCARE",
+  currency: "INR",
+  interval: "1d",
+  provider: "EODHD",
+  endpoint: "seed",
+  retrieved_at: "2026-06-23T00:00:00.000Z",
+  data_as_of: "2026-06-22",
+  adjustment_status: "EODHD_ADJUSTED_CLOSE_PRESENT",
+  delayed_or_live: "EOD",
+  fallback_label: "EODHD_FALLBACK",
+  bars: barsThrough("2026-06-22")
+}), "utf8");
 const indexFetchCalls = [];
 const indexReport = await refreshIndiaIndexCache({
   indexRoot,
@@ -313,15 +331,19 @@ const indexReport = await refreshIndiaIndexCache({
     indexFetchCalls.push(url);
     assert.match(url, /ind_close_all_23062026\.csv/);
     return new Response(`Index Name,Index Date,Open Index Value,High Index Value,Low Index Value,Closing Index Value,Volume,Turnover (Rs. Cr.)
-Nifty 500,23-06-2026,25000,25100,24900,25050,123456,7890`, { status: 200 });
+Nifty 500,23-06-2026,25000,25100,24900,25050,123456,7890
+Nifty Healthcare Index,23-06-2026,15000,15100,14900,15050,123456,7890`, { status: 200 });
   }
 });
 const refreshedIndex = JSON.parse(await readFile(join(indexRoot, "NIFTY500.json"), "utf8"));
+const refreshedHealthcareIndex = JSON.parse(await readFile(join(indexRoot, "NIFTYHEALTHCARE.json"), "utf8"));
 assert.equal(indexReport.status, "UPDATED");
-assert.equal(indexReport.updated, 1);
+assert.equal(indexReport.updated, 2);
 assert.equal(indexFetchCalls.length, 1);
 assert.equal(refreshedIndex.provider, "NSE_OFFICIAL_INDEX_ARCHIVE");
 assert.equal(refreshedIndex.data_as_of, "2026-06-23");
+assert.equal(refreshedHealthcareIndex.provider, "NSE_OFFICIAL_INDEX_ARCHIVE");
+assert.equal(refreshedHealthcareIndex.data_as_of, "2026-06-23");
 
 await rm(directory, { recursive: true, force: true });
 await rm(invalidZipDir, { recursive: true, force: true });
