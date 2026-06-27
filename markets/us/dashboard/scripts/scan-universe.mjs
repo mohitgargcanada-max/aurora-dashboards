@@ -452,7 +452,8 @@ const state = {
     missing: ["official index membership", "issuer/SEC event verification", "PEAD/EP/HVE catalyst registry", "full fundamental enrichment", "exact GICS sub-industry for uncached names"]
   }
 };
-state.run.status = "PARTIAL_LOCKED_ENRICHMENT_REQUIRED";
+state.run.status = "CALCULATED_WITH_DECLARED_GAPS";
+state.run.enrichment_status = "LOCKED_ENRICHMENT_REQUIRED";
 state.run.daily_top_status = daily.length ? "CONDITIONAL_NOT_PROMOTED" : "NO_VALID_ENTRY";
 state.run.warning = "Universe-wide Stooq technical discovery completed. Weekly scores and Daily Top plans are provisional until official active-universe/membership, sector mapping, complete locked pattern certification, and event/fundamental enrichment finish.";
 for (const candidate of state.core) candidate.technical_strength_label = "NOT_CERTIFIED_PARTIAL";

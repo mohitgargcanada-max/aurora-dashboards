@@ -227,7 +227,9 @@ jobs:
           console.log(`- EODHD runtime resolved by scripts: \`${process.env.EODHD_RUNTIME_RESOLVED === "1" ? "YES" : "NO"}\``);
           for (const [label, report] of [["Daily", refresh], ["History", history], ["Wrapper", wrapper]]) {
             if (!report) continue;
-            console.log(`- ${label} status: \`${report.status || report.final_status || "UNKNOWN"}\``);
+            const status = report.effective_status || report.status || report.final_status || "UNKNOWN";
+            const suffix = report.non_fatal ? " (non-fatal fallback)" : "";
+            console.log(`- ${label} status: \`${status}${suffix}\``);
             console.log(`- ${label} latest data as of: \`${report.latest_data_as_of || "NONE"}\``);
             console.log(`- ${label} provider counts: \`${JSON.stringify(report.provider_counts || {})}\``);
             const grouped = warningSummary(report.warnings || report.history_repair?.warnings || report.daily_refresh?.warnings);
@@ -311,3 +313,15 @@ jobs:
         if: always() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Summarize GitHub Pages deployment
+        if: success() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
+        run: |
+          page_url='${{ steps.deployment.outputs.page_url }}'
+          page_url="${page_url%/}/"
+          {
+            echo ""
+            echo "### GitHub Pages"
+            echo "- Deployment URL: ${page_url}"
+            echo "- Dashboard URL: ${page_url}markets/us/AURORA_US_Dashboard.html"
+          } >> "$GITHUB_STEP_SUMMARY"

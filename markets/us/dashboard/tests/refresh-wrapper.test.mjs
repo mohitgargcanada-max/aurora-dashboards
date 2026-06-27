@@ -23,6 +23,8 @@ const summary = summarizeRefreshOrRepairResult({
 
 assert.equal(summary.status, "UPDATED");
 assert.equal(summary.final_status, "UPDATED");
+assert.equal(summary.daily_refresh.effective_status, "FALLBACK_HISTORY_REPAIR_CURRENT");
+assert.equal(summary.daily_refresh.non_fatal, true);
 assert.equal(summary.data_source, "history_repair");
 assert.equal(summary.expected_completed_session, "2026-06-25");
 assert.equal(summary.latest_data_as_of, "2026-06-25");

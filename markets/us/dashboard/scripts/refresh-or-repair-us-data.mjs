@@ -51,6 +51,18 @@ export function chooseDataSource(daily, history) {
   return isCurrent(daily) ? { label: "daily_refresh", report: daily } : { label: "history_repair", report: history };
 }
 
+export function markNonFatalDailyFallback(result) {
+  if (result?.daily_refresh?.status !== "DATA_REFRESH_BLOCKED" || !isCurrent(result.history_repair)) return result;
+  return {
+    ...result,
+    daily_refresh: {
+      ...result.daily_refresh,
+      effective_status: "FALLBACK_HISTORY_REPAIR_CURRENT",
+      non_fatal: true
+    }
+  };
+}
+
 function buildSkippedResult(previous, expectedSession, skipReason, generatedAt = new Date().toISOString(), extra = {}) {
   const fallbackReport = {
     status: previous?.status || previous?.final_status || "UPDATED",
@@ -109,12 +121,13 @@ export function buildMarketHolidayResult(previous, expectedSession, calendar, ge
 }
 
 export function summarizeRefreshOrRepairResult(result) {
-  const source = chooseDataSource(result.daily_refresh, result.history_repair);
+  const annotated = markNonFatalDailyFallback(result);
+  const source = chooseDataSource(annotated.daily_refresh, annotated.history_repair);
   return {
-    ...result,
-    status: result.final_status,
+    ...annotated,
+    status: annotated.final_status,
     data_source: source.label,
-    expected_completed_session: source.report?.expected_completed_session || result.daily_refresh?.expected_completed_session || result.history_repair?.expected_completed_session || null,
+    expected_completed_session: source.report?.expected_completed_session || annotated.daily_refresh?.expected_completed_session || annotated.history_repair?.expected_completed_session || null,
     latest_data_as_of: source.report?.latest_data_as_of || null,
     provider_counts: source.report?.provider_counts || {},
     fallback_label: source.report?.fallback_label || "NOT_AVAILABLE"
