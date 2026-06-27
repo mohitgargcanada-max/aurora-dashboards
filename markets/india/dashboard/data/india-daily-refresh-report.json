@@ -1,50 +1,18 @@
 {
-  "status": "UPDATED",
-  "provider": "NSE_OFFICIAL_FETCH",
-  "endpoint": "scripts/fetch-nse-session.sh",
-  "retrieved_at": "2026-06-27T12:53:48.498Z",
+  "status": "ALREADY_CURRENT_OR_UNCHANGED",
+  "provider": "CACHE",
+  "endpoint": "cache/india/ohlcv",
+  "retrieved_at": "2026-06-27T20:56:16.463Z",
   "expected_completed_session": "2026-06-25",
   "latest_data_as_of": "2026-06-25",
   "fallback_label": "OFFICIAL_VERIFIED",
-  "fallback_reason": "OFFICIAL_NSE_FETCH_DAILY_APPEND",
+  "fallback_reason": "CACHE_ALREADY_HAS_EXPECTED_COMPLETED_SESSION",
   "coverage": {
     "total_records": 8012,
     "current_records": 3425,
     "valid_current_records": 3425,
     "current_coverage_pct": 42.75
   },
-  "attempts": [
-    {
-      "provider": "NSE_OFFICIAL_FETCH",
-      "endpoint": "scripts/fetch-nse-session.sh",
-      "source_files": [
-        {
-          "file": "BhavCopy_NSE_CM_0_0_0_20260625_F_0000.csv.zip",
-          "sha256": "edc4cd4db5206ffe3e1969c8effd1bff9b25d5f4c6854143bc69c8fa0bcb758a",
-          "bytes": 192413,
-          "accepted_rows": 3428
-        },
-        {
-          "file": "EQ_ISINCODE_250626.zip",
-          "sha256": "0176fbe9151bb1d12bf9a764f70f749f5ccfbe2844be1f7cef91d7104a48283e",
-          "bytes": 12565,
-          "accepted_rows": 0,
-          "warning": "INVALID_ZIP_SKIPPED"
-        },
-        {
-          "file": "sec_bhavdata_full_25062026.csv",
-          "sha256": "79184636d7a73093a3bbeb6114b894641687bc814c75da27e9077c79f526c426",
-          "bytes": 370291,
-          "accepted_rows": 3261
-        }
-      ],
-      "inserted": 3425,
-      "corrected": 0,
-      "unchanged": 0,
-      "invalid": 0,
-      "rejected_rows": 0,
-      "symbols_touched": 3425
-    }
-  ],
+  "attempts": [],
   "warnings": []
 }
