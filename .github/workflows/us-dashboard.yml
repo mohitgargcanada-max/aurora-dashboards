@@ -221,7 +221,6 @@ jobs:
           console.log("");
           console.log("### Data Provenance");
           console.log(`- AURORAKEYS secret present: \`${process.env.AURORAKEYS_PRESENT === "1" ? "YES" : "NO"}\``);
-          console.log(`- EODHD secret resolved by loader: \`${process.env.EODHD_SECRET_RESOLVED === "1" ? "YES" : "NO"}\``);
           console.log(`- EODHD runtime resolved by scripts: \`${process.env.EODHD_RUNTIME_RESOLVED === "1" ? "YES" : "NO"}\``);
           for (const [label, report] of [["Daily", refresh], ["History", history], ["Wrapper", wrapper]]) {
             if (!report) continue;
@@ -248,21 +247,23 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add markets/us/dashboard/data markets/us/dashboard/cache markets/us/AURORA_US_Dashboard.html
-          if ! git diff --cached --quiet; then
+          for attempt in 1 2 3 4; do
+            git fetch origin "${GITHUB_REF_NAME}"
+            git reset --mixed "origin/${GITHUB_REF_NAME}"
+            git add markets/us/dashboard/data markets/us/dashboard/cache markets/us/AURORA_US_Dashboard.html
+            if git diff --cached --quiet; then
+              echo "No US dashboard changes to commit."
+              exit 0
+            fi
             git commit -m "Update AURORA US dashboard"
-            for attempt in 1 2 3; do
-              if git push; then
-                exit 0
-              fi
-              echo "US output push rejected; rebasing on origin/${GITHUB_REF_NAME} and retrying (${attempt}/3)." >&2
-              git fetch origin "${GITHUB_REF_NAME}"
-              git rebase "origin/${GITHUB_REF_NAME}"
-            done
-            git push
-          else
-            echo "No US dashboard changes to commit."
-          fi
+            if git push; then
+              exit 0
+            fi
+            if [ "$attempt" = "4" ]; then
+              exit 1
+            fi
+            echo "US output push rejected; refreshing origin/${GITHUB_REF_NAME} and retrying (${attempt}/4)." >&2
+          done
 
       - name: Prepare GitHub Pages artifact
         if: success() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
