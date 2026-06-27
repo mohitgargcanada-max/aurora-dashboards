@@ -1,5 +1,8 @@
 {
-  "generated_at": "2026-06-27T07:50:52.433Z",
+  "generated_at": "2026-06-27T12:44:04.016Z",
+  "skipped": true,
+  "skip_reason": "LOCAL_DATA_ALREADY_CURRENT",
+  "previous_generated_at": "2026-06-27T07:50:52.433Z",
   "daily_refresh": {
     "status": "DATA_REFRESH_BLOCKED",
     "route_order": [
