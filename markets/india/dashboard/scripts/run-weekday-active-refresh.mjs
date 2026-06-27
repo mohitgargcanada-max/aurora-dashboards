@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { latestCompletedIndiaSession } from "../engine/trading-calendar.mjs";
-import { buildWeekdayPrioritySymbols, refreshIndiaDailyBars } from "./refresh-india-daily-bars.mjs";
+import { buildWeekdayPrioritySymbols, refreshIndiaDailyBars, refreshIndiaIndexCache } from "./refresh-india-daily-bars.mjs";
 
 const projectRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const scanPath = resolve(projectRoot, "data/india-full-dashboard-scan.json");
@@ -43,6 +43,17 @@ console.log(JSON.stringify({
   refresh_status: report.status,
   provider: report.provider,
   coverage: report.coverage
+}, null, 2));
+
+const indexReport = await refreshIndiaIndexCache({ expectedSession });
+console.log(JSON.stringify({
+  mode: "INDEX_REFRESH",
+  expected_session: expectedSession,
+  status: indexReport.status,
+  provider: indexReport.provider,
+  updated: indexReport.updated,
+  missing_bar: indexReport.missing_bar,
+  latest_index_data_as_of: indexReport.latest_index_data_as_of
 }, null, 2));
 
 await run(process.execPath, ["scripts/run-full-dashboard-scan.mjs", expectedSession]);

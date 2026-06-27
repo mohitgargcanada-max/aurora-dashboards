@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { loadSymbol, saveSymbol } from "../engine/cache-store.mjs";
 import { latestCompletedIndiaSession } from "../engine/trading-calendar.mjs";
-import { appendOfficialSource, appendProviderConsistentFallback, refreshIndiaDailyBars } from "../scripts/refresh-india-daily-bars.mjs";
+import { appendOfficialSource, appendProviderConsistentFallback, refreshIndiaDailyBars, refreshIndiaIndexCache } from "../scripts/refresh-india-daily-bars.mjs";
 
 function barsThrough(date, count = 260) {
   const end = new Date(`${date}T00:00:00Z`);
@@ -283,6 +283,45 @@ assert.match(eodhdRecord.endpoint, /RELIANCE\.XNSE/);
 if (oldToken === undefined) delete process.env.EODHD_API_TOKEN;
 else process.env.EODHD_API_TOKEN = oldToken;
 
+const indexDir = await mkdtemp(join(tmpdir(), "aurora-india-index-refresh-"));
+const indexRoot = join(indexDir, "indices");
+await mkdir(indexRoot, { recursive: true });
+await writeFile(join(indexRoot, "NIFTY500.json"), JSON.stringify({
+  schema_version: "3.0",
+  market: "INDIA",
+  asset_type: "INDEX",
+  exchange: "INDX",
+  symbol: "NIFTY500",
+  name: "NIFTY 500",
+  currency: "INR",
+  interval: "1d",
+  provider: "EODHD",
+  endpoint: "seed",
+  retrieved_at: "2026-06-23T00:00:00.000Z",
+  data_as_of: "2026-06-22",
+  adjustment_status: "EODHD_ADJUSTED_CLOSE_PRESENT",
+  delayed_or_live: "EOD",
+  fallback_label: "EODHD_FALLBACK",
+  bars: barsThrough("2026-06-22")
+}), "utf8");
+const indexFetchCalls = [];
+const indexReport = await refreshIndiaIndexCache({
+  indexRoot,
+  expectedSession: "2026-06-23",
+  fetcher: async url => {
+    indexFetchCalls.push(url);
+    assert.match(url, /ind_close_all_23062026\.csv/);
+    return new Response(`Index Name,Index Date,Open Index Value,High Index Value,Low Index Value,Closing Index Value,Volume,Turnover (Rs. Cr.)
+Nifty 500,23-JUN-2026,25000,25100,24900,25050,123456,7890`, { status: 200 });
+  }
+});
+const refreshedIndex = JSON.parse(await readFile(join(indexRoot, "NIFTY500.json"), "utf8"));
+assert.equal(indexReport.status, "UPDATED");
+assert.equal(indexReport.updated, 1);
+assert.equal(indexFetchCalls.length, 1);
+assert.equal(refreshedIndex.provider, "NSE_OFFICIAL_INDEX_ARCHIVE");
+assert.equal(refreshedIndex.data_as_of, "2026-06-23");
+
 await rm(directory, { recursive: true, force: true });
 await rm(invalidZipDir, { recursive: true, force: true });
 await rm(blockedDir, { recursive: true, force: true });
@@ -291,4 +330,5 @@ await rm(fetchOnceDir, { recursive: true, force: true });
 await rm(prefetchDir, { recursive: true, force: true });
 await rm(tapetideDir, { recursive: true, force: true });
 await rm(eodhdDir, { recursive: true, force: true });
+await rm(indexDir, { recursive: true, force: true });
 console.log("India daily refresh contract tests passed");

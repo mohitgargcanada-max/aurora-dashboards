@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { refreshIndiaIndexCache } from "./refresh-india-daily-bars.mjs";
 
 const projectRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const refreshReportPath = resolve(projectRoot, "data/india-daily-refresh-report.json");
@@ -57,4 +58,15 @@ try {
   throw error;
 }
 if (await handleBlockedRefresh()) process.exit(0);
-await run(process.execPath, ["scripts/run-full-dashboard-scan.mjs", await refreshedSession()]);
+const expectedSession = await refreshedSession();
+const indexReport = await refreshIndiaIndexCache({ expectedSession });
+console.log(JSON.stringify({
+  mode: "INDEX_REFRESH",
+  expected_session: expectedSession,
+  status: indexReport.status,
+  provider: indexReport.provider,
+  updated: indexReport.updated,
+  missing_bar: indexReport.missing_bar,
+  latest_index_data_as_of: indexReport.latest_index_data_as_of
+}, null, 2));
+await run(process.execPath, ["scripts/run-full-dashboard-scan.mjs", expectedSession]);
