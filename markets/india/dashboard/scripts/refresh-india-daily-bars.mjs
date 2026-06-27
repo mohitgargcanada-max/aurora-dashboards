@@ -9,6 +9,7 @@ import { compactSession, latestCompletedIndiaSession } from "../engine/trading-c
 
 const projectRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const DEFAULT_CACHE_ROOT = resolve(projectRoot, "cache/india/ohlcv");
+const DEFAULT_INDEX_ROOT = resolve(projectRoot, "cache/india/indices");
 const DEFAULT_RAW_ROOT = resolve(projectRoot, "cache/india/raw");
 const DEFAULT_REPORT_PATH = resolve(projectRoot, "data/india-daily-refresh-report.json");
 const DEFAULT_LAST_GOOD_SCAN_PATH = resolve(projectRoot, "data/india-full-dashboard-scan.json");
@@ -45,6 +46,26 @@ const DEFAULT_SECTOR_INDEX_MAP = {
   NIFTYPSU: ["Financials", "Energy", "Utilities", "Industrials"],
   CNXMEDIA: ["Communication Services"]
 };
+const INDEX_SYMBOL_BY_OFFICIAL_NAME = new Map(Object.entries({
+  "NIFTY AUTO": "CNXAUTO",
+  "NIFTY ENERGY": "CNXENERGY",
+  "NIFTY FMCG": "CNXFMCG",
+  "NIFTY IT": "CNXIT",
+  "NIFTY MEDIA": "CNXMEDIA",
+  "NIFTY METAL": "CNXMETAL",
+  "NIFTY PHARMA": "CNXPHARMA",
+  "INDIA VIX": "INDIAVIX",
+  "NIFTY OIL & GAS": "NIFOILGAS",
+  "NIFTY 500": "NIFTY500",
+  "NIFTY FINANCIAL SERVICES": "NIFTYFINSERVICE",
+  "NIFTY HEALTHCARE": "NIFTYHEALTHCARE",
+  "NIFTY INFRASTRUCTURE": "NIFTYINFRA",
+  "NIFTY MIDCAP 150": "NIFTYMIDCAP150",
+  "NIFTY PSU BANK": "NIFTYPSU",
+  "NIFTY REALTY": "NIFTYREAL",
+  "NIFTY SMALLCAP 250": "NISM250",
+  "NIFTY BANK": "NSEBANK"
+}));
 const PROVIDER_ENDPOINTS = {
   OFFICIAL_LOCAL: "local official incoming/raw bhavcopy",
   NSE_OFFICIAL_FETCH: "scripts/fetch-nse-session.sh",
@@ -113,6 +134,63 @@ function eodhdSymbolCandidates(record) {
 
 function sanitizeToken(url) {
   return url.replace(/api_token=[^&]+/i, "api_token=***");
+}
+
+function indexPath(indexRoot, symbol) {
+  return resolve(indexRoot, `${normalizeSymbol(symbol)}.json`);
+}
+
+async function saveIndexRecord(indexRoot, record) {
+  await mkdir(indexRoot, { recursive: true });
+  const path = indexPath(indexRoot, record.symbol);
+  const temporary = `${path}.tmp`;
+  await writeFile(temporary, JSON.stringify(record, null, 2), "utf8");
+  await rename(temporary, path);
+}
+
+async function cachedIndexRecords(indexRoot = DEFAULT_INDEX_ROOT) {
+  const files = (await readdir(indexRoot)).filter(file => file.endsWith(".json")).sort();
+  const records = [];
+  for (const file of files) {
+    records.push(JSON.parse(await readFile(resolve(indexRoot, file), "utf8")));
+  }
+  return records;
+}
+
+function indexNameKey(value) {
+  return String(value || "").trim().toUpperCase().replace(/\s+/g, " ");
+}
+
+function numberFromIndexCell(value) {
+  const number = Number(String(value ?? "").replace(/,/g, "").trim());
+  return Number.isFinite(number) ? number : 0;
+}
+
+function officialIndexArchiveUrl(expectedSession) {
+  const ddmmyyyy = `${expectedSession.slice(8, 10)}${expectedSession.slice(5, 7)}${expectedSession.slice(0, 4)}`;
+  return `https://nsearchives.nseindia.com/content/indices/ind_close_all_${ddmmyyyy}.csv`;
+}
+
+function parseOfficialIndexBars(text, expectedSession) {
+  const bars = new Map();
+  for (const row of parseCsv(text)) {
+    const symbol = INDEX_SYMBOL_BY_OFFICIAL_NAME.get(indexNameKey(row["INDEX NAME"]));
+    if (!symbol) continue;
+    const date = normalizeDate(row["INDEX DATE"] || row.DATE || expectedSession);
+    if (date !== expectedSession) continue;
+    const bar = normalizeBar({
+      date,
+      open: numberFromIndexCell(row["OPEN INDEX VALUE"]),
+      high: numberFromIndexCell(row["HIGH INDEX VALUE"]),
+      low: numberFromIndexCell(row["LOW INDEX VALUE"]),
+      close: numberFromIndexCell(row["CLOSING INDEX VALUE"]),
+      adjusted_close: numberFromIndexCell(row["CLOSING INDEX VALUE"]),
+      volume: numberFromIndexCell(row.VOLUME),
+      turnover: numberFromIndexCell(row["TURNOVER (RS. CR.)"])
+    });
+    if (bar) bars.set(symbol, bar);
+  }
+  return bars;
 }
 
 function isEquityRecord(record) {
@@ -594,6 +672,25 @@ async function fetchJson(url, fetcher, timeoutMs) {
   }
 }
 
+async function fetchText(url, fetcher, timeoutMs) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetcher(url, {
+      signal: controller.signal,
+      headers: {
+        accept: "text/csv,text/plain,*/*",
+        referer: "https://www.nseindia.com/",
+        "user-agent": "Mozilla/5.0 AURORA/2.18.2"
+      }
+    });
+    if (!response.ok) throw new Error(`HTTP_${response.status}`);
+    return response.text();
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 function fallbackUrl(provider, record, expectedSession) {
   const symbol = normalizeSymbol(record.symbol);
   if (provider === "TAPETIDE") {
@@ -726,6 +823,87 @@ export async function appendProviderConsistentFallback({
       report.warnings.push({ symbol: record.symbol, warning: error.message });
     }
   }
+  return report;
+}
+
+export async function refreshIndiaIndexCache({
+  indexRoot = DEFAULT_INDEX_ROOT,
+  expectedSession = latestCompletedIndiaSession(),
+  fetcher = fetch,
+  timeoutMs = DEFAULT_TIMEOUT_MS
+} = {}) {
+  const retrievedAt = new Date().toISOString();
+  const records = await cachedIndexRecords(indexRoot);
+  const report = {
+    status: "ALREADY_CURRENT_OR_UNCHANGED",
+    provider: "CACHE",
+    endpoint: "cache/india/indices",
+    retrieved_at: retrievedAt,
+    expected_completed_session: expectedSession,
+    latest_index_data_as_of: records.map(record => record.data_as_of).sort().at(-1) || null,
+    requested: records.length,
+    updated: 0,
+    unchanged: records.filter(record => record.data_as_of === expectedSession).length,
+    missing_bar: 0,
+    invalid: 0,
+    warnings: []
+  };
+
+  const stale = records.filter(record => record.data_as_of !== expectedSession);
+  if (!stale.length) return report;
+
+  const endpoint = officialIndexArchiveUrl(expectedSession);
+  let bars = new Map();
+  try {
+    const csv = await fetchText(endpoint, fetcher, timeoutMs);
+    bars = parseOfficialIndexBars(csv, expectedSession);
+  } catch (error) {
+    report.warnings.push({ provider: "NSE_OFFICIAL_INDEX_ARCHIVE", warning: error.message });
+  }
+
+  for (const record of stale) {
+    const bar = bars.get(normalizeSymbol(record.symbol));
+    if (!bar) {
+      report.missing_bar += 1;
+      continue;
+    }
+    const merged = mergeBars(record.bars || [], [bar]);
+    const validation = validateSeries(merged, { minimumBars: Math.min(252, merged.length), expectedSession });
+    if (!validation.ok) {
+      report.invalid += 1;
+      report.warnings.push({ symbol: record.symbol, warning: validation.code });
+      continue;
+    }
+    await saveIndexRecord(indexRoot, {
+      ...record,
+      schema_version: CACHE_SCHEMA_VERSION,
+      provider: "NSE_OFFICIAL_INDEX_ARCHIVE",
+      endpoint,
+      retrieved_at: retrievedAt,
+      data_as_of: expectedSession,
+      adjustment_status: "NSE_OFFICIAL_INDEX_CLOSE",
+      delayed_or_live: "EOD",
+      fallback_label: "OFFICIAL_VERIFIED",
+      fallback_reason: "OFFICIAL_NSE_INDEX_DAILY_APPEND",
+      validation: {
+        ok: true,
+        rows: merged.length,
+        unique_dates: true,
+        minimum_required: Math.min(252, merged.length)
+      },
+      bars: merged
+    });
+    report.updated += 1;
+  }
+
+  const refreshedRecords = await cachedIndexRecords(indexRoot);
+  report.latest_index_data_as_of = refreshedRecords.map(record => record.data_as_of).sort().at(-1) || null;
+  report.unchanged = refreshedRecords.filter(record => record.data_as_of === expectedSession).length - report.updated;
+  report.status = refreshedRecords.every(record => record.data_as_of === expectedSession)
+    ? "UPDATED"
+    : "INDEX_REFRESH_BLOCKED";
+  report.provider = report.updated ? "NSE_OFFICIAL_INDEX_ARCHIVE" : "NONE";
+  report.endpoint = endpoint;
   return report;
 }
 
