@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { buildAlreadyCurrentResult, buildMarketHolidayResult, isAlreadyCurrentSummary, summarizeRefreshOrRepairResult } from "../scripts/refresh-or-repair-us-data.mjs";
+import { buildAlreadyCurrentResult, buildCacheCurrentResult, buildMarketHolidayResult, isAlreadyCurrentSummary, summarizeRefreshOrRepairResult } from "../scripts/refresh-or-repair-us-data.mjs";
 
 const summary = summarizeRefreshOrRepairResult({
   final_status: "UPDATED",
@@ -49,5 +49,14 @@ assert.equal(holidaySkipped.skipped, true);
 assert.equal(holidaySkipped.skip_reason, "NYSE_MARKET_HOLIDAY");
 assert.equal(holidaySkipped.market_holiday.date, "2026-07-03");
 assert.equal(holidaySkipped.latest_data_as_of, "2026-06-25");
+
+const cacheSkipped = summarizeRefreshOrRepairResult(buildCacheCurrentResult(null, "2026-06-26", "2026-06-27T00:00:00.000Z"));
+assert.equal(cacheSkipped.status, "UPDATED");
+assert.equal(cacheSkipped.skipped, true);
+assert.equal(cacheSkipped.skip_reason, "EOD_CACHE_ALREADY_CURRENT");
+assert.equal(cacheSkipped.calculation_source, "CACHE_ONLY");
+assert.equal(cacheSkipped.latest_data_as_of, "2026-06-26");
+assert.deepEqual(cacheSkipped.provider_counts, { CACHE: 4 });
+assert.equal(cacheSkipped.fallback_label, "CACHE_ONLY");
 
 console.log("Refresh wrapper tests passed");
