@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { buildAlreadyCurrentResult, isAlreadyCurrentSummary, summarizeRefreshOrRepairResult } from "../scripts/refresh-or-repair-us-data.mjs";
+import { buildAlreadyCurrentResult, buildMarketHolidayResult, isAlreadyCurrentSummary, summarizeRefreshOrRepairResult } from "../scripts/refresh-or-repair-us-data.mjs";
 
 const summary = summarizeRefreshOrRepairResult({
   final_status: "UPDATED",
@@ -36,5 +36,18 @@ assert.equal(skipped.skip_reason, "LOCAL_DATA_ALREADY_CURRENT");
 assert.equal(skipped.data_source, "history_repair");
 assert.equal(skipped.latest_data_as_of, "2026-06-25");
 assert.deepEqual(skipped.provider_counts, { YAHOO_FINANCE: 3129 });
+
+const holidaySkipped = summarizeRefreshOrRepairResult(buildMarketHolidayResult(summary, "2026-06-25", {
+  exchange: "NYSE",
+  today: "2026-07-03",
+  is_market_holiday: true,
+  today_holiday: { date: "2026-07-03", name: "Independence Day observed" },
+  next_holiday: { date: "2026-07-03", name: "Independence Day observed" }
+}, "2026-07-03T16:00:00.000Z"));
+assert.equal(holidaySkipped.status, "UPDATED");
+assert.equal(holidaySkipped.skipped, true);
+assert.equal(holidaySkipped.skip_reason, "NYSE_MARKET_HOLIDAY");
+assert.equal(holidaySkipped.market_holiday.date, "2026-07-03");
+assert.equal(holidaySkipped.latest_data_as_of, "2026-06-25");
 
 console.log("Refresh wrapper tests passed");

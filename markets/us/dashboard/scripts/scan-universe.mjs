@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { marketDimmer, weeklyWatchlistScore } from "../engine/aurora.mjs";
 import { loadSymbol } from "../engine/cache-store.mjs";
+import { nyseCalendarSummary } from "./us-market-calendar.mjs";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const trackingConfig = JSON.parse(await readFile(resolve(root, "config/tracking_basket.json"), "utf8"));
@@ -388,6 +389,7 @@ const state = {
     daily_top_status: daily.length ? `${daily.length}_QUALIFIED` : "NO_VALID_ENTRY",
     warning: "Full Stooq stock-path universe calculated. Official index memberships, sector mapping, fundamentals and official PEAD/EP/HVE catalysts remain enrichment-required; no provider was blended within a series."
   },
+  market_calendar: nyseCalendarSummary(),
   market: {
     market_state: marketLabels.oneil,
     oneil_market_cycle: marketLabels.oneil,

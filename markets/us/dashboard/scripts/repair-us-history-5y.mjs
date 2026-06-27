@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { CACHE_SCHEMA_VERSION, DEFAULT_RETAIN_BARS, loadSymbol, mergeBars, normalizeBar, normalizeSymbol, saveSymbol, validateSeries } from "../engine/cache-store.mjs";
 import { resolveEodhdToken } from "./aurora-env.mjs";
+import { latestCompletedNyseSession } from "./us-market-calendar.mjs";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const cacheDefault = resolve(root, "cache/us/ohlcv");
@@ -17,12 +18,7 @@ const stooqSymbol = s => `${normalizeSymbol(s).toLowerCase()}.us`;
 const eodhdSymbol = s => `${normalizeSymbol(s)}.US`;
 function addYears(date, years) { const copy = new Date(date); copy.setUTCFullYear(copy.getUTCFullYear() + years); return copy; }
 function latestCompletedUsSession(now = new Date()) {
-  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", hour12: false }).formatToParts(now);
-  const get = type => Number(parts.find(x => x.type === type)?.value);
-  const d = new Date(Date.UTC(get("year"), get("month") - 1, get("day")));
-  if (get("hour") < 18) d.setUTCDate(d.getUTCDate() - 1);
-  while ([0, 6].includes(d.getUTCDay())) d.setUTCDate(d.getUTCDate() - 1);
-  return ymd(d);
+  return latestCompletedNyseSession(now);
 }
 function nyDate(seconds) {
   if (!Number.isFinite(Number(seconds))) return null;

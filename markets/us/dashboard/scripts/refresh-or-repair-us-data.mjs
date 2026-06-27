@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { latestCompletedUsSession, refreshDailyBars } from "./refresh-stooq-daily-bars.mjs";
 import { repairUsHistory } from "./repair-us-history-5y.mjs";
+import { nyseCalendarSummary } from "./us-market-calendar.mjs";
 
 const projectRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const summaryPath = resolve(projectRoot, "data/us-refresh-or-repair-report.json");
@@ -19,7 +20,7 @@ export function chooseDataSource(daily, history) {
   return isCurrent(daily) ? { label: "daily_refresh", report: daily } : { label: "history_repair", report: history };
 }
 
-export function buildAlreadyCurrentResult(previous, expectedSession, generatedAt = new Date().toISOString()) {
+function buildSkippedResult(previous, expectedSession, skipReason, generatedAt = new Date().toISOString(), extra = {}) {
   const fallbackReport = {
     status: previous?.status || previous?.final_status || "UPDATED",
     expected_completed_session: previous?.expected_completed_session || expectedSession,
@@ -30,12 +31,24 @@ export function buildAlreadyCurrentResult(previous, expectedSession, generatedAt
   return {
     generated_at: generatedAt,
     skipped: true,
-    skip_reason: "LOCAL_DATA_ALREADY_CURRENT",
+    skip_reason: skipReason,
     previous_generated_at: previous?.generated_at || null,
     daily_refresh: previous?.daily_refresh || null,
     history_repair: previous?.history_repair || fallbackReport,
-    final_status: "UPDATED"
+    final_status: "UPDATED",
+    ...extra
   };
+}
+
+export function buildAlreadyCurrentResult(previous, expectedSession, generatedAt = new Date().toISOString()) {
+  return buildSkippedResult(previous, expectedSession, "LOCAL_DATA_ALREADY_CURRENT", generatedAt);
+}
+
+export function buildMarketHolidayResult(previous, expectedSession, calendar, generatedAt = new Date().toISOString()) {
+  return buildSkippedResult(previous, expectedSession, "NYSE_MARKET_HOLIDAY", generatedAt, {
+    market_calendar: calendar,
+    market_holiday: calendar?.today_holiday || null
+  });
 }
 
 export function summarizeRefreshOrRepairResult(result) {
@@ -68,10 +81,13 @@ async function main() {
   const allowStale = process.argv.includes("--allow-stale") || process.env.AURORA_ALLOW_STALE_REFRESH === "1";
   const forceRefresh = process.argv.includes("--force-refresh") || process.env.AURORA_FORCE_REFRESH === "1";
   const expectedSession = latestCompletedUsSession();
+  const calendar = nyseCalendarSummary();
   if (!forceRefresh) {
     const previous = await readPreviousSummary();
     if (isAlreadyCurrentSummary(previous, expectedSession)) {
-      const skipped = buildAlreadyCurrentResult(previous, expectedSession);
+      const skipped = calendar.is_market_holiday
+        ? buildMarketHolidayResult(previous, expectedSession, calendar)
+        : buildAlreadyCurrentResult(previous, expectedSession);
       await persist(skipped);
       console.log(JSON.stringify(summarizeRefreshOrRepairResult(skipped)));
       return;
