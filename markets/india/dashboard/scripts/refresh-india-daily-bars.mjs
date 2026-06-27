@@ -171,12 +171,19 @@ function officialIndexArchiveUrl(expectedSession) {
   return `https://nsearchives.nseindia.com/content/indices/ind_close_all_${ddmmyyyy}.csv`;
 }
 
+function normalizeOfficialIndexDate(value) {
+  const text = String(value ?? "").trim();
+  const ddmmyyyy = text.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if (ddmmyyyy) return `${ddmmyyyy[3]}-${ddmmyyyy[2]}-${ddmmyyyy[1]}`;
+  return normalizeDate(text);
+}
+
 function parseOfficialIndexBars(text, expectedSession) {
   const bars = new Map();
   for (const row of parseCsv(text)) {
     const symbol = INDEX_SYMBOL_BY_OFFICIAL_NAME.get(indexNameKey(row["INDEX NAME"]));
     if (!symbol) continue;
-    const date = normalizeDate(row["INDEX DATE"] || row.DATE || expectedSession);
+    const date = normalizeOfficialIndexDate(row["INDEX DATE"] || row.DATE || expectedSession);
     if (date !== expectedSession) continue;
     const bar = normalizeBar({
       date,

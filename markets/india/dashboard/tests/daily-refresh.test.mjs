@@ -313,7 +313,7 @@ const indexReport = await refreshIndiaIndexCache({
     indexFetchCalls.push(url);
     assert.match(url, /ind_close_all_23062026\.csv/);
     return new Response(`Index Name,Index Date,Open Index Value,High Index Value,Low Index Value,Closing Index Value,Volume,Turnover (Rs. Cr.)
-Nifty 500,23-JUN-2026,25000,25100,24900,25050,123456,7890`, { status: 200 });
+Nifty 500,23-06-2026,25000,25100,24900,25050,123456,7890`, { status: 200 });
   }
 });
 const refreshedIndex = JSON.parse(await readFile(join(indexRoot, "NIFTY500.json"), "utf8"));
