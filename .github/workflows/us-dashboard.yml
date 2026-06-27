@@ -18,9 +18,6 @@ concurrency:
 jobs:
   scan:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v5
 
@@ -46,14 +43,128 @@ jobs:
         if: github.event_name == 'schedule'
         run: node scripts/nyse-time-gate.mjs
 
-      - name: Run US dashboard
-        if: github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1'
+      - name: Load bundled Aurora secrets
         env:
+          AURORAKEYS: ${{ secrets.AURORAKEYS }}
           EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN || secrets.EODHD_API_KEY }}
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY || secrets.EODHD_API_TOKEN }}
           SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+        run: |
+          node <<'NODE'
+          const fs = require("fs");
+          const allowed = new Set(["EODHD_API_TOKEN", "EODHD_API_KEY", "SEC_USER_AGENT", "TAVILY_API_KEY", "FIRECRAWL_API_KEY"]);
+          const eodhdAliases = ["EODHD_API_TOKEN", "EODHD_API_KEY", "EODHD_API", "EODHD_TOKEN", "EODHD_KEY", "EODHD", "EODHD_TOKEN_VALUE", "EODHD_SECRET", "EODHD_CREDENTIAL", "EOD_API_TOKEN", "EOD_API_KEY", "EOD_TOKEN", "EOD_KEY", "EOD", "EOD_HISTORICAL_DATA_API_KEY", "EOD_HISTORICAL_DATA_API_TOKEN", "EOD_HISTORICAL_DATA_TOKEN", "EOD_HISTORICAL_DATA_KEY", "EOD_HISTORICAL_DATA", "EODH_API_KEY", "EODH_TOKEN", "EODH_KEY", "EODHD_APIKEY", "EODHDAPIKEY", "EODHDTOKEN"].map(normalizeKey);
+          const identityFields = ["name", "provider", "service", "source", "connector", "id", "key"];
+          const valueFields = ["value", "secret", "token", "api_token", "apiToken", "api_key", "apiKey", "credential", "key"];
+          function normalizeKey(key) {
+            return String(key || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+          }
+          function primitiveValue(value) {
+            return value === null || value === undefined || typeof value === "object" ? "" : String(value);
+          }
+          function isEodhdCredentialKey(key) {
+            const normalized = normalizeKey(key);
+            if (eodhdAliases.some(alias => normalized === alias || normalized.endsWith(alias))) return true;
+            const namesEodhd = normalized.includes("EODHD") || normalized.includes("EODHISTORICALDATA") || normalized.includes("EOD");
+            const namesSecret = ["API", "TOKEN", "KEY", "SECRET", "CREDENTIAL"].some(part => normalized.includes(part));
+            return namesEodhd && namesSecret;
+          }
+          function addStructuredSecretAlias(value, out) {
+            if (!value || typeof value !== "object" || Array.isArray(value)) return;
+            const identity = identityFields.map(field => primitiveValue(value[field])).find(Boolean);
+            if (!identity || !isEodhdCredentialKey(identity)) return;
+            const secret = valueFields.map(field => primitiveValue(value[field])).find(Boolean);
+            if (secret) out[identity] = secret;
+          }
+          function flatten(value, prefix = "", out = {}) {
+            if (!value || typeof value !== "object") return out;
+            if (Array.isArray(value)) {
+              value.forEach((item, index) => flatten(item, prefix ? `${prefix}_${index}` : String(index), out));
+              return out;
+            }
+            addStructuredSecretAlias(value, out);
+            for (const [key, item] of Object.entries(value)) {
+              const path = prefix ? `${prefix}_${key}` : key;
+              if (item && typeof item === "object") flatten(item, path, out);
+              else out[path] = item;
+            }
+            return out;
+          }
+          function parse(raw) {
+            const text = String(raw || "").trim();
+            if (!text) return {};
+            try {
+              const json = JSON.parse(text);
+              if (typeof json === "string" && json.trim()) return { EODHD: json.trim() };
+              if (json && typeof json === "object") return flatten(json);
+              return {};
+            } catch {}
+            const out = {};
+            for (const line of text.split(/\r?\n/)) {
+              const trimmed = line.trim().replace(/^export\s+/i, "");
+              if (!trimmed || trimmed.startsWith("#")) continue;
+              const equalsIndex = trimmed.indexOf("=");
+              const colonIndex = trimmed.indexOf(":");
+              const index = equalsIndex > 0 ? equalsIndex : colonIndex > 0 ? colonIndex : -1;
+              if (index <= 0) continue;
+              const key = trimmed.slice(0, index).trim();
+              let value = trimmed.slice(index + 1).trim();
+              if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) value = value.slice(1, -1);
+              out[key] = value;
+            }
+            if (!Object.keys(out).length && !/\s/.test(text)) return { EODHD: text };
+            return out;
+          }
+          const bundled = parse(process.env.AURORAKEYS);
+          const values = { ...bundled };
+          if (process.env.EODHD_API_TOKEN) values.EODHD_API_TOKEN = process.env.EODHD_API_TOKEN;
+          if (process.env.EODHD_API_KEY) values.EODHD_API_KEY = process.env.EODHD_API_KEY;
+          if (process.env.SEC_USER_AGENT) values.SEC_USER_AGENT = process.env.SEC_USER_AGENT;
+          if (process.env.TAVILY_API_KEY) values.TAVILY_API_KEY = process.env.TAVILY_API_KEY;
+          if (process.env.FIRECRAWL_API_KEY) values.FIRECRAWL_API_KEY = process.env.FIRECRAWL_API_KEY;
+          const eodhdEntry = Object.entries(values).find(([key, value]) => {
+            return value && isEodhdCredentialKey(key);
+          });
+          if (eodhdEntry) {
+            values.EODHD_API_TOKEN ||= eodhdEntry[1];
+            values.EODHD_API_KEY ||= eodhdEntry[1];
+          }
+          const delimiter = `AURORA_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+          const lines = [
+            `AURORAKEYS_PRESENT=${process.env.AURORAKEYS ? "1" : "0"}`,
+            `EODHD_SECRET_RESOLVED=${eodhdEntry ? "1" : "0"}`
+          ];
+          for (const [key, value] of Object.entries(values)) {
+            if (!allowed.has(key) || !value) continue;
+            lines.push(`${key}<<${delimiter}`, String(value), delimiter);
+          }
+          if (lines.length) fs.appendFileSync(process.env.GITHUB_ENV, `${lines.join("\n")}\n`);
+          NODE
+
+      - name: Diagnose Aurora secret routing
+        env:
+          AURORAKEYS: ${{ secrets.AURORAKEYS }}
+          EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN || secrets.EODHD_API_KEY }}
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY || secrets.EODHD_API_TOKEN }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          import { resolveEodhdToken } from "./markets/us/dashboard/scripts/aurora-env.mjs";
+          const runtimeResolved = Boolean(resolveEodhdToken(process.env));
+          fs.appendFileSync(process.env.GITHUB_ENV, `EODHD_RUNTIME_RESOLVED=${runtimeResolved ? "1" : "0"}\n`);
+          console.log(`AURORAKEYS_PRESENT=${process.env.AURORAKEYS_PRESENT || "0"}`);
+          console.log(`EODHD_SECRET_RESOLVED=${process.env.EODHD_SECRET_RESOLVED || "0"}`);
+          console.log(`EODHD_RUNTIME_RESOLVED=${runtimeResolved ? "1" : "0"}`);
+          NODE
+
+      - name: Run US dashboard
+        if: github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1'
+        env:
+          AURORAKEYS: ${{ secrets.AURORAKEYS }}
+          EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN || secrets.EODHD_API_KEY }}
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY || secrets.EODHD_API_TOKEN }}
         run: |
           cd markets/us/dashboard
           node scripts/refresh-or-repair-us-data.mjs
@@ -109,6 +220,8 @@ jobs:
           console.log(`- Refresh-or-repair report: \`${wrapperPath}\` ${wrapper ? "present" : "missing/unreadable"}`);
           console.log("");
           console.log("### Data Provenance");
+          console.log(`- AURORAKEYS secret present: \`${process.env.AURORAKEYS_PRESENT === "1" ? "YES" : "NO"}\``);
+          console.log(`- EODHD runtime resolved by scripts: \`${process.env.EODHD_RUNTIME_RESOLVED === "1" ? "YES" : "NO"}\``);
           for (const [label, report] of [["Daily", refresh], ["History", history], ["Wrapper", wrapper]]) {
             if (!report) continue;
             console.log(`- ${label} status: \`${report.status || report.final_status || "UNKNOWN"}\``);
@@ -134,13 +247,23 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add markets/us/dashboard/data markets/us/dashboard/cache markets/us/AURORA_US_Dashboard.html
-          if ! git diff --cached --quiet; then
+          for attempt in 1 2 3 4; do
+            git fetch origin "${GITHUB_REF_NAME}"
+            git reset --mixed "origin/${GITHUB_REF_NAME}"
+            git add markets/us/dashboard/data markets/us/dashboard/cache markets/us/AURORA_US_Dashboard.html
+            if git diff --cached --quiet; then
+              echo "No US dashboard changes to commit."
+              exit 0
+            fi
             git commit -m "Update AURORA US dashboard"
-            git push
-          else
-            echo "No US dashboard changes to commit."
-          fi
+            if git push; then
+              exit 0
+            fi
+            if [ "$attempt" = "4" ]; then
+              exit 1
+            fi
+            echo "US output push rejected; refreshing origin/${GITHUB_REF_NAME} and retrying (${attempt}/4)." >&2
+          done
 
       - name: Prepare GitHub Pages artifact
         if: success() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')

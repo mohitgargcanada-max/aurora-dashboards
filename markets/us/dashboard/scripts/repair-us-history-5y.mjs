@@ -2,6 +2,7 @@ import { readdir, readFile, writeFile, rename, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { CACHE_SCHEMA_VERSION, DEFAULT_RETAIN_BARS, loadSymbol, mergeBars, normalizeBar, normalizeSymbol, saveSymbol, validateSeries } from "../engine/cache-store.mjs";
+import { resolveEodhdToken } from "./aurora-env.mjs";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const cacheDefault = resolve(root, "cache/us/ohlcv");
@@ -14,7 +15,6 @@ const ymd = d => d.toISOString().slice(0, 10);
 const compact = d => String(d).replaceAll("-", "");
 const stooqSymbol = s => `${normalizeSymbol(s).toLowerCase()}.us`;
 const eodhdSymbol = s => `${normalizeSymbol(s)}.US`;
-const eodhdEnvToken = () => process.env.EODHD_API_TOKEN || process.env.EODHD_API_KEY || "";
 function addYears(date, years) { const copy = new Date(date); copy.setUTCFullYear(copy.getUTCFullYear() + years); return copy; }
 function latestCompletedUsSession(now = new Date()) {
   const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", hour12: false }).formatToParts(now);
@@ -111,7 +111,7 @@ async function mapLimit(items, limit, worker) {
   await Promise.all(Array.from({ length: Math.min(limit, items.length) }, run));
   return result;
 }
-export async function repairUsHistory({ cacheRoot = cacheDefault, reportPath = reportDefault, from = null, to = null, lookbackYears = 5, minBars = minBarsDefault, staleOnly = true, strictCurrent = false, allowStale = false, symbols = null, limit = null, concurrency = concurrencyDefault, timeoutMs = timeoutDefault, eodhdToken = eodhdEnvToken(), fetcher = fetch, now = new Date() } = {}) {
+export async function repairUsHistory({ cacheRoot = cacheDefault, reportPath = reportDefault, from = null, to = null, lookbackYears = 5, minBars = minBarsDefault, staleOnly = true, strictCurrent = false, allowStale = false, symbols = null, limit = null, concurrency = concurrencyDefault, timeoutMs = timeoutDefault, eodhdToken = resolveEodhdToken(), fetcher = fetch, now = new Date() } = {}) {
   const expectedSession = to || latestCompletedUsSession(now);
   const start = from || ymd(addYears(`${expectedSession}T00:00:00Z`, -lookbackYears));
   let universe = symbols?.length ? symbols : await symbolsFromCache(cacheRoot);

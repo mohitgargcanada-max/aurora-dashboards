@@ -1,6 +1,7 @@
 import { readdir, readFile, writeFile, rename, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { resolveEodhdToken } from "./aurora-env.mjs";
 import {
   CACHE_SCHEMA_VERSION,
   loadSymbol,
@@ -254,7 +255,7 @@ async function fetchYahooQuotes(symbols, fetcher = fetch, timeoutMs = DEFAULT_TI
 }
 
 async function fetchEodhdBulkLastDay(expectedSession, token, fetcher = fetch, timeoutMs = DEFAULT_TIMEOUT_MS) {
-  if (!token) throw new Error("EODHD_TOKEN_MISSING");
+  if (!token) throw new Error("EODHD_TOKEN_OR_CONNECTOR_MISSING");
   const publicEndpoint = `https://eodhd.com/api/eod-bulk-last-day/US?date=${expectedSession}&fmt=json`;
   const url = `${publicEndpoint}&api_token=${encodeURIComponent(token)}`;
   const controller = new AbortController();
@@ -281,7 +282,7 @@ export async function refreshDailyBars({
   timeoutMs = DEFAULT_TIMEOUT_MS,
   maxConsecutiveFailures = DEFAULT_MAX_CONSECUTIVE_FAILURES,
   allowStale = false,
-  eodhdToken = process.env.EODHD_API_TOKEN,
+  eodhdToken = resolveEodhdToken(),
   fetcher = fetch,
   now = new Date()
 } = {}) {
@@ -369,7 +370,7 @@ export async function refreshDailyBars({
     warnings.push({
       provider: "EODHD",
       symbols: eodhdMissing.length,
-      warning: "EODHD_TOKEN_MISSING"
+      warning: "EODHD_TOKEN_OR_CONNECTOR_MISSING"
     });
   }
 
