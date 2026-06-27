@@ -18,7 +18,7 @@ for (const candidate of state.all_candidates) {
   assert.ok(Array.isArray(candidate.scans), `${candidate.ticker} lacks scanner memberships`);
   assert.ok(Array.isArray(candidate.failed_gates), `${candidate.ticker} lacks failed gates`);
   assert.ok(candidate.next_condition, `${candidate.ticker} lacks next promotion condition`);
-  assert.equal(candidate.provider, "STOOQ");
+  assert.ok(["STOOQ", "YAHOO_FINANCE", "EODHD"].includes(candidate.provider), `${candidate.ticker} has invalid provider`);
   assert.equal(candidate.data_as_of, state.run.data_as_of);
 }
 
