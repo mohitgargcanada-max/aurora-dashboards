@@ -1,7 +1,6 @@
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { readFile, writeFile, mkdir, readdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { loadSymbol } from "../engine/cache-store.mjs";
 import { latestCompletedUsSession, refreshDailyBars } from "./refresh-stooq-daily-bars.mjs";
 import { repairUsHistory } from "./repair-us-history-5y.mjs";
 import { nyseCalendarSummary } from "./us-market-calendar.mjs";
@@ -9,7 +8,6 @@ import { nyseCalendarSummary } from "./us-market-calendar.mjs";
 const projectRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const summaryPath = resolve(projectRoot, "data/us-refresh-or-repair-report.json");
 const cacheRoot = resolve(projectRoot, "cache/us/ohlcv");
-const cacheCurrentSentinels = ["SPY", "QQQ", "IWM", "DIA"];
 
 function isCurrent(report) {
   return Boolean(report?.expected_completed_session && report?.latest_data_as_of === report.expected_completed_session);
@@ -19,12 +17,34 @@ export function isAlreadyCurrentSummary(report, expectedSession) {
   return Boolean(report?.latest_data_as_of === expectedSession);
 }
 
-export async function isCacheCurrent(expectedSession, symbols = cacheCurrentSentinels) {
-  for (const symbol of symbols) {
-    const record = await loadSymbol(cacheRoot, symbol);
-    if (record?.bars?.at(-1)?.date !== expectedSession) return false;
+export async function cacheCurrentStatus(expectedSession, root = cacheRoot) {
+  let names;
+  try {
+    names = await readdir(root);
+  } catch {
+    return { ok: false, total: 0, current: 0, stale: 0, expected_session: expectedSession, stale_samples: ["CACHE_MISSING"] };
   }
-  return symbols.length > 0;
+  const files = names.filter(name => name.endsWith(".json"));
+  const status = { ok: false, total: files.length, current: 0, stale: 0, expected_session: expectedSession, stale_samples: [] };
+  for (const file of files) {
+    try {
+      const record = JSON.parse(await readFile(resolve(root, file), "utf8"));
+      if (record?.bars?.at(-1)?.date === expectedSession) status.current += 1;
+      else {
+        status.stale += 1;
+        if (status.stale_samples.length < 5) status.stale_samples.push(`${record?.symbol || file}:${record?.bars?.at(-1)?.date || "NO_DATE"}`);
+      }
+    } catch {
+      status.stale += 1;
+      if (status.stale_samples.length < 5) status.stale_samples.push(`${file}:READ_FAILED`);
+    }
+  }
+  status.ok = status.total > 0 && status.stale === 0;
+  return status;
+}
+
+export async function isCacheCurrent(expectedSession, root = cacheRoot) {
+  return (await cacheCurrentStatus(expectedSession, root)).ok;
 }
 
 export function chooseDataSource(daily, history) {
@@ -51,16 +71,19 @@ function buildSkippedResult(previous, expectedSession, skipReason, generatedAt =
   };
 }
 
-export function buildAlreadyCurrentResult(previous, expectedSession, generatedAt = new Date().toISOString()) {
-  return buildSkippedResult(previous, expectedSession, "LOCAL_DATA_ALREADY_CURRENT", generatedAt);
+export function buildAlreadyCurrentResult(previous, expectedSession, generatedAt = new Date().toISOString(), cacheStatus = null) {
+  return buildSkippedResult(previous, expectedSession, "LOCAL_DATA_ALREADY_CURRENT", generatedAt, {
+    calculation_source: "CACHE_ONLY",
+    cache_date_status: cacheStatus
+  });
 }
 
-export function buildCacheCurrentResult(previous, expectedSession, generatedAt = new Date().toISOString()) {
+export function buildCacheCurrentResult(previous, expectedSession, generatedAt = new Date().toISOString(), cacheStatus = null) {
   const cacheReport = {
     status: "UPDATED",
     expected_completed_session: expectedSession,
     latest_data_as_of: expectedSession,
-    provider_counts: { CACHE: cacheCurrentSentinels.length },
+    provider_counts: { CACHE: cacheStatus?.current || 0 },
     fallback_label: "CACHE_ONLY"
   };
   return {
@@ -68,6 +91,7 @@ export function buildCacheCurrentResult(previous, expectedSession, generatedAt =
     skipped: true,
     skip_reason: "EOD_CACHE_ALREADY_CURRENT",
     calculation_source: "CACHE_ONLY",
+    cache_date_status: cacheStatus,
     previous_generated_at: previous?.generated_at || null,
     daily_refresh: null,
     history_repair: cacheReport,
@@ -75,8 +99,10 @@ export function buildCacheCurrentResult(previous, expectedSession, generatedAt =
   };
 }
 
-export function buildMarketHolidayResult(previous, expectedSession, calendar, generatedAt = new Date().toISOString()) {
+export function buildMarketHolidayResult(previous, expectedSession, calendar, generatedAt = new Date().toISOString(), cacheStatus = null) {
   return buildSkippedResult(previous, expectedSession, "NYSE_MARKET_HOLIDAY", generatedAt, {
+    calculation_source: "CACHE_ONLY",
+    cache_date_status: cacheStatus,
     market_calendar: calendar,
     market_holiday: calendar?.today_holiday || null
   });
@@ -115,16 +141,17 @@ async function main() {
   const calendar = nyseCalendarSummary();
   if (!forceRefresh) {
     const previous = await readPreviousSummary();
-    if (isAlreadyCurrentSummary(previous, expectedSession)) {
+    const cacheStatus = await cacheCurrentStatus(expectedSession);
+    if (isAlreadyCurrentSummary(previous, expectedSession) && cacheStatus.ok) {
       const skipped = calendar.is_market_holiday
-        ? buildMarketHolidayResult(previous, expectedSession, calendar)
-        : buildAlreadyCurrentResult(previous, expectedSession);
+        ? buildMarketHolidayResult(previous, expectedSession, calendar, undefined, cacheStatus)
+        : buildAlreadyCurrentResult(previous, expectedSession, undefined, cacheStatus);
       await persist(skipped);
       console.log(JSON.stringify(summarizeRefreshOrRepairResult(skipped)));
       return;
     }
-    if (await isCacheCurrent(expectedSession)) {
-      const skipped = buildCacheCurrentResult(previous, expectedSession);
+    if (cacheStatus.ok) {
+      const skipped = buildCacheCurrentResult(previous, expectedSession, undefined, cacheStatus);
       await persist(skipped);
       console.log(JSON.stringify(summarizeRefreshOrRepairResult(skipped)));
       return;
