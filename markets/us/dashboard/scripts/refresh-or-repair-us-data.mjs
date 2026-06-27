@@ -1,7 +1,7 @@
-import { writeFile, mkdir } from "node:fs/promises";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { refreshDailyBars } from "./refresh-stooq-daily-bars.mjs";
+import { latestCompletedUsSession, refreshDailyBars } from "./refresh-stooq-daily-bars.mjs";
 import { repairUsHistory } from "./repair-us-history-5y.mjs";
 
 const projectRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
@@ -11,8 +11,31 @@ function isCurrent(report) {
   return Boolean(report?.expected_completed_session && report?.latest_data_as_of === report.expected_completed_session);
 }
 
+export function isAlreadyCurrentSummary(report, expectedSession) {
+  return Boolean(report?.latest_data_as_of === expectedSession);
+}
+
 export function chooseDataSource(daily, history) {
   return isCurrent(daily) ? { label: "daily_refresh", report: daily } : { label: "history_repair", report: history };
+}
+
+export function buildAlreadyCurrentResult(previous, expectedSession, generatedAt = new Date().toISOString()) {
+  const fallbackReport = {
+    status: previous?.status || previous?.final_status || "UPDATED",
+    expected_completed_session: previous?.expected_completed_session || expectedSession,
+    latest_data_as_of: previous?.latest_data_as_of || null,
+    provider_counts: previous?.provider_counts || {},
+    fallback_label: previous?.fallback_label || "NOT_AVAILABLE"
+  };
+  return {
+    generated_at: generatedAt,
+    skipped: true,
+    skip_reason: "LOCAL_DATA_ALREADY_CURRENT",
+    previous_generated_at: previous?.generated_at || null,
+    daily_refresh: previous?.daily_refresh || null,
+    history_repair: previous?.history_repair || fallbackReport,
+    final_status: "UPDATED"
+  };
 }
 
 export function summarizeRefreshOrRepairResult(result) {
@@ -33,8 +56,27 @@ async function persist(result) {
   await writeFile(summaryPath, JSON.stringify(summarizeRefreshOrRepairResult(result), null, 2), "utf8");
 }
 
+async function readPreviousSummary() {
+  try {
+    return JSON.parse(await readFile(summaryPath, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
 async function main() {
   const allowStale = process.argv.includes("--allow-stale") || process.env.AURORA_ALLOW_STALE_REFRESH === "1";
+  const forceRefresh = process.argv.includes("--force-refresh") || process.env.AURORA_FORCE_REFRESH === "1";
+  const expectedSession = latestCompletedUsSession();
+  if (!forceRefresh) {
+    const previous = await readPreviousSummary();
+    if (isAlreadyCurrentSummary(previous, expectedSession)) {
+      const skipped = buildAlreadyCurrentResult(previous, expectedSession);
+      await persist(skipped);
+      console.log(JSON.stringify(summarizeRefreshOrRepairResult(skipped)));
+      return;
+    }
+  }
   const strictCurrent = !allowStale;
   const result = { generated_at: new Date().toISOString(), daily_refresh: null, history_repair: null, final_status: null };
   try {

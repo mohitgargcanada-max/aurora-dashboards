@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { summarizeRefreshOrRepairResult } from "../scripts/refresh-or-repair-us-data.mjs";
+import { buildAlreadyCurrentResult, isAlreadyCurrentSummary, summarizeRefreshOrRepairResult } from "../scripts/refresh-or-repair-us-data.mjs";
 
 const summary = summarizeRefreshOrRepairResult({
   final_status: "UPDATED",
@@ -25,5 +25,16 @@ assert.equal(summary.expected_completed_session, "2026-06-25");
 assert.equal(summary.latest_data_as_of, "2026-06-25");
 assert.deepEqual(summary.provider_counts, { YAHOO_FINANCE: 3129 });
 assert.equal(summary.fallback_label, "YAHOO_FALLBACK");
+
+assert.equal(isAlreadyCurrentSummary(summary, "2026-06-25"), true);
+assert.equal(isAlreadyCurrentSummary(summary, "2026-06-26"), false);
+
+const skipped = summarizeRefreshOrRepairResult(buildAlreadyCurrentResult(summary, "2026-06-25", "2026-06-26T00:00:00.000Z"));
+assert.equal(skipped.status, "UPDATED");
+assert.equal(skipped.skipped, true);
+assert.equal(skipped.skip_reason, "LOCAL_DATA_ALREADY_CURRENT");
+assert.equal(skipped.data_source, "history_repair");
+assert.equal(skipped.latest_data_as_of, "2026-06-25");
+assert.deepEqual(skipped.provider_counts, { YAHOO_FINANCE: 3129 });
 
 console.log("Refresh wrapper tests passed");
