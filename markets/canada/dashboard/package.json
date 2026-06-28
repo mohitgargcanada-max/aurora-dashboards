@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node tests/canada-dashboard.test.mjs",
+    "test": "node tests/canada-dashboard.test.mjs && node tests/ui-copy.test.mjs",
     "cache:refresh:daily": "node scripts/refresh-canada-daily-bars.mjs",
     "cache:refresh:indices": "node scripts/refresh-canada-index-bars.mjs",
     "cache:audit:indices": "node scripts/audit-indices.mjs",
