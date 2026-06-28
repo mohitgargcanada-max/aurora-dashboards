@@ -3,7 +3,7 @@
   "routing_order": [
     "OFFICIAL_EXCHANGE_SEDAR_ISSUER",
     "YAHOO_SUFFIX_TO_OR_V",
-    "EODHD_FALLBACK_ONLY",
+    "EODHD_FALLBACK_NOT_IMPLEMENTED_NOT_TESTED",
     "PARALLEL_VERIFICATION",
     "TAVILY_SHORTLIST_ONLY",
     "FIRECRAWL_DIFFICULT_DOCUMENTS_ONLY"
@@ -11,8 +11,7 @@
   "notes": [
     "Use TSX, TSX Venture, CSE, NEO/Cboe Canada, SEDAR+ and issuer sources first.",
     "Use Yahoo Finance with .TO or .V suffix for validated OHLCV when reliable.",
-    "Use EODHD only when free sources fail validation or lack a required field.",
+    "EODHD Canada fallback is not implemented or tested yet; do not claim fallback coverage until it is added behind explicit free-first failure.",
     "Never blend providers inside one indicator series."
   ]
 }
-
