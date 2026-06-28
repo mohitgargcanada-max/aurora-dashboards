@@ -3,8 +3,8 @@ name: AURORA US Dashboard
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 13 * * 0-5"
-    - cron: "0 14 * * 0-5"
+    - cron: "0 13 * * 1-5"
+    - cron: "0 14 * * 1-5"
 
 permissions:
   contents: write
@@ -47,6 +47,7 @@ jobs:
         run: node scripts/nyse-time-gate.mjs
 
       - name: Load bundled Aurora secrets
+        if: github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1'
         env:
           AURORAKEYS: ${{ secrets.AURORAKEYS }}
           EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN || secrets.EODHD_API_KEY }}
@@ -147,6 +148,7 @@ jobs:
           NODE
 
       - name: Diagnose Aurora secret routing
+        if: github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1'
         env:
           AURORAKEYS: ${{ secrets.AURORAKEYS }}
           EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN || secrets.EODHD_API_KEY }}
