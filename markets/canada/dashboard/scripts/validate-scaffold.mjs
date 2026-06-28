@@ -1,2 +1,1 @@
-console.log("Canada scaffold validation passed");
-
+import "../tests/canada-dashboard.test.mjs";

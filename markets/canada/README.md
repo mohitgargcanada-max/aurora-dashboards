@@ -11,5 +11,4 @@ Locked Canada routing:
 5. Tavily for shortlisted catalysts and emerging leaders.
 6. Firecrawl only for difficult documents.
 
-The Canada runner currently exits as scaffold-only until the market-specific dashboard implementation is added.
-
+The Canada runner is production-oriented and EOD-only. It writes scan diagnostics locally, preserves the last-good dashboard when freshness guards block publication, and deploys via a Canada-only Pages artifact.
