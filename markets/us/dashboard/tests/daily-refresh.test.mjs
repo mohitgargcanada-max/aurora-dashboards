@@ -3,7 +3,7 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { saveSymbol, loadSymbol } from "../engine/cache-store.mjs";
-import { latestCompletedUsSession, parseEodhdBulkRows, parseStooqDailyCsv, parseStooqQuoteCsv, parseYahooQuoteRows, refreshDailyBars, stooqSymbol, yahooSymbol } from "../scripts/refresh-stooq-daily-bars.mjs";
+import { latestCompletedUsSession, parseEodhdBulkRows, parseStooqDailyCsv, parseStooqQuoteCsv, parseYahooChartRows, parseYahooQuoteRows, refreshDailyBars, stooqSymbol, yahooSymbol } from "../scripts/refresh-stooq-daily-bars.mjs";
 
 assert.equal(stooqSymbol("BRK-B"), "brk-b.us");
 assert.equal(yahooSymbol("BRK-B"), "BRK-B");
@@ -21,6 +21,20 @@ assert.equal(eodhdParsed[0].bar.volume, 2000);
 const yahooParsed = parseYahooQuoteRows([{ symbol: "MSFT", regularMarketTime: Date.parse("2026-06-23T20:00:00Z") / 1000, regularMarketOpen: 20, regularMarketDayHigh: 22, regularMarketDayLow: 19, regularMarketPrice: 21, regularMarketVolume: 2000 }]);
 assert.equal(yahooParsed[0].symbol, "MSFT");
 assert.equal(yahooParsed[0].bar.close, 21);
+const yahooChartPayload = {
+  chart: {
+    result: [{
+      timestamp: [Date.parse("2026-06-23T20:00:00Z") / 1000],
+      indicators: {
+        quote: [{ open: [20], high: [22], low: [19], close: [21], volume: [2000] }],
+        adjclose: [{ adjclose: [21] }]
+      }
+    }]
+  }
+};
+const yahooChartParsed = parseYahooChartRows("MSFT", yahooChartPayload);
+assert.equal(yahooChartParsed[0].symbol, "MSFT");
+assert.equal(yahooChartParsed[0].bar.close, 21);
 
 const directory = await mkdtemp(join(tmpdir(), "aurora-refresh-"));
 const reportPath = join(directory, "report.json");
@@ -96,7 +110,8 @@ const splitReport = await refreshDailyBars({
   fetcher: splitFetcher,
   now: new Date("2026-06-24T13:00:00Z")
 });
-assert.equal(splitReport.status, "UPDATED");
+assert.equal(splitReport.status, "PARTIAL_CURRENT_SESSION");
+assert.equal(splitReport.current_session_complete, false);
 assert.equal(splitReport.provider_counts.STOOQ, 1);
 assert.equal(splitReport.missing_quote, 1);
 assert.equal((await loadSymbol(splitDirectory, "AAPL")).data_as_of, "2026-06-23");
@@ -153,9 +168,9 @@ await saveSymbol(yahooDirectory, {
   symbol: "MSFT",
   currency: "USD",
   interval: "1d",
-  provider: "STOOQ",
-  endpoint: "d_us_txt.zip",
-  adjustment_status: "STOOQ_ADJUSTED_OHLC",
+  provider: "YAHOO_FINANCE",
+  endpoint: "https://query1.finance.yahoo.com/v8/finance/chart/MSFT",
+  adjustment_status: "YAHOO_ADJUSTED_CLOSE",
   delayed_or_live: "EOD",
   fallback_label: "FREE_PRIMARY",
   data_as_of: "2026-06-22",
@@ -164,9 +179,9 @@ await saveSymbol(yahooDirectory, {
   ]
 });
 const yahooFetcher = async url => {
-  if (url.includes("stooq.pl")) return new Response("blocked", { status: 403 });
+  assert(url.includes("/v8/finance/chart/MSFT"));
   return new Response(
-    JSON.stringify({ quoteResponse: { result: [{ symbol: "MSFT", regularMarketTime: Date.parse("2026-06-23T20:00:00Z") / 1000, regularMarketOpen: 20, regularMarketDayHigh: 22, regularMarketDayLow: 19, regularMarketPrice: 21, regularMarketVolume: 2000 }] } }),
+    JSON.stringify(yahooChartPayload),
     { status: 200, headers: { "content-type": "application/json" } }
   );
 };
@@ -179,7 +194,7 @@ const yahooReport = await refreshDailyBars({
 });
 assert.equal(yahooReport.fallback_label, "YAHOO_FALLBACK");
 assert.equal(yahooReport.provider_counts.YAHOO_FINANCE, 1);
-assert.equal((await loadSymbol(yahooDirectory, "MSFT")).fallback_label, "YAHOO_FALLBACK");
+assert.equal((await loadSymbol(yahooDirectory, "MSFT")).fallback_label, "YAHOO_CHART_DAILY");
 
 await rm(yahooDirectory, { recursive: true, force: true });
 
@@ -191,9 +206,9 @@ await saveSymbol(fallbackDirectory, {
   symbol: "MSFT",
   currency: "USD",
   interval: "1d",
-  provider: "STOOQ",
-  endpoint: "d_us_txt.zip",
-  adjustment_status: "STOOQ_ADJUSTED_OHLC",
+  provider: "EODHD",
+  endpoint: "https://eodhd.com/api/eod-bulk-last-day/US",
+  adjustment_status: "EODHD_ADJUSTED_CLOSE",
   delayed_or_live: "EOD",
   fallback_label: "FREE_PRIMARY",
   data_as_of: "2026-06-22",
@@ -202,8 +217,6 @@ await saveSymbol(fallbackDirectory, {
   ]
 });
 const fallbackFetcher = async url => {
-  if (url.includes("stooq.pl")) return new Response("blocked", { status: 403 });
-  if (url.includes("query1.finance.yahoo.com")) return new Response("blocked", { status: 403 });
   assert(url.includes("api_token=secret-token"));
   return new Response(
     JSON.stringify([{ code: "MSFT.US", date: "2026-06-23", open: 20, high: 22, low: 19, close: 21, adjusted_close: 21, volume: 2000 }]),
@@ -220,11 +233,51 @@ const fallbackReport = await refreshDailyBars({
 });
 assert.equal(fallbackReport.fallback_label, "EODHD_FALLBACK");
 assert.equal(fallbackReport.provider_counts.EODHD, 1);
-assert.equal((await loadSymbol(fallbackDirectory, "MSFT")).fallback_label, "EODHD_FALLBACK");
+assert.equal((await loadSymbol(fallbackDirectory, "MSFT")).fallback_label, "EODHD_DAILY");
 assert(!JSON.stringify(fallbackReport).includes("secret-token"));
 assert(!JSON.stringify(JSON.parse(await readFile(fallbackReportPath, "utf8"))).includes("api_token"));
 
 await rm(fallbackDirectory, { recursive: true, force: true });
+
+const mappedBulkDirectory = await mkdtemp(join(tmpdir(), "aurora-refresh-eodhd-map-"));
+const mappedBulkReportPath = join(mappedBulkDirectory, "report.json");
+await saveSymbol(mappedBulkDirectory, {
+  schema_version: "2.0",
+  market: "US",
+  symbol: "BRK-B",
+  currency: "USD",
+  interval: "1d",
+  provider: "EODHD",
+  endpoint: "https://eodhd.com/api/eod-bulk-last-day/US",
+  adjustment_status: "EODHD_ADJUSTED_CLOSE",
+  delayed_or_live: "EOD",
+  fallback_label: "FREE_PRIMARY",
+  data_as_of: "2026-06-22",
+  bars: [
+    { date: "2026-06-22", open: 419, high: 421, low: 418, close: 420, adjusted_close: 420, volume: 1900 }
+  ]
+});
+const mappedBulkFetcher = async url => {
+  assert(url.includes("api_token=map-token"));
+  return new Response(
+    JSON.stringify([{ code: "BRK.B.US", date: "2026-06-23", open: 420, high: 422, low: 419, close: 421, adjusted_close: 421, volume: 2000 }]),
+    { status: 200, headers: { "content-type": "application/json" } }
+  );
+};
+const mappedBulkReport = await refreshDailyBars({
+  cacheRoot: mappedBulkDirectory,
+  reportPath: mappedBulkReportPath,
+  chunkSize: 10,
+  fetcher: mappedBulkFetcher,
+  eodhdToken: "map-token",
+  universeRef: [{ canonical_symbol: "BRK-B", market_symbol: "BRK-B", instrument_type: "COMMON_STOCK", provider_symbols: { eodhd: "BRK.B.US", yahoo: "BRK-B" } }],
+  now: new Date("2026-06-24T13:00:00Z")
+});
+assert.equal(mappedBulkReport.provider_counts.EODHD, 1);
+assert.equal((await loadSymbol(mappedBulkDirectory, "BRK-B")).data_as_of, "2026-06-23");
+assert(!JSON.stringify(JSON.parse(await readFile(mappedBulkReportPath, "utf8"))).includes("map-token"));
+
+await rm(mappedBulkDirectory, { recursive: true, force: true });
 
 const auroraKeysDirectory = await mkdtemp(join(tmpdir(), "aurora-refresh-aurorakeys-"));
 const auroraKeysReportPath = join(auroraKeysDirectory, "report.json");
@@ -234,9 +287,9 @@ await saveSymbol(auroraKeysDirectory, {
   symbol: "MSFT",
   currency: "USD",
   interval: "1d",
-  provider: "STOOQ",
-  endpoint: "d_us_txt.zip",
-  adjustment_status: "STOOQ_ADJUSTED_OHLC",
+  provider: "EODHD",
+  endpoint: "https://eodhd.com/api/eod-bulk-last-day/US",
+  adjustment_status: "EODHD_ADJUSTED_CLOSE",
   delayed_or_live: "EOD",
   fallback_label: "FREE_PRIMARY",
   data_as_of: "2026-06-22",
@@ -251,8 +304,6 @@ delete process.env.EODHD_API_TOKEN;
 delete process.env.EODHD_API_KEY;
 process.env.AURORAKEYS = "SEC_USER_AGENT=agent\nEODHD_API_TOKEN=aurora-token\n";
 const auroraKeysFetcher = async url => {
-  if (url.includes("stooq.pl")) return new Response("blocked", { status: 403 });
-  if (url.includes("query1.finance.yahoo.com")) return new Response("blocked", { status: 403 });
   assert(url.includes("api_token=aurora-token"));
   return new Response(
     JSON.stringify([{ code: "MSFT.US", date: "2026-06-23", open: 20, high: 22, low: 19, close: 21, adjusted_close: 21, volume: 2000 }]),

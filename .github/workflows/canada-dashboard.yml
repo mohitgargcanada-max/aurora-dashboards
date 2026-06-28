@@ -1,16 +1,39 @@
 name: AURORA Canada Dashboard
 
 on:
+  pull_request:
+    paths:
+      - ".github/workflows/canada-dashboard.yml"
+      - "markets/canada/**"
+      - "scripts/canada-time-gate.mjs"
+      - "scripts/prepare-canada-pages-artifact.sh"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/canada-dashboard.yml"
+      - "markets/canada/**"
+      - "scripts/canada-time-gate.mjs"
+      - "scripts/prepare-canada-pages-artifact.sh"
   workflow_dispatch:
+    inputs:
+      eodhd_fallback_test_symbol:
+        description: "Optional Canada symbol for forced Yahoo-failure EODHD fallback verification, e.g. RY.TO"
+        required: false
+        default: ""
   schedule:
-    - cron: "0 13 * * 0-5"
-    - cron: "0 14 * * 0-5"
+    - cron: "0 13 * * 1-5"
+    - cron: "0 14 * * 1-5"
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: canada-dashboard-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  scan:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,27 +42,98 @@ jobs:
         with:
           node-version: "22"
 
-      - uses: browser-actions/setup-chrome@v1
-
-      - name: Gate scheduled run to 9am New York/Toronto
+      - name: Gate scheduled run to 9:00 AM Toronto trading day
         if: github.event_name == 'schedule'
-        run: node scripts/nyse-time-gate.mjs
+        run: node scripts/canada-time-gate.mjs
 
-      - name: Run Canada dashboard
-        env:
-          EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN }}
-          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
-          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
-        run: bash scripts/run-market.sh canada
+      - name: Install Canada dashboard dependencies
+        if: github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1'
+        run: npm ci --prefix markets/canada/dashboard
 
-      - name: Commit updated Canada outputs
+      - name: Run Canada PR validation
+        if: github.event_name == 'pull_request'
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add markets/canada
-          if ! git diff --cached --quiet; then
-            git commit -m "Update AURORA Canada dashboard"
-            git push
-          else
-            echo "No Canada dashboard changes to commit."
-          fi
+          npm --prefix markets/canada/dashboard test
+          npm --prefix markets/canada/dashboard run scan:smoke
+          bash -n scripts/prepare-canada-pages-artifact.sh
+
+      - name: Run Canada dashboard validation
+        if: github.event_name != 'pull_request' && (github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1')
+        env:
+          AURORAKEYS: ${{ secrets.AURORAKEYS }}
+          EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN || secrets.EODHD_API_KEY }}
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY || secrets.EODHD_API_TOKEN }}
+        run: |
+          npm --prefix markets/canada/dashboard test
+          npm --prefix markets/canada/dashboard run cache:refresh:indices
+          npm --prefix markets/canada/dashboard run cache:audit:indices
+          npm --prefix markets/canada/dashboard run scan:full
+          npm --prefix markets/canada/dashboard run scan:weekday
+          bash -n scripts/prepare-canada-pages-artifact.sh
+
+      - name: Run Canada EODHD fallback verification
+        if: github.event_name == 'workflow_dispatch' && inputs.eodhd_fallback_test_symbol != ''
+        env:
+          AURORAKEYS: ${{ secrets.AURORAKEYS }}
+          EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN || secrets.EODHD_API_KEY }}
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY || secrets.EODHD_API_TOKEN }}
+          AURORA_CANADA_EODHD_FALLBACK_TEST_SYMBOL: ${{ inputs.eodhd_fallback_test_symbol }}
+          AURORA_FORCE_CANADA_YAHOO_FAIL_FOR: ${{ inputs.eodhd_fallback_test_symbol }}
+        run: npm --prefix markets/canada/dashboard run test:eodhd:fallback
+
+  deploy-pages:
+    needs: validate
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Gate scheduled run to 9:00 AM Toronto trading day
+        if: github.event_name == 'schedule'
+        run: node scripts/canada-time-gate.mjs
+
+      - name: Install Canada dashboard dependencies
+        if: github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1'
+        run: npm ci --prefix markets/canada/dashboard
+
+      - name: Generate Canada dashboard
+        if: github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1'
+        env:
+          AURORAKEYS: ${{ secrets.AURORAKEYS }}
+          EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN || secrets.EODHD_API_KEY }}
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY || secrets.EODHD_API_TOKEN }}
+        run: |
+          npm --prefix markets/canada/dashboard run cache:refresh:indices
+          npm --prefix markets/canada/dashboard run cache:audit:indices
+          npm --prefix markets/canada/dashboard run scan:full
+          npm --prefix markets/canada/dashboard run scan:weekday
+
+      - name: Prepare unified GitHub Pages artifact
+        if: success() && (github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1')
+        run: bash scripts/prepare-canada-pages-artifact.sh public
+
+      - name: Configure GitHub Pages
+        if: success() && (github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1')
+        uses: actions/configure-pages@v5
+
+      - name: Upload GitHub Pages artifact
+        if: success() && (github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1')
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy GitHub Pages
+        if: success() && (github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1')
+        id: deployment
+        uses: actions/deploy-pages@v4

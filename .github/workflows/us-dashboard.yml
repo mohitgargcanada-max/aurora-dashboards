@@ -3,8 +3,8 @@ name: AURORA US Dashboard
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 13 * * 0-5"
-    - cron: "0 14 * * 0-5"
+    - cron: "0 13 * * 1-5"
+    - cron: "0 14 * * 1-5"
 
 permissions:
   contents: write
@@ -18,6 +18,9 @@ concurrency:
 jobs:
   scan:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v5
 
@@ -44,6 +47,7 @@ jobs:
         run: node scripts/nyse-time-gate.mjs
 
       - name: Load bundled Aurora secrets
+        if: github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1'
         env:
           AURORAKEYS: ${{ secrets.AURORAKEYS }}
           EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN || secrets.EODHD_API_KEY }}
@@ -144,6 +148,7 @@ jobs:
           NODE
 
       - name: Diagnose Aurora secret routing
+        if: github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1'
         env:
           AURORAKEYS: ${{ secrets.AURORAKEYS }}
           EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN || secrets.EODHD_API_KEY }}
@@ -224,7 +229,9 @@ jobs:
           console.log(`- EODHD runtime resolved by scripts: \`${process.env.EODHD_RUNTIME_RESOLVED === "1" ? "YES" : "NO"}\``);
           for (const [label, report] of [["Daily", refresh], ["History", history], ["Wrapper", wrapper]]) {
             if (!report) continue;
-            console.log(`- ${label} status: \`${report.status || report.final_status || "UNKNOWN"}\``);
+            const status = report.effective_status || report.status || report.final_status || "UNKNOWN";
+            const suffix = report.non_fatal ? " (non-fatal fallback)" : "";
+            console.log(`- ${label} status: \`${status}${suffix}\``);
             console.log(`- ${label} latest data as of: \`${report.latest_data_as_of || "NONE"}\``);
             console.log(`- ${label} provider counts: \`${JSON.stringify(report.provider_counts || {})}\``);
             const grouped = warningSummary(report.warnings || report.history_repair?.warnings || report.daily_refresh?.warnings);
@@ -244,6 +251,7 @@ jobs:
 
       - name: Commit updated US outputs
         if: always() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
+        continue-on-error: true
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -260,18 +268,24 @@ jobs:
               exit 0
             fi
             if [ "$attempt" = "4" ]; then
+              echo "US output push rejected after 4 attempts; continuing to Pages deploy with current rendered artifact." >&2
               exit 1
             fi
             echo "US output push rejected; refreshing origin/${GITHUB_REF_NAME} and retrying (${attempt}/4)." >&2
           done
 
       - name: Prepare GitHub Pages artifact
-        if: success() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
+        if: always() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
         run: |
+          test -s markets/us/AURORA_US_Dashboard.html
           rm -rf public
           mkdir -p public/markets/us/dashboard
           cp markets/us/AURORA_US_Dashboard.html public/markets/us/AURORA_US_Dashboard.html
-          cp -r markets/us/dashboard/data public/markets/us/dashboard/data
+          if [ -d markets/us/dashboard/data ]; then
+            cp -r markets/us/dashboard/data public/markets/us/dashboard/data
+          else
+            mkdir -p public/markets/us/dashboard/data
+          fi
           cat > public/index.html <<'HTML'
           <!doctype html>
           <html>
@@ -288,16 +302,28 @@ jobs:
           touch public/.nojekyll
 
       - name: Configure GitHub Pages
-        if: success() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
+        if: always() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
         uses: actions/configure-pages@v5
 
       - name: Upload GitHub Pages artifact
-        if: success() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
+        if: always() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
         uses: actions/upload-pages-artifact@v3
         with:
           path: public
 
       - name: Deploy GitHub Pages
-        if: success() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
+        if: always() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Summarize GitHub Pages deployment
+        if: success() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
+        run: |
+          page_url='${{ steps.deployment.outputs.page_url }}'
+          page_url="${page_url%/}/"
+          {
+            echo ""
+            echo "### GitHub Pages"
+            echo "- Deployment URL: ${page_url}"
+            echo "- Dashboard URL: ${page_url}markets/us/AURORA_US_Dashboard.html"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -4,6 +4,9 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { marketDimmer, weeklyWatchlistScore } from "../engine/aurora.mjs";
 import { loadSymbol } from "../engine/cache-store.mjs";
+import { isoTimestamp } from "./dashboard-state.mjs";
+import { nyseCalendarSummary } from "./us-market-calendar.mjs";
+import { enrichmentStatuses, universeReferenceRow } from "./us-universe-reference.mjs";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const trackingConfig = JSON.parse(await readFile(resolve(root, "config/tracking_basket.json"), "utf8"));
@@ -11,6 +14,7 @@ const gicsConfig = JSON.parse(await readFile(resolve(root, "config/gics_sector_p
 const cacheRoot = resolve(root, "cache/us/ohlcv");
 const archive = resolve(root, "cache/us/d_us_txt.zip");
 const output = resolve(root, "data/us-dashboard-state.json");
+const universeReferenceOutput = resolve(root, "cache/us/us-universe-reference.json");
 const round = (x, n = 2) => Number.isFinite(x) ? Number(x.toFixed(n)) : null;
 const mean = xs => xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null;
 const sma = (xs, n) => xs.length >= n ? mean(xs.slice(-n)) : null;
@@ -156,19 +160,41 @@ const benchmarkRecords = Object.fromEntries((await Promise.all(benchmarkSymbols.
 const spy = benchmarkRecords.SPY?.bars || [];
 if (spy.length < 252) throw new Error("SPY benchmark cache is insufficient");
 const asOf = spy.at(-1).date;
+const generatedAt = isoTimestamp();
 const classificationCache = await loadClassificationCache();
+const universeReference = securityMaster.map(row => universeReferenceRow(row, classificationCache[row.symbol]));
+const referenceBySymbol = new Map(universeReference.map(row => [row.market_symbol, row]));
+const technicalEligibleSymbols = new Set(universeReference.filter(row => row.eligible_technical).map(row => row.market_symbol));
+const technicalSecurityMaster = securityMaster.filter(row => technicalEligibleSymbols.has(row.symbol));
+const rawListedCount = securityMaster.length;
+const technicalEligibleCount = technicalSecurityMaster.length;
+const notApplicableInstrumentCount = rawListedCount - technicalEligibleCount;
+const unknownReviewCount = universeReference.filter(row => row.instrument_type === "UNKNOWN_REVIEW").length;
+const instrumentTypeCounts = {};
+for (const row of universeReference) instrumentTypeCounts[row.instrument_type] = (instrumentTypeCounts[row.instrument_type] || 0) + 1;
+await writeFile(universeReferenceOutput, JSON.stringify({
+  schema_version: "1.0",
+  generated_at: generatedAt,
+  raw_listed_count: rawListedCount,
+  technical_eligible_count: technicalEligibleCount,
+  not_applicable_instrument_count: notApplicableInstrumentCount,
+  unknown_review_count: unknownReviewCount,
+  instrument_type_counts: instrumentTypeCounts,
+  symbols: universeReference
+}, null, 2), "utf8");
 
-let loaded = 0, current = 0, valid = 0;
+let loaded = 0, current = 0, valid = 0, ipoShortHistoryCount = 0;
 const candidates = [];
 const events = [];
-for (let offset = 0; offset < securityMaster.length; offset += 48) {
-  const batch = securityMaster.slice(offset, offset + 48);
+for (let offset = 0; offset < technicalSecurityMaster.length; offset += 48) {
+  const batch = technicalSecurityMaster.slice(offset, offset + 48);
   const records = await Promise.all(batch.map(x => load(x.symbol)));
   records.forEach((record, i) => {
     if (!record) return;
     loaded++;
     const meta = batch[i], bars = record.bars;
     if (record.data_as_of === asOf) current++;
+    if (record.data_as_of === asOf && bars.length > 0 && bars.length < 252) ipoShortHistoryCount++;
     if (record.data_as_of === asOf && bars.length >= 20 && bars.length < 252) {
       const closes = bars.map(x => x.close), volumes = bars.map(x => x.volume), price = closes.at(-1);
       const rs = alignedRs(bars, spy), rsValues = rs.map(x => x.value), rs21 = ema(rsValues, 21), rsNow = rsValues.at(-1);
@@ -224,6 +250,7 @@ for (let offset = 0; offset < securityMaster.length; offset += 48) {
     const ve2 = ve2Label({ rvol, dryup, compressed, dayPct, close: bars.at(-1).close, open: bars.at(-1).open });
     const pattern = patternContext({ r5, r15, r25, compressed, nearPivot, stage, bars });
     const classification = classificationFor(meta.symbol, classificationCache);
+    const universeMeta = referenceBySymbol.get(meta.symbol) || universeReferenceRow(meta, classificationCache[meta.symbol]);
     let bucket = "REPAIR_WATCH";
     if (stage === "STAGE_4" || addv < 1_000_000) bucket = "AVOID_FRESH_LONG";
     else if (axm > 3 || price > trigger * 1.05) bucket = "NO_CHASE";
@@ -242,6 +269,17 @@ for (let offset = 0; offset < securityMaster.length; offset += 48) {
     const extensionScore = Math.abs(axm) <= 2 ? 5 : Math.abs(axm) <= 3 ? 3 : 0;
     const technical = marketScore + rsScore + rrgScore + patternScore + entryScore + volumeScore + pullbackScore + riskScore;
     candidates.push({ ticker: meta.symbol, exchange: meta.exchange, sector: classification.gics_sector, gics_sector: classification.gics_sector, main_industry: classification.main_industry, sub_industry: classification.sub_industry, classification_status: classification.classification_status, sector_proxy: classification.sector_proxy, price: round(price), day_pct: round(dayPct), rs_trifecta: trifecta, rs_ema21: rsEma, rs_slope5: round(rsSlope5), rs63_prox: round(rsNow / rs63 * 100, 1), rs52_prox: round(rsNow / rs252 * 100, 1), mansfield: round(mansfield), rmv5: round(r5), rmv15: round(r15), rmv25: round(r25), rmv50: round(r50), stage, bucket, pivot: round(priorPivot), trigger: round(trigger), active_trigger_state: triggerOwnedSetup ? "PENDING_CERTIFIED_TRIGGER_PROXY" : "NO_ACTIVE_TRIGGER_PROXY", entry_reference: round(entryReference), stop: round(entryStop), risk_pct: round(entryRiskPct), entry_stop: round(entryStop), entry_risk_pct: round(entryRiskPct), entry_risk_atr: round(entryRiskAtr), thesis_stop: round(thesisStop), thesis_risk_pct: round(thesisRiskPct), entry_permission: permissionTier, level_2r: round(entryReference + 2 * (entryReference - entryStop)), level_3r: round(entryReference + 3 * (entryReference - entryStop)), axm_atr: round(axm), axm_label: axmLabel(axm), rvol: round(rvol), avg_dollar_volume_20_usd_equiv: round(addv, 0), liquidity_label: addv >= 100_000_000 ? "LIQUIDITY_HIGH" : addv >= 20_000_000 ? "LIQUIDITY_PASS" : "LIQUIDITY_THIN", rmv_tight_label: rmvLabel(r15), risk_bucket: riskBucket(entryRiskPct), rmv_pivot_quality: Math.abs(nearPivot) <= 3 && compressed ? "RMV_PIVOT_QUALITY_A" : Math.abs(nearPivot) <= 7 ? "RMV_PIVOT_QUALITY_B" : "RMV_PIVOT_QUALITY_NONE", final_bucket: bucket, setup: bucket === "TRIGGER_READY" ? "TRIGGER_READY" : bucket === "EARLY_ENTRY_WATCH" ? "EARLY_ENTRY" : bucket === "PULLBACK_WATCH" ? "PULLBACK" : bucket === "RSNH_WATCH_ONLY" ? "RSNH_WATCH" : bucket === "NO_CHASE" ? "NO_CHASE_RISK" : "REPAIR", rs_score_pct: round(rsScore / 12 * 100), rmv_tightness_score_pct: round(Math.max(0, 100 - r15 * 4)), compression_score_pct: compressed ? 85 : 35, theme_score_pct: classification.gics_sector === "GICS_UNKNOWN" ? 45 : 55, theme_primary: classification.theme_primary, theme_tracker_label: classification.gics_sector === "GICS_UNKNOWN" ? "THEME_UNKNOWN" : "THEME_NEUTRAL", show_of_power_label: rvol >= 2 && dayPct >= 3 ? "SHOW_OF_POWER_VALID" : "NO_SHOW_OF_POWER", market_dimmer: 0, market_permission: "WATCHLIST_ONLY", technical_strength_score: round(technical), technical_strength_label: techLabel(technical), score_components: { market: marketScore, rs: rsScore, rrg: rrgScore, pattern: patternScore, entry: entryScore, volume: volumeScore, fundamental: 5, pullback: pullbackScore, risk: riskScore, extension: extensionScore }, aurora_sig_score: round(technical + 5 + extensionScore), rrg_quadrant: rrgState.quadrant, rrg_ratio: round(rrgState.ratio), rrg_momentum: round(rrgState.momentum), rrg_direction: rrgState.quadrant === "LEADING" && rrgState.momentum >= 102 ? "NORTHEAST" : rrgState.quadrant === "IMPROVING" ? "NORTH" : rrgState.quadrant === "WEAKENING" ? "EAST" : "SOUTHWEST", pbx_quality: pbx.pbx_quality, pbx_ma_defense: pbx.pbx_ma_defense, pbx_reversal: pbx.pbx_reversal, ve2_label: ve2, ve2_grade: ve2.includes("CONFIRMED") || ve2.includes("FINAL_DRYUP") ? "A" : ve2.includes("CONSTRUCTIVE") || ve2.includes("CONTROLLED") || ve2.includes("LIFT") ? "B" : "C", basepivot_quality: Math.abs(nearPivot) <= 3 && compressed ? "BASEPIVOT_QUALITY_A" : Math.abs(nearPivot) <= 7 ? "BASEPIVOT_QUALITY_B" : "BASEPIVOT_QUALITY_C", basepivot_state: price >= priorPivot ? "BASEPIVOT_ACTIVE_AFTER_WEAK_BREAKOUT" : "BASEPIVOT_ACTIVE_BELOW_TRIGGER", rmvp: round(priorPivot * (compressed ? 0.999 : 1.002)), rmvp_quality: compressed && Math.abs(nearPivot) <= 5 ? "RMVP_QUALITY_A" : Math.abs(nearPivot) <= 7 ? "RMVP_QUALITY_B" : "RMVP_QUALITY_NONE", above_ema21: price > e21, above_ema50: price > s50, dryup, compressed, ...pattern, data_state: "CALCULATED_TECHNICAL_FUNDAMENTAL_NEUTRAL", provider: record.provider, data_as_of: record.data_as_of });
+    Object.assign(candidates.at(-1), {
+      instrument_type: universeMeta.instrument_type,
+      eligible_technical: universeMeta.eligible_technical,
+      technical_exclusion_reason: universeMeta.technical_exclusion_reason,
+      provider_symbols: universeMeta.provider_symbols,
+      mapping_confidence: universeMeta.mapping_confidence,
+      listing_exchange: universeMeta.listing_exchange,
+      cik: universeMeta.cik,
+      sector_source: universeMeta.sector_source,
+      sector_status: universeMeta.sector_status
+    });
     const candidate = candidates.at(-1);
     const ranges = bars.map(x => x.high - x.low);
     const price52Prox = price / max(closes, 252) * 100;
@@ -358,6 +396,8 @@ const scannerCounts = {};
 for (const candidate of candidates) for (const scan of candidate.scan_memberships) scannerCounts[scan] = (scannerCounts[scan] || 0) + 1;
 scannerCounts.R11_DAILY_TOP = daily.length;
 scannerCounts.R15_WEEKLY_WATCHLIST = weekly.length;
+const dataRepairCount = Math.max(0, technicalEligibleCount - valid - ipoShortHistoryCount);
+const technicalCoveragePct = round(valid / technicalEligibleCount * 100);
 events.sort((a, b) => ({ ACTIONABLE: 0, NEW: 1, DEVELOPING: 2, EXTENDED_NO_CHASE: 3, FAILED_REPAIR: 4 }[a.lifecycle] - { ACTIONABLE: 0, NEW: 1, DEVELOPING: 2, EXTENDED_NO_CHASE: 3, FAILED_REPAIR: 4 }[b.lifecycle]) || b.event_date.localeCompare(a.event_date));
 const marketLabels = marketCycleLabels(dimmer);
 const aboveEma21Count = candidates.filter(x => x.above_ema21).length;
@@ -372,6 +412,7 @@ const referencePass = referenceRows.filter(x => ["PASS", "PARTIAL"].includes(x.r
 const referenceBasketState = referenceRows.length && referencePass / referenceRows.length >= 0.6 ? "REFERENCE_BASKET_CONFIRMING" : referenceRows.length && referencePass / referenceRows.length >= 0.3 ? "REFERENCE_BASKET_MIXED" : "REFERENCE_BASKET_SQUATTING";
 const sectionSort = xs => xs.sort((a, b) => b.weekly_watchlist_score - a.weekly_watchlist_score || b.technical_strength_score - a.technical_strength_score).slice(0, 50);
 const state = {
+  generated_at: generatedAt,
   run: {
     run_type: "SUNDAY_FULL_UNIVERSE_REBUILD",
     status: "CALCULATED_WITH_DECLARED_GAPS",
@@ -379,15 +420,25 @@ const state = {
     provider: "STOOQ",
     fallback_label: "FREE_PRIMARY",
     universe_status: "STOOQ_STOCK_PATH_CLASSIFIED",
-    expected_symbols: securityMaster.length,
+    expected_symbols: technicalEligibleCount,
+    raw_listed_count: rawListedCount,
+    technical_eligible_count: technicalEligibleCount,
+    calculated_technical_count: valid,
+    technical_coverage_pct: technicalCoveragePct,
+    not_applicable_instrument_count: notApplicableInstrumentCount,
+    ipo_short_history_count: ipoShortHistoryCount,
+    data_repair_count: dataRepairCount,
+    unknown_review_count: unknownReviewCount,
+    instrument_type_counts: instrumentTypeCounts,
     loaded_symbols: loaded,
     valid_latest_symbols: current,
     calculated_symbols: valid,
-    coverage_pct: round(valid / securityMaster.length * 100),
+    coverage_pct: technicalCoveragePct,
     market_permission: marketPermission,
     daily_top_status: daily.length ? `${daily.length}_QUALIFIED` : "NO_VALID_ENTRY",
     warning: "Full Stooq stock-path universe calculated. Official index memberships, sector mapping, fundamentals and official PEAD/EP/HVE catalysts remain enrichment-required; no provider was blended within a series."
   },
+  market_calendar: nyseCalendarSummary(),
   market: {
     market_state: marketLabels.oneil,
     oneil_market_cycle: marketLabels.oneil,
@@ -434,6 +485,20 @@ const state = {
   scanner_counts: scannerCounts,
   events: events.slice(0, 100),
   event_registry_count: events.length,
+  enrichment_status: enrichmentStatuses({
+    hasEvents: events.length > 0,
+    hasSectorCache: Object.keys(classificationCache).length > 0
+  }),
+  universe_reference: {
+    path: "cache/us/us-universe-reference.json",
+    raw_listed_count: rawListedCount,
+    technical_eligible_count: technicalEligibleCount,
+    not_applicable_instrument_count: notApplicableInstrumentCount,
+    ipo_short_history_count: ipoShortHistoryCount,
+    data_repair_count: dataRepairCount,
+    unknown_review_count: unknownReviewCount,
+    instrument_type_counts: instrumentTypeCounts
+  },
   provenance: {
     provider_route: "OFFICIAL_US_DIRECTORIES_PENDING_PLUS_STOOQ_CACHE_FREE_PRIMARY_YAHOO_FALLBACK_EODHD_LAST_RESORT",
     classification_system: gicsConfig.classification_system,
@@ -450,7 +515,8 @@ const state = {
     missing: ["official index membership", "issuer/SEC event verification", "PEAD/EP/HVE catalyst registry", "full fundamental enrichment", "exact GICS sub-industry for uncached names"]
   }
 };
-state.run.status = "PARTIAL_LOCKED_ENRICHMENT_REQUIRED";
+state.run.status = "CALCULATED_WITH_DECLARED_GAPS";
+state.run.enrichment_status = "LOCKED_ENRICHMENT_REQUIRED";
 state.run.daily_top_status = daily.length ? "CONDITIONAL_NOT_PROMOTED" : "NO_VALID_ENTRY";
 state.run.warning = "Universe-wide Stooq technical discovery completed. Weekly scores and Daily Top plans are provisional until official active-universe/membership, sector mapping, complete locked pattern certification, and event/fundamental enrichment finish.";
 for (const candidate of state.core) candidate.technical_strength_label = "NOT_CERTIFIED_PARTIAL";
@@ -473,7 +539,16 @@ state.tracking_basket = {
 state.all_candidates = candidates.map(candidate => ({
   ticker: candidate.ticker,
   exchange: candidate.exchange,
+  instrument_type: candidate.instrument_type,
+  eligible_technical: candidate.eligible_technical,
+  technical_exclusion_reason: candidate.technical_exclusion_reason,
+  provider_symbols: candidate.provider_symbols,
+  mapping_confidence: candidate.mapping_confidence,
+  listing_exchange: candidate.listing_exchange,
+  cik: candidate.cik,
   gics_sector: candidate.gics_sector,
+  sector_source: candidate.sector_source,
+  sector_status: candidate.sector_status,
   main_industry: candidate.main_industry,
   sub_industry: candidate.sub_industry,
   theme_primary: candidate.theme_primary,

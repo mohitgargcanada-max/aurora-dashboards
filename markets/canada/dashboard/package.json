@@ -1,11 +1,17 @@
 {
   "name": "aurora-canada-dashboard",
   "private": true,
-  "version": "0.1.0",
-  "description": "AURORA Canada dashboard scaffold.",
+  "type": "module",
   "scripts": {
-    "scan:full": "node scripts/scan-full.mjs",
-    "test": "node scripts/validate-scaffold.mjs"
-  }
+    "test": "node tests/canada-dashboard.test.mjs",
+    "cache:refresh:daily": "node scripts/refresh-canada-daily-bars.mjs",
+    "cache:refresh:indices": "node scripts/refresh-canada-index-bars.mjs",
+    "cache:audit:indices": "node scripts/audit-indices.mjs",
+    "scan:full": "node scripts/run-full-dashboard-scan.mjs",
+    "scan:weekday": "node scripts/run-weekday-active-refresh.mjs",
+    "scan:smoke": "node scripts/run-fixture-scan-smoke.mjs",
+    "test:eodhd:fallback": "node scripts/run-eodhd-fallback-verification.mjs",
+    "backfill:history": "node scripts/backfill-canada-history.mjs"
+  },
+  "dependencies": {}
 }
-
