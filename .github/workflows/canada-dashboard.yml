@@ -16,6 +16,11 @@ on:
       - "scripts/canada-time-gate.mjs"
       - "scripts/prepare-canada-pages-artifact.sh"
   workflow_dispatch:
+    inputs:
+      eodhd_fallback_test_symbol:
+        description: "Optional Canada symbol for forced Yahoo-failure EODHD fallback verification, e.g. RY.TO"
+        required: false
+        default: ""
   schedule:
     - cron: "0 13 * * 1-5"
     - cron: "0 14 * * 1-5"
@@ -55,7 +60,9 @@ jobs:
       - name: Run Canada dashboard validation
         if: github.event_name != 'pull_request' && (github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1')
         env:
-          EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN }}
+          AURORAKEYS: ${{ secrets.AURORAKEYS }}
+          EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN || secrets.EODHD_API_KEY }}
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY || secrets.EODHD_API_TOKEN }}
         run: |
           npm --prefix markets/canada/dashboard test
           npm --prefix markets/canada/dashboard run cache:refresh:indices
@@ -63,6 +70,16 @@ jobs:
           npm --prefix markets/canada/dashboard run scan:full
           npm --prefix markets/canada/dashboard run scan:weekday
           bash -n scripts/prepare-canada-pages-artifact.sh
+
+      - name: Run Canada EODHD fallback verification
+        if: github.event_name == 'workflow_dispatch' && inputs.eodhd_fallback_test_symbol != ''
+        env:
+          AURORAKEYS: ${{ secrets.AURORAKEYS }}
+          EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN || secrets.EODHD_API_KEY }}
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY || secrets.EODHD_API_TOKEN }}
+          AURORA_CANADA_EODHD_FALLBACK_TEST_SYMBOL: ${{ inputs.eodhd_fallback_test_symbol }}
+          AURORA_FORCE_CANADA_YAHOO_FAIL_FOR: ${{ inputs.eodhd_fallback_test_symbol }}
+        run: npm --prefix markets/canada/dashboard run test:eodhd:fallback
 
   deploy-pages:
     needs: validate
@@ -93,7 +110,9 @@ jobs:
       - name: Generate Canada dashboard
         if: github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1'
         env:
-          EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN }}
+          AURORAKEYS: ${{ secrets.AURORAKEYS }}
+          EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN || secrets.EODHD_API_KEY }}
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY || secrets.EODHD_API_TOKEN }}
         run: |
           npm --prefix markets/canada/dashboard run cache:refresh:indices
           npm --prefix markets/canada/dashboard run cache:audit:indices

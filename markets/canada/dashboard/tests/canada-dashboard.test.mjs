@@ -9,7 +9,7 @@ import { canadaCalendarSummary, isCanadaTradingDay, previousCanadaTradingDay } f
 import { writeJson, readJson } from "../engine/cache-store.mjs";
 import { alignedSeries } from "../engine/indicators.mjs";
 import { renderCanadaDashboard } from "../engine/scan-engine.mjs";
-import { mapYahooToEodhdSymbol, normalizeEodhdDaily } from "../engine/eodhd-client.mjs";
+import { mapYahooToEodhdSymbol, normalizeEodhdDaily, resolveEodhdToken } from "../engine/eodhd-client.mjs";
 
 assert.equal(CANADA_PROFILE.market, "CANADA");
 assert.equal(CANADA_PROFILE.currency, "CAD");
@@ -65,6 +65,12 @@ assert.ok(CANADA_PROVIDER_ROUTE.includes("EODHD_FALLBACK"));
 assert.equal(mapYahooToEodhdSymbol("^GSPTSE"), "GSPTSE.INDX");
 assert.equal(mapYahooToEodhdSymbol("RY.TO", "TSX"), "RY.TO");
 assert.equal(mapYahooToEodhdSymbol("ABC", "TSXV"), "ABC.V");
+assert.equal(resolveEodhdToken({ EODHD_API_KEY: "token-a" }), "token-a");
+assert.equal(resolveEodhdToken({ AURORAKEYS: "EODHD_API_TOKEN=token-b\n" }), "token-b");
+assert.equal(resolveEodhdToken({ AURORAKEYS: JSON.stringify({ aurora: { eodhd: { api_key: "token-c" } } }) }), "token-c");
+assert.equal(resolveEodhdToken({ AURORAKEYS: JSON.stringify({ providers: [{ provider: "EODHD", key: "token-d" }] }) }), "token-d");
+assert.equal(resolveEodhdToken({ AURORAKEYS: "EOD Historical Data: token-e\n" }), "token-e");
+assert.equal(resolveEodhdToken({ AURORAKEYS: "EODHD_API_TOKEN token-f\n" }), "token-f");
 const eodhd = normalizeEodhdDaily("RY.TO", [{ date: "2026-06-26", open: 10, high: 12, low: 9, close: 10, adjusted_close: 5, volume: 1000 }], { mappedSymbol: "RY.TO" });
 assert.equal(eodhd.provider, "EODHD");
 assert.equal(eodhd.adjustment_status, "ADJUSTED_OHLCV_FROM_ADJUSTED_CLOSE_RATIO");

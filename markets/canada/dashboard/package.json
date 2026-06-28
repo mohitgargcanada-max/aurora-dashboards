@@ -10,6 +10,7 @@
     "scan:full": "node scripts/run-full-dashboard-scan.mjs",
     "scan:weekday": "node scripts/run-weekday-active-refresh.mjs",
     "scan:smoke": "node scripts/run-fixture-scan-smoke.mjs",
+    "test:eodhd:fallback": "node scripts/run-eodhd-fallback-verification.mjs",
     "backfill:history": "node scripts/backfill-canada-history.mjs"
   },
   "dependencies": {}
