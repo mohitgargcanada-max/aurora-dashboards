@@ -8,6 +8,12 @@ function isRecordUsable(record, expectedSession) {
   return { ok: true, reason: "OK" };
 }
 
+function forcedYahooFailureReason(symbol) {
+  const raw = process.env.AURORA_FORCE_CANADA_YAHOO_FAIL_FOR || "";
+  const symbols = raw.split(",").map(x => x.trim()).filter(Boolean);
+  return symbols.includes(symbol) ? `Yahoo forced failure requested by AURORA_FORCE_CANADA_YAHOO_FAIL_FOR=${raw}` : null;
+}
+
 export async function fetchCanadaDaily(symbol, {
   exchange = "",
   range = "5y",
@@ -17,6 +23,8 @@ export async function fetchCanadaDaily(symbol, {
 } = {}) {
   const attempts = [];
   try {
+    const forcedFailure = forcedYahooFailureReason(symbol);
+    if (forcedFailure) throw new Error(`${symbol}: ${forcedFailure}`);
     const yahoo = await fetchYahooDaily(symbol, { range, currency, fallback_reason: "YAHOO_FREE_PRIMARY" });
     const usable = isRecordUsable(yahoo, expectedSession);
     attempts.push({ provider: yahoo.provider, status: usable.ok ? "OK" : "UNUSABLE", data_as_of: yahoo.data_as_of, reason: usable.reason, type });
