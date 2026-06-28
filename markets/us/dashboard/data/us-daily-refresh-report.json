@@ -1,23 +1,27 @@
 {
-  "status": "UPDATED",
+  "status": "PARTIAL_CURRENT_SESSION",
   "route_order": [
     "STOOQ",
     "YAHOO_FINANCE",
     "EODHD"
   ],
   "provider_counts": {
-    "EODHD": 2
+    "YAHOO_FINANCE": 5355,
+    "EODHD": 3530
   },
   "fallback_label": "EODHD_FALLBACK",
-  "retrieved_at": "2026-06-27T21:57:31.420Z",
+  "retrieved_at": "2026-06-28T04:40:05.417Z",
   "expected_completed_session": "2026-06-26",
   "latest_data_as_of": "2026-06-26",
-  "symbols_requested": 560,
-  "quotes_loaded": 49613,
-  "inserted": 2,
-  "corrected": 0,
-  "unchanged": 0,
-  "missing_quote": 558,
+  "current_session_complete": false,
+  "symbols_requested": 11952,
+  "quotes_loaded": 8885,
+  "inserted": 42,
+  "corrected": 2984,
+  "unchanged": 5859,
+  "unchanged_current": 2416,
+  "unchanged_cache_better_than_provider": 0,
+  "missing_quote": 651,
   "stale_quote": 0,
   "invalid": 0,
   "warnings": [
@@ -700,7 +704,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "AGM-G"
+        "AHL-D"
       ],
       "warning": "fetch failed",
       "offset": 0
@@ -709,7 +713,16 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "AHL-D"
+        "AHL-E"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AHL-F"
       ],
       "warning": "fetch failed",
       "offset": 0
@@ -736,24 +749,6 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "AHL-F"
-      ],
-      "warning": "fetch failed",
-      "offset": 0
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "AHT-G"
-      ],
-      "warning": "fetch failed",
-      "offset": 0
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
         "AHT-H"
       ],
       "warning": "fetch failed",
@@ -772,16 +767,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "ALB-A"
-      ],
-      "warning": "fetch failed",
-      "offset": 0
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "ALL-H"
+        "AHT-G"
       ],
       "warning": "fetch failed",
       "offset": 0
@@ -799,25 +785,16 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "ALL-B"
-      ],
-      "warning": "fetch failed",
-      "offset": 0
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "ALL-I"
-      ],
-      "warning": "fetch failed",
-      "offset": 0
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
         "ALISU"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ALB-A"
       ],
       "warning": "fetch failed",
       "offset": 0
@@ -844,7 +821,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "AMH-H"
+        "ALL-B"
       ],
       "warning": "fetch failed",
       "offset": 0
@@ -853,7 +830,16 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "AMH-G"
+        "ALL-H"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ALL-I"
       ],
       "warning": "fetch failed",
       "offset": 0
@@ -871,7 +857,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "AMPX-WS"
+        "AMH-G"
       ],
       "warning": "fetch failed",
       "offset": 0
@@ -880,7 +866,16 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "APADR"
+        "AMH-H"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AMPX-WS"
       ],
       "warning": "fetch failed",
       "offset": 0
@@ -898,25 +893,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "APXTU"
-      ],
-      "warning": "fetch failed",
-      "offset": 0
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "APXT"
-      ],
-      "warning": "fetch failed",
-      "offset": 0
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "APO-A"
+        "APADR"
       ],
       "warning": "fetch failed",
       "offset": 0
@@ -934,7 +911,25 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "ARCI"
+        "APO-A"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "APXT"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "APXTU"
       ],
       "warning": "fetch failed",
       "offset": 0
@@ -952,7 +947,25 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
+        "ARCI"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
         "ARR-C"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ARES-B"
       ],
       "warning": "fetch failed",
       "offset": 0
@@ -979,7 +992,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "ARES-B"
+        "ATH-A"
       ],
       "warning": "fetch failed",
       "offset": 0
@@ -997,24 +1010,6 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "ATH-D"
-      ],
-      "warning": "fetch failed",
-      "offset": 0
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "ATH-A"
-      ],
-      "warning": "fetch failed",
-      "offset": 0
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
         "ATH-E"
       ],
       "warning": "fetch failed",
@@ -1024,7 +1019,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "BA-A"
+        "ATH-D"
       ],
       "warning": "fetch failed",
       "offset": 0
@@ -1042,15 +1037,6 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "AZUL"
-      ],
-      "warning": "fetch failed",
-      "offset": 0
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
         "AXS-E"
       ],
       "warning": "fetch failed",
@@ -1060,7 +1046,16 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "BAC-E"
+        "BA-A"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "AZUL"
       ],
       "warning": "fetch failed",
       "offset": 0
@@ -1078,15 +1073,6 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "BAC-B"
-      ],
-      "warning": "fetch failed",
-      "offset": 0
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
         "BAC-L"
       ],
       "warning": "fetch failed",
@@ -1096,7 +1082,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "BAC-M"
+        "BAC-N"
       ],
       "warning": "fetch failed",
       "offset": 0
@@ -1105,7 +1091,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "BAC-N"
+        "BAC-M"
       ],
       "warning": "fetch failed",
       "offset": 0
@@ -1132,15 +1118,6 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "BAC-Q"
-      ],
-      "warning": "fetch failed",
-      "offset": 0
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
         "BAC-S"
       ],
       "warning": "fetch failed",
@@ -1150,16 +1127,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "BBAI-WS"
-      ],
-      "warning": "fetch failed",
-      "offset": 0
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "BC-C"
+        "BAC-Q"
       ],
       "warning": "fetch failed",
       "offset": 0
@@ -1177,6 +1145,15 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
+        "BBAI-WS"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
         "BCV-A"
       ],
       "warning": "fetch failed",
@@ -1186,7 +1163,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "BDCIW"
+        "BC-C"
       ],
       "warning": "fetch failed",
       "offset": 0
@@ -1196,6 +1173,15 @@
       "symbols": 1,
       "sample": [
         "BDCIU"
+      ],
+      "warning": "fetch failed",
+      "offset": 0
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "BDCIW"
       ],
       "warning": "fetch failed",
       "offset": 0
@@ -1879,33 +1865,6 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "BML-G"
-      ],
-      "warning": "fetch failed",
-      "offset": 75
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "BML-H"
-      ],
-      "warning": "fetch failed",
-      "offset": 75
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "BML-J"
-      ],
-      "warning": "fetch failed",
-      "offset": 75
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
         "BML-L"
       ],
       "warning": "fetch failed",
@@ -1915,7 +1874,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "BRKRP"
+        "BPACR"
       ],
       "warning": "fetch failed",
       "offset": 75
@@ -1924,7 +1883,25 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "BWIV-U"
+        "BOH-B"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "BRKHU"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "BULX"
       ],
       "warning": "fetch failed",
       "offset": 75
@@ -1942,6 +1919,15 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
+        "BWIV-U"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
         "BWIV"
       ],
       "warning": "fetch failed",
@@ -1951,7 +1937,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "C-N"
+        "CAEP"
       ],
       "warning": "fetch failed",
       "offset": 75
@@ -1960,7 +1946,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "CAEP"
+        "C-N"
       ],
       "warning": "fetch failed",
       "offset": 75
@@ -2005,6 +1991,33 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
+        "CELG-R"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "CFG-E"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "CFR-B"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
         "CFG-H"
       ],
       "warning": "fetch failed",
@@ -2032,52 +2045,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "CELG-R"
-      ],
-      "warning": "fetch failed",
-      "offset": 75
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "CFR-B"
-      ],
-      "warning": "fetch failed",
-      "offset": 75
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "CHECU"
-      ],
-      "warning": "fetch failed",
-      "offset": 75
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "CIM-A"
-      ],
-      "warning": "fetch failed",
-      "offset": 75
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
         "CHECW"
-      ],
-      "warning": "fetch failed",
-      "offset": 75
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "CFG-E"
       ],
       "warning": "fetch failed",
       "offset": 75
@@ -2095,7 +2063,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "CIM-B"
+        "CHECU"
       ],
       "warning": "fetch failed",
       "offset": 75
@@ -2105,6 +2073,24 @@
       "symbols": 1,
       "sample": [
         "CHMI-B"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "CIM-A"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "CIM-B"
       ],
       "warning": "fetch failed",
       "offset": 75
@@ -2140,15 +2126,6 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "CMII"
-      ],
-      "warning": "fetch failed",
-      "offset": 75
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
         "CLDT-A"
       ],
       "warning": "fetch failed",
@@ -2167,7 +2144,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "CMIIW"
+        "CMII"
       ],
       "warning": "fetch failed",
       "offset": 75
@@ -2185,25 +2162,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "CMS-B"
-      ],
-      "warning": "fetch failed",
-      "offset": 75
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "CMRE-D"
-      ],
-      "warning": "fetch failed",
-      "offset": 75
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "CMRE-B"
+        "CMIIW"
       ],
       "warning": "fetch failed",
       "offset": 75
@@ -2221,7 +2180,25 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "CMS-C"
+        "CMRE-B"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "CMRE-D"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "CMS-B"
       ],
       "warning": "fetch failed",
       "offset": 75
@@ -2239,15 +2216,6 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "CODI-A"
-      ],
-      "warning": "fetch failed",
-      "offset": 75
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
         "CODI-B"
       ],
       "warning": "fetch failed",
@@ -2257,7 +2225,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "COF-I"
+        "CODI-C"
       ],
       "warning": "fetch failed",
       "offset": 75
@@ -2266,7 +2234,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "CODI-C"
+        "COF-I"
       ],
       "warning": "fetch failed",
       "offset": 75
@@ -2302,16 +2270,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "CTA-A"
-      ],
-      "warning": "fetch failed",
-      "offset": 75
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "CRACW"
+        "COF-L"
       ],
       "warning": "fetch failed",
       "offset": 75
@@ -2329,43 +2288,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "CRAN"
-      ],
-      "warning": "fetch failed",
-      "offset": 75
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "CTAA"
-      ],
-      "warning": "fetch failed",
-      "offset": 75
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "CTAAU"
-      ],
-      "warning": "fetch failed",
-      "offset": 75
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "DBRG-H"
-      ],
-      "warning": "fetch failed",
-      "offset": 75
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "COF-L"
+        "CTA-A"
       ],
       "warning": "fetch failed",
       "offset": 75
@@ -2375,6 +2298,15 @@
       "symbols": 1,
       "sample": [
         "CTO-A"
+      ],
+      "warning": "fetch failed",
+      "offset": 75
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "DBRG-H"
       ],
       "warning": "fetch failed",
       "offset": 75
@@ -3058,7 +2990,16 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "EFC-D"
+        "EFC-B"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "EFC-C"
       ],
       "warning": "fetch failed",
       "offset": 150
@@ -3076,7 +3017,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "EFC-B"
+        "EFC-D"
       ],
       "warning": "fetch failed",
       "offset": 150
@@ -3085,7 +3026,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "EFC-C"
+        "EMIS"
       ],
       "warning": "fetch failed",
       "offset": 150
@@ -3112,15 +3053,6 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "EMIS"
-      ],
-      "warning": "fetch failed",
-      "offset": 150
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
         "EONR-WS"
       ],
       "warning": "fetch failed",
@@ -3139,15 +3071,6 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "EPR-G"
-      ],
-      "warning": "fetch failed",
-      "offset": 150
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
         "EPR-C"
       ],
       "warning": "fetch failed",
@@ -3157,16 +3080,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "EQH-C"
-      ],
-      "warning": "fetch failed",
-      "offset": 150
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "ET-I"
+        "EPR-G"
       ],
       "warning": "fetch failed",
       "offset": 150
@@ -3185,6 +3099,24 @@
       "symbols": 1,
       "sample": [
         "ERNAW"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "EQH-C"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "ET-I"
       ],
       "warning": "fetch failed",
       "offset": 150
@@ -3220,15 +3152,6 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "EVEX-WS"
-      ],
-      "warning": "fetch failed",
-      "offset": 150
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
         "EURKR"
       ],
       "warning": "fetch failed",
@@ -3238,7 +3161,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "F-B"
+        "EVEX-WS"
       ],
       "warning": "fetch failed",
       "offset": 150
@@ -3256,16 +3179,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "EVOXW"
-      ],
-      "warning": "fetch failed",
-      "offset": 150
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "F-C"
+        "FBRT-E"
       ],
       "warning": "fetch failed",
       "offset": 150
@@ -3283,34 +3197,25 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "F-D"
-      ],
-      "warning": "fetch failed",
-      "offset": 150
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "FBRT-E"
-      ],
-      "warning": "fetch failed",
-      "offset": 150
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "FITB-A"
-      ],
-      "warning": "fetch failed",
-      "offset": 150
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
         "FHN-F"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "F-C"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "F-D"
       ],
       "warning": "fetch failed",
       "offset": 150
@@ -3328,7 +3233,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "FITB-M"
+        "F-B"
       ],
       "warning": "fetch failed",
       "offset": 150
@@ -3338,6 +3243,24 @@
       "symbols": 1,
       "sample": [
         "FITB-K"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "EVOXW"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "FITB-A"
       ],
       "warning": "fetch failed",
       "offset": 150
@@ -3364,7 +3287,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "FLYX-WS"
+        "FITB-M"
       ],
       "warning": "fetch failed",
       "offset": 150
@@ -3373,7 +3296,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "FRT-C"
+        "FLYX-WS"
       ],
       "warning": "fetch failed",
       "offset": 150
@@ -3391,7 +3314,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "FMACU"
+        "FRT-C"
       ],
       "warning": "fetch failed",
       "offset": 150
@@ -3400,7 +3323,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "GAB-G"
+        "FMACU"
       ],
       "warning": "fetch failed",
       "offset": 150
@@ -3418,25 +3341,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "GDV-H"
-      ],
-      "warning": "fetch failed",
-      "offset": 150
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "GAM-B"
-      ],
-      "warning": "fetch failed",
-      "offset": 150
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "GCTS-WS"
+        "GAB-G"
       ],
       "warning": "fetch failed",
       "offset": 150
@@ -3454,7 +3359,34 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
+        "GAM-B"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
         "GAB-K"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "GCTS-WS"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "GDV-H"
       ],
       "warning": "fetch failed",
       "offset": 150
@@ -3472,6 +3404,15 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
+        "GGT-E"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
+    },
+    {
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
         "GGN-B"
       ],
       "warning": "fetch failed",
@@ -3481,7 +3422,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "GGT-E"
+        "GGT-G"
       ],
       "warning": "fetch failed",
       "offset": 150
@@ -3499,7 +3440,7 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "GGT-G"
+        "GIF"
       ],
       "warning": "fetch failed",
       "offset": 150
@@ -3526,24 +3467,6 @@
       "provider": "STOOQ_HISTORY",
       "symbols": 1,
       "sample": [
-        "GIF"
-      ],
-      "warning": "fetch failed",
-      "offset": 150
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
-        "GL-D"
-      ],
-      "warning": "fetch failed",
-      "offset": 150
-    },
-    {
-      "provider": "STOOQ_HISTORY",
-      "symbols": 1,
-      "sample": [
         "GIWWU"
       ],
       "warning": "fetch failed",
@@ -3559,26 +3482,2519 @@
       "offset": 150
     },
     {
-      "provider": "YAHOO_FINANCE",
-      "offset": 0,
-      "symbols": 75,
-      "warning": "YAHOO_HTTP_401"
+      "provider": "STOOQ_HISTORY",
+      "symbols": 1,
+      "sample": [
+        "GL-D"
+      ],
+      "warning": "fetch failed",
+      "offset": 150
     },
     {
       "provider": "YAHOO_FINANCE",
-      "offset": 75,
-      "symbols": 75,
-      "warning": "YAHOO_HTTP_401"
+      "symbols": 1,
+      "sample": [
+        "ABNY"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 0
     },
     {
       "provider": "YAHOO_FINANCE",
-      "offset": 150,
-      "symbols": 75,
-      "warning": "YAHOO_HTTP_401"
+      "symbols": 1,
+      "sample": [
+        "BTOP"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 825
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "BWEB"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 900
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "CA"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 900
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "CMU"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 1200
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "CTRA"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 1350
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "CVNX"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 1425
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "CUK"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 1425
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "CXH"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 1425
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "CXE"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 1425
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "DISO"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 1575
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "EATZ"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 1800
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "EHAB"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 1875
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "ESIX"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 1950
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "FCO"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 2100
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "FFIC"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 2175
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "FIVY"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 2250
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "FONR"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 2325
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "GAINN"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 2475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "GECCO"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 2550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "GMUN"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 2625
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "GSIG"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 2700
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "HSPT"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 2925
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "HSPTU"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 2925
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "HYRM"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 3000
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "KALV"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 3600
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "LAYS"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 3750
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "KW"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 3750
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "LNKB"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 3900
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "MASI"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 4050
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "MSDD"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 4275
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "MPX"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 4275
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "NZUS"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 4725
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "OCCIO"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 4800
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "OOSB"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 4875
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "PCRB"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 5025
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "PFUT"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 5100
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "PHYD"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 5100
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "PLDR"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 5175
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "PKST"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 5175
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "PPEM"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 5250
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "PPIE"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 5250
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "PULT"
+      ],
+      "warning": "YAHOO_CHART_NO_USABLE_DAILY_BAR",
+      "offset": 5325
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "PSNL"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5325
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "PWRD"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5325
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "PYT"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QABA"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QB"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "PYPY"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "PYZ"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QBER"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QBF"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "PZG"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QCMU"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "PYPG"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "PZT"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "PYPD"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QDEC"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QBUL"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QBUF"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QDIV"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QBIG"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QCMD"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "PZA"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QFIN"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QCJL"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QCOC"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QETH"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QID"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QCAP"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "PYXS"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QHDG"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QETA"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QCRH"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QDPL"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QLC"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QDVO"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QGRW"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QCML"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QFLR"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QLTY"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QIS"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QIDX"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QDTE"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QIG"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QCLS"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QEMM"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QJUN"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QMNV"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QLV"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QNTM"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QMID"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QNST"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQA"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QINT"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QMOM"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QMAG"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QOWZ"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QMFE"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QLTA"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQDN"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QNXT"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QMAR"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QLTI"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQH"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQLV"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQQE"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QPX"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QMMY"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQQH"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQQI"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQQD"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQMG"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQEW"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQQA"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQQJ"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQQG"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QDTY"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QCJA"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQHG"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5400
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RBLX"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QTEXW"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QTOC"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QSEAU"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QTRX"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QSIX"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QTTB"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QUCY"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QTEX"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QUSA"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QSI"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QTPI"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QTR"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QTUM"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QXL"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QTJA"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QVOY"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QXQ"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QVMT"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RAA"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RAAQU"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "R"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RACE"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QYLD"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RAC"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RANG"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RAND"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RAPP"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RBIL"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RA"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RBB"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RBRK"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RADX"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RAY"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RBUF"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RBKB"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QSEA"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QTOP"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QSML"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QUAL"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QVMS"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQQT"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QXO"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQQP"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQUP"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQQY"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QRMI"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QS"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQQX"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QRFT"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QRHC"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQQS"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QSR"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQQU"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQXT"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QQWZ"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RC"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RBBN"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RCEL"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QVMM"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RARE"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RCAT"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RAIN"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RANI"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RAFE"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RAVI"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QUAD"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RAAQ"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QVML"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RCD"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "QUIK"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RBNE"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RAYJ"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RAYA"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RAVE"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5475
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REZI"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REZ"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RFAI"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RF"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RDAGU"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RDDT"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RDTE"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RCON"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RDVI"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RCS"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RDTY"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RDAC"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RDTL"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RDNW"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RDNT"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RDHL"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REFI"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REET"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RECS"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RDVT"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REGN"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RDVY"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REGL"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REFR"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REBN"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RECT"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RELX"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RDY"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REAI"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REM"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RENX"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RDN"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REPX"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REKR"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REVS"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RETO"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REI"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RFDI"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RELL"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REMG"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RFDA"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REIT"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REMX"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RCGE"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RCT"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RCL"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RDAG"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RCKT"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RDCM"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RDACU"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RCG"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RDIB"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RDOG"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RFL"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RDWR"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RFFC"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RENT"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REXR"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REVB"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RERE"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RETL"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REX"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REYN"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RFM"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RGEF"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REW"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RGC"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RFCI"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RFIX"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RFEM"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "REPL"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RGA"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RFIL"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RFLR"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
+    },
+    {
+      "provider": "YAHOO_FINANCE",
+      "symbols": 1,
+      "sample": [
+        "RFMZ"
+      ],
+      "warning": "YAHOO_HTTP_429",
+      "offset": 5550
     },
     {
       "provider": "EODHD",
-      "warning": "USED_EODHD_BULK_LAST_DAY_FOR_SYMBOLS_STILL_MISSING_AFTER_STOOQ_AND_YAHOO"
+      "symbol": "ACHR-WS",
+      "warning": "EODHD_SYMBOL_UNMAPPED",
+      "eodhd_status": "UNMAPPED"
+    },
+    {
+      "provider": "EODHD",
+      "symbol": "BF-A",
+      "warning": "EODHD_SYMBOL_UNMAPPED",
+      "eodhd_status": "UNMAPPED"
+    },
+    {
+      "provider": "EODHD",
+      "symbol": "BF-B",
+      "warning": "EODHD_SYMBOL_UNMAPPED",
+      "eodhd_status": "UNMAPPED"
+    },
+    {
+      "provider": "EODHD",
+      "symbol": "BRK-B",
+      "warning": "EODHD_SYMBOL_UNMAPPED",
+      "eodhd_status": "UNMAPPED"
+    },
+    {
+      "provider": "EODHD",
+      "symbol": "CRD-A",
+      "warning": "EODHD_SYMBOL_UNMAPPED",
+      "eodhd_status": "UNMAPPED"
+    },
+    {
+      "provider": "EODHD",
+      "symbol": "GRAF-WS",
+      "warning": "EODHD_SYMBOL_UNMAPPED",
+      "eodhd_status": "UNMAPPED"
+    },
+    {
+      "provider": "EODHD",
+      "symbol": "IAUX-WS",
+      "warning": "EODHD_SYMBOL_UNMAPPED",
+      "eodhd_status": "UNMAPPED"
+    },
+    {
+      "provider": "EODHD",
+      "symbol": "IONQ-WS",
+      "warning": "EODHD_SYMBOL_UNMAPPED",
+      "eodhd_status": "UNMAPPED"
+    },
+    {
+      "provider": "EODHD",
+      "symbol": "JOBY-WS",
+      "warning": "EODHD_SYMBOL_UNMAPPED",
+      "eodhd_status": "UNMAPPED"
+    },
+    {
+      "provider": "EODHD",
+      "symbol": "KRSP-U",
+      "warning": "EODHD_SYMBOL_UNMAPPED",
+      "eodhd_status": "UNMAPPED"
+    },
+    {
+      "provider": "EODHD",
+      "symbol": "OPFI-WS",
+      "warning": "EODHD_SYMBOL_UNMAPPED",
+      "eodhd_status": "UNMAPPED"
+    },
+    {
+      "provider": "EODHD",
+      "symbol": "VACI-U",
+      "warning": "EODHD_SYMBOL_UNMAPPED",
+      "eodhd_status": "UNMAPPED"
+    },
+    {
+      "provider": "EODHD",
+      "warning": "USED_EODHD_BULK_LAST_DAY_FOR_EODHD_PROVIDER_COHORT"
     }
   ]
 }
