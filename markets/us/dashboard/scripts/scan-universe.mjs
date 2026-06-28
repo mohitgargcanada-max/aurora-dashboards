@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { marketDimmer, weeklyWatchlistScore } from "../engine/aurora.mjs";
 import { loadSymbol } from "../engine/cache-store.mjs";
+import { isoTimestamp } from "./dashboard-state.mjs";
 import { nyseCalendarSummary } from "./us-market-calendar.mjs";
 import { enrichmentStatuses, universeReferenceRow } from "./us-universe-reference.mjs";
 
@@ -159,6 +160,7 @@ const benchmarkRecords = Object.fromEntries((await Promise.all(benchmarkSymbols.
 const spy = benchmarkRecords.SPY?.bars || [];
 if (spy.length < 252) throw new Error("SPY benchmark cache is insufficient");
 const asOf = spy.at(-1).date;
+const generatedAt = isoTimestamp();
 const classificationCache = await loadClassificationCache();
 const universeReference = securityMaster.map(row => universeReferenceRow(row, classificationCache[row.symbol]));
 const referenceBySymbol = new Map(universeReference.map(row => [row.market_symbol, row]));
@@ -172,7 +174,7 @@ const instrumentTypeCounts = {};
 for (const row of universeReference) instrumentTypeCounts[row.instrument_type] = (instrumentTypeCounts[row.instrument_type] || 0) + 1;
 await writeFile(universeReferenceOutput, JSON.stringify({
   schema_version: "1.0",
-  generated_at: new Date().toISOString(),
+  generated_at: generatedAt,
   raw_listed_count: rawListedCount,
   technical_eligible_count: technicalEligibleCount,
   not_applicable_instrument_count: notApplicableInstrumentCount,
@@ -410,6 +412,7 @@ const referencePass = referenceRows.filter(x => ["PASS", "PARTIAL"].includes(x.r
 const referenceBasketState = referenceRows.length && referencePass / referenceRows.length >= 0.6 ? "REFERENCE_BASKET_CONFIRMING" : referenceRows.length && referencePass / referenceRows.length >= 0.3 ? "REFERENCE_BASKET_MIXED" : "REFERENCE_BASKET_SQUATTING";
 const sectionSort = xs => xs.sort((a, b) => b.weekly_watchlist_score - a.weekly_watchlist_score || b.technical_strength_score - a.technical_strength_score).slice(0, 50);
 const state = {
+  generated_at: generatedAt,
   run: {
     run_type: "SUNDAY_FULL_UNIVERSE_REBUILD",
     status: "CALCULATED_WITH_DECLARED_GAPS",
