@@ -6,6 +6,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { normalizeBhavcopyRow, parseCsv } from "../engine/bhavcopy-parser.mjs";
 import { CACHE_SCHEMA_VERSION, loadSymbol, mergeBars, normalizeBar, normalizeDate, normalizeSymbol, saveSymbol, validateSeries } from "../engine/cache-store.mjs";
 import { compactSession, latestCompletedIndiaSession } from "../engine/trading-calendar.mjs";
+import { resolveIndiaProviderSymbol } from "./india-provider-symbols.mjs";
 
 const projectRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const DEFAULT_CACHE_ROOT = resolve(projectRoot, "cache/india/ohlcv");
@@ -110,31 +111,10 @@ function providerSymbolLimit(provider, maxSymbols) {
   return Math.max(0, defaultLimit);
 }
 
-function exchangeSuffix(record, provider) {
-  const exchange = String(record.exchange || "NSE").toUpperCase();
-  if (provider === "YAHOO") return exchange === "BSE" ? ".BO" : ".NS";
-  if (provider === "EODHD") return `.${eodhdExchangeCodes(record)[0]}`;
-  return "";
-}
-
-function eodhdExchangeCodes(record) {
-  const exchange = String(record.exchange || "NSE").toUpperCase();
-  const envName = exchange === "BSE" ? "AURORA_EODHD_BSE_CODES" : "AURORA_EODHD_NSE_CODES";
-  const defaults = exchange === "BSE" ? ["BSE", "XBOM", "BO"] : ["NSE", "XNSE", "NS"];
-  const configured = (process.env[envName] || "")
-    .split(",")
-    .map(item => item.trim().replace(/^\./, "").toUpperCase())
-    .filter(Boolean);
-  return [...new Set([...(configured.length ? configured : defaults)])];
-}
-
-function eodhdSymbolCandidates(record) {
-  const symbol = normalizeSymbol(record.symbol);
-  return eodhdExchangeCodes(record).map(code => `${symbol}.${code}`);
-}
-
 function sanitizeToken(url) {
-  return url.replace(/api_token=[^&]+/i, "api_token=***");
+  let text = String(url || "").replace(/api_token=[^&\s]+/ig, "api_token=***");
+  if (process.env.EODHD_API_TOKEN) text = text.replaceAll(process.env.EODHD_API_TOKEN, "***");
+  return text;
 }
 
 function indexPath(indexRoot, symbol) {
@@ -729,34 +709,36 @@ async function fetchText(url, fetcher, timeoutMs) {
   }
 }
 
-function fallbackUrl(provider, record, expectedSession) {
-  const symbol = normalizeSymbol(record.symbol);
+async function fallbackUrl(provider, record, expectedSession) {
   if (provider === "TAPETIDE") {
     return null;
   }
   if (provider === "YAHOO") {
+    const resolved = await resolveIndiaProviderSymbol(record, "YAHOO");
     const { start, end } = sessionToUnix(expectedSession);
-    return `${PROVIDER_ENDPOINTS.YAHOO}${encodeURIComponent(symbol + exchangeSuffix(record, provider))}?period1=${start}&period2=${end}&interval=1d&events=history`;
-  }
-  if (provider === "EODHD") {
-    const token = process.env.EODHD_API_TOKEN;
-    if (!token) return null;
-    return `${PROVIDER_ENDPOINTS.EODHD}${encodeURIComponent(symbol + exchangeSuffix(record, provider))}?from=${expectedSession}&to=${expectedSession}&period=d&fmt=json&api_token=${encodeURIComponent(token)}`;
+    return `${PROVIDER_ENDPOINTS.YAHOO}${encodeURIComponent(resolved.provider_symbol)}?period1=${start}&period2=${end}&interval=1d&events=history`;
   }
   return null;
 }
 
-function eodhdFallbackUrls(record, expectedSession) {
+async function eodhdFallbackUrls(record, expectedSession) {
   const token = process.env.EODHD_API_TOKEN;
-  if (!token) return [];
-  return eodhdSymbolCandidates(record).map(symbol =>
-    `${PROVIDER_ENDPOINTS.EODHD}${encodeURIComponent(symbol)}?from=${expectedSession}&to=${expectedSession}&period=d&fmt=json&api_token=${encodeURIComponent(token)}`
-  );
+  if (!token) return { urls: [], warning: "EODHD_NOT_CONFIGURED" };
+  const resolved = await resolveIndiaProviderSymbol(record, "EODHD");
+  if (!["VALIDATED", "DERIVED_EODHD_CANDIDATES"].includes(resolved.status)) {
+    return { urls: [], warning: resolved.warning || resolved.status };
+  }
+  return {
+    urls: resolved.candidates.map(symbol =>
+      `${PROVIDER_ENDPOINTS.EODHD}${encodeURIComponent(symbol)}?from=${expectedSession}&to=${expectedSession}&period=d&fmt=json&api_token=${encodeURIComponent(token)}`
+    ),
+    warning: null
+  };
 }
 
 async function fetchEodhdFallbackBar(record, expectedSession, fetcher, timeoutMs) {
-  const urls = eodhdFallbackUrls(record, expectedSession);
-  if (!urls.length) return { bar: null, warning: "EODHD_NOT_CONFIGURED" };
+  const { urls, warning } = await eodhdFallbackUrls(record, expectedSession);
+  if (!urls.length) return { bar: null, warning };
   const warnings = [];
   for (const url of urls) {
     try {
@@ -765,7 +747,7 @@ async function fetchEodhdFallbackBar(record, expectedSession, fetcher, timeoutMs
       if (bar?.date === expectedSession) return { bar, endpoint: sanitizeToken(url) };
       warnings.push(`${sanitizeToken(url)}:EODHD_NO_COMPLETED_BAR`);
     } catch (error) {
-      warnings.push(`${sanitizeToken(url)}:${error.message}`);
+      warnings.push(`${sanitizeToken(url)}:${sanitizeToken(error.message)}`);
     }
   }
   return { bar: null, endpoint: sanitizeToken(urls.at(-1)), warning: `EODHD_NO_COMPLETED_BAR:${warnings.join("|")}` };
@@ -776,7 +758,7 @@ async function fetchFallbackBar(provider, record, expectedSession, fetcher, time
   if (prefetched) return prefetched;
   if (provider === "TAPETIDE") return fetchTapetideMcp(record, expectedSession, fetcher, timeoutMs);
   if (provider === "EODHD") return fetchEodhdFallbackBar(record, expectedSession, fetcher, timeoutMs);
-  const url = fallbackUrl(provider, record, expectedSession);
+  const url = await fallbackUrl(provider, record, expectedSession);
   if (!url) return { bar: null, warning: `${provider}_NOT_CONFIGURED` };
   const payload = await fetchJson(url, fetcher, timeoutMs);
   const bar = provider === "TAPETIDE"
@@ -826,6 +808,11 @@ export async function appendProviderConsistentFallback({
   for (const record of records) {
     if (report.requested >= providerMaxSymbols) break;
     const existingFamily = providerFamily(record.provider);
+    if (provider === "EODHD" && existingFamily !== "EODHD") {
+      report.skipped_no_blend += 1;
+      report.warnings.push({ symbol: record.symbol, warning: "EODHD_REQUIRES_PROVIDER_CONSISTENT_REPAIR" });
+      continue;
+    }
     if (existingFamily !== provider && !(allowProviderRepair && existingFamily !== "UNKNOWN")) {
       report.skipped_no_blend += 1;
       continue;
