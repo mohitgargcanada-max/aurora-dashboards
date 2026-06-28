@@ -54,6 +54,8 @@ jobs:
 
       - name: Run Canada dashboard validation
         if: github.event_name != 'pull_request' && (github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1')
+        env:
+          EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN }}
         run: |
           npm --prefix markets/canada/dashboard test
           npm --prefix markets/canada/dashboard run cache:refresh:indices
@@ -90,6 +92,8 @@ jobs:
 
       - name: Generate Canada dashboard
         if: github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1'
+        env:
+          EODHD_API_TOKEN: ${{ secrets.EODHD_API_TOKEN }}
         run: |
           npm --prefix markets/canada/dashboard run cache:refresh:indices
           npm --prefix markets/canada/dashboard run cache:audit:indices
