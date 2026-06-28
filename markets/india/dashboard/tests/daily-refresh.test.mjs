@@ -114,6 +114,7 @@ await assert.rejects(
     reportPath: blockedReportPath,
     lastGoodScanPath,
     expectedSession: "2026-06-23",
+    requiredSymbols: [],
     localSources: [],
     tryOfficialFetch: false,
     providerOrder: []
@@ -174,6 +175,7 @@ const fetchOnceReport = await refreshIndiaDailyBars({
   rawRoot: join(fetchOnceDir, "raw"),
   reportPath: join(fetchOnceDir, "report.json"),
   expectedSession: "2026-06-23",
+  requiredSymbols: [],
   localSources: [],
   tryOfficialFetch: false,
   providerOrder: ["YAHOO", "TAPETIDE"],
@@ -194,6 +196,39 @@ assert.equal(fetchOnceReport.provider, "YAHOO");
 assert.equal(fetchOnceReport.attempts.length, 1);
 assert.equal(fetchOnceCalls.length, 1);
 assert.equal((await loadSymbol(join(fetchOnceDir, "cache"), "NSE", "RELIANCE")).data_as_of, "2026-06-23");
+
+const cacheHitDir = await mkdtemp(join(tmpdir(), "aurora-india-cache-hit-"));
+await seedRecord(join(cacheHitDir, "cache"), { dataAsOf: "2026-06-23", provider: "NSE_OFFICIAL_FETCH" });
+await seedRecord(join(cacheHitDir, "cache"), { symbol: "TCS", dataAsOf: "2026-06-22", provider: "NSE_OFFICIAL_FETCH" });
+await mkdir(join(cacheHitDir, "data"), { recursive: true });
+await writeFile(join(cacheHitDir, "data", "india-full-dashboard-scan.json"), JSON.stringify({
+  data_as_of: "2026-06-23",
+  daily_top_1_4: [{ symbol: "RELIANCE" }, { symbol: "TCS" }]
+}), "utf8");
+await writeFile(join(cacheHitDir, "report.json"), JSON.stringify({
+  status: "UPDATED",
+  expected_completed_session: "2026-06-23",
+  latest_data_as_of: "2026-06-23"
+}), "utf8");
+const cacheHitReport = await refreshIndiaDailyBars({
+  cacheRoot: join(cacheHitDir, "cache"),
+  rawRoot: join(cacheHitDir, "raw"),
+  reportPath: join(cacheHitDir, "report.json"),
+  lastGoodScanPath: join(cacheHitDir, "data", "india-full-dashboard-scan.json"),
+  expectedSession: "2026-06-23",
+  requiredSymbols: ["RELIANCE", "TCS"],
+  localSources: [],
+  tryOfficialFetch: true,
+  providerOrder: ["YAHOO"],
+  fetcher: async () => {
+    throw new Error("FETCHER_SHOULD_NOT_BE_CALLED_WHEN_CACHE_IS_SAME_DATE");
+  }
+});
+assert.equal(cacheHitReport.provider, "CACHE");
+assert.equal(cacheHitReport.same_date_cache, true);
+assert.equal(cacheHitReport.coverage.required_fresh_symbols, 1);
+assert.equal(cacheHitReport.coverage.required_stale_symbols.length, 1);
+assert.equal(cacheHitReport.coverage.required_stale_symbols[0].symbol, "TCS");
 
 const prefetchDir = await mkdtemp(join(tmpdir(), "aurora-india-prefetch-"));
 await seedRecord(join(prefetchDir, "cache"), { provider: "TAPETIDE_DAILY" });
@@ -281,6 +316,37 @@ assert.equal(eodhdCalls.length, 2);
 const eodhdRecord = await loadSymbol(join(eodhdDir, "cache"), "NSE", "RELIANCE");
 assert.doesNotMatch(eodhdRecord.endpoint, /secret-token/);
 assert.match(eodhdRecord.endpoint, /RELIANCE\.XNSE/);
+
+const eodhdLeakDir = await mkdtemp(join(tmpdir(), "aurora-india-eodhd-leak-"));
+await seedRecord(join(eodhdLeakDir, "cache"), { provider: "EODHD_DAILY" });
+const leakReport = await appendProviderConsistentFallback({
+  provider: "EODHD",
+  expectedSession: "2026-06-23",
+  cacheRoot: join(eodhdLeakDir, "cache"),
+  maxSymbols: 1,
+  fetcher: async () => {
+    throw new Error("provider echoed api_token=secret-token&fmt=json and secret-token");
+  }
+});
+assert.equal(leakReport.inserted, 0);
+assert.doesNotMatch(JSON.stringify(leakReport.warnings), /secret-token/);
+assert.match(JSON.stringify(leakReport.warnings), /api_token=\*\*\*/);
+
+const eodhdNoBlendDir = await mkdtemp(join(tmpdir(), "aurora-india-eodhd-no-blend-"));
+await seedRecord(join(eodhdNoBlendDir, "cache"), { provider: "YAHOO_DATA_REPAIR" });
+const noBlendReport = await appendProviderConsistentFallback({
+  provider: "EODHD",
+  expectedSession: "2026-06-23",
+  cacheRoot: join(eodhdNoBlendDir, "cache"),
+  maxSymbols: 1,
+  fetcher: async () => {
+    throw new Error("EODHD_FETCHER_SHOULD_NOT_BE_CALLED_FOR_CROSS_PROVIDER_DAILY_APPEND");
+  }
+});
+assert.equal(noBlendReport.inserted, 0);
+assert.equal(noBlendReport.skipped_no_blend, 1);
+assert.match(JSON.stringify(noBlendReport.warnings), /EODHD_REQUIRES_PROVIDER_CONSISTENT_REPAIR/);
+assert.equal((await loadSymbol(join(eodhdNoBlendDir, "cache"), "NSE", "RELIANCE")).data_as_of, "2026-06-22");
 if (oldToken === undefined) delete process.env.EODHD_API_TOKEN;
 else process.env.EODHD_API_TOKEN = oldToken;
 
@@ -344,14 +410,27 @@ assert.equal(refreshedIndex.provider, "NSE_OFFICIAL_INDEX_ARCHIVE");
 assert.equal(refreshedIndex.data_as_of, "2026-06-23");
 assert.equal(refreshedHealthcareIndex.provider, "NSE_OFFICIAL_INDEX_ARCHIVE");
 assert.equal(refreshedHealthcareIndex.data_as_of, "2026-06-23");
+const cachedIndexReport = await refreshIndiaIndexCache({
+  indexRoot,
+  expectedSession: "2026-06-23",
+  fetcher: async () => {
+    throw new Error("INDEX_FETCHER_SHOULD_NOT_BE_CALLED_WHEN_CACHE_IS_SAME_DATE");
+  }
+});
+assert.equal(cachedIndexReport.provider, "CACHE");
+assert.equal(cachedIndexReport.same_date_cache, true);
+assert.equal(cachedIndexReport.updated, 0);
 
 await rm(directory, { recursive: true, force: true });
 await rm(invalidZipDir, { recursive: true, force: true });
 await rm(blockedDir, { recursive: true, force: true });
 await rm(yahooDir, { recursive: true, force: true });
 await rm(fetchOnceDir, { recursive: true, force: true });
+await rm(cacheHitDir, { recursive: true, force: true });
 await rm(prefetchDir, { recursive: true, force: true });
 await rm(tapetideDir, { recursive: true, force: true });
 await rm(eodhdDir, { recursive: true, force: true });
+await rm(eodhdLeakDir, { recursive: true, force: true });
+await rm(eodhdNoBlendDir, { recursive: true, force: true });
 await rm(indexDir, { recursive: true, force: true });
 console.log("India daily refresh contract tests passed");

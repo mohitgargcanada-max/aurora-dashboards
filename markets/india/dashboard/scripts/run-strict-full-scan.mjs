@@ -67,6 +67,7 @@ console.log(JSON.stringify({
   provider: indexReport.provider,
   updated: indexReport.updated,
   missing_bar: indexReport.missing_bar,
-  latest_index_data_as_of: indexReport.latest_index_data_as_of
+  latest_index_data_as_of: indexReport.latest_index_data_as_of,
+  same_date_cache: indexReport.same_date_cache
 }, null, 2));
 await run(process.execPath, ["scripts/run-full-dashboard-scan.mjs", expectedSession]);

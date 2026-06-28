@@ -6,6 +6,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { normalizeBhavcopyRow, parseCsv } from "../engine/bhavcopy-parser.mjs";
 import { CACHE_SCHEMA_VERSION, loadSymbol, mergeBars, normalizeBar, normalizeDate, normalizeSymbol, saveSymbol, validateSeries } from "../engine/cache-store.mjs";
 import { compactSession, latestCompletedIndiaSession } from "../engine/trading-calendar.mjs";
+import { resolveIndiaProviderSymbol } from "./india-provider-symbols.mjs";
 
 const projectRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const DEFAULT_CACHE_ROOT = resolve(projectRoot, "cache/india/ohlcv");
@@ -110,31 +111,10 @@ function providerSymbolLimit(provider, maxSymbols) {
   return Math.max(0, defaultLimit);
 }
 
-function exchangeSuffix(record, provider) {
-  const exchange = String(record.exchange || "NSE").toUpperCase();
-  if (provider === "YAHOO") return exchange === "BSE" ? ".BO" : ".NS";
-  if (provider === "EODHD") return `.${eodhdExchangeCodes(record)[0]}`;
-  return "";
-}
-
-function eodhdExchangeCodes(record) {
-  const exchange = String(record.exchange || "NSE").toUpperCase();
-  const envName = exchange === "BSE" ? "AURORA_EODHD_BSE_CODES" : "AURORA_EODHD_NSE_CODES";
-  const defaults = exchange === "BSE" ? ["BSE", "XBOM", "BO"] : ["NSE", "XNSE", "NS"];
-  const configured = (process.env[envName] || "")
-    .split(",")
-    .map(item => item.trim().replace(/^\./, "").toUpperCase())
-    .filter(Boolean);
-  return [...new Set([...(configured.length ? configured : defaults)])];
-}
-
-function eodhdSymbolCandidates(record) {
-  const symbol = normalizeSymbol(record.symbol);
-  return eodhdExchangeCodes(record).map(code => `${symbol}.${code}`);
-}
-
 function sanitizeToken(url) {
-  return url.replace(/api_token=[^&]+/i, "api_token=***");
+  let text = String(url || "").replace(/api_token=[^&\s]+/ig, "api_token=***");
+  if (process.env.EODHD_API_TOKEN) text = text.replaceAll(process.env.EODHD_API_TOKEN, "***");
+  return text;
 }
 
 function indexPath(indexRoot, symbol) {
@@ -440,24 +420,54 @@ export async function appendOfficialSource({
   };
 }
 
-async function cacheCoverage(cacheRoot, expectedSession) {
+async function cacheCoverage(cacheRoot, expectedSession, requiredSymbols = new Set()) {
   const files = (await readdir(cacheRoot).catch(() => [])).filter(x => x.endsWith(".json"));
   let current = 0;
   let valid = 0;
+  const required = new Set([...requiredSymbols].map(normalizeSymbol).filter(Boolean));
+  const requiredState = new Map([...required].map(symbol => [symbol, {
+    records: 0,
+    current: 0,
+    valid: 0,
+    latest_data_as_of: null
+  }]));
   for (const file of files) {
     try {
       const record = JSON.parse(await readFile(resolve(cacheRoot, file), "utf8"));
+      const validation = validateSeries(record.bars, { minimumBars: Math.min(252, record.bars?.length || 0), expectedSession });
       if (record.data_as_of === expectedSession) current += 1;
-      if (validateSeries(record.bars, { minimumBars: Math.min(252, record.bars?.length || 0), expectedSession }).ok) valid += 1;
+      if (validation.ok) valid += 1;
+      const requiredRecord = isEquityRecord(record) ? requiredState.get(normalizeSymbol(record.symbol)) : null;
+      if (requiredRecord) {
+        requiredRecord.records += 1;
+        if (!requiredRecord.latest_data_as_of || String(record.data_as_of || "") > requiredRecord.latest_data_as_of) {
+          requiredRecord.latest_data_as_of = record.data_as_of || null;
+        }
+        if (record.data_as_of === expectedSession) requiredRecord.current += 1;
+        if (validation.ok) requiredRecord.valid += 1;
+      }
     } catch {
       // Audit separately reports malformed records.
     }
+  }
+  const requiredMissingSymbols = [];
+  const requiredStaleSymbols = [];
+  let requiredFreshSymbols = 0;
+  for (const [symbol, state] of requiredState) {
+    if (!state.records) requiredMissingSymbols.push(symbol);
+    else if (!state.valid) requiredStaleSymbols.push({ symbol, latest_data_as_of: state.latest_data_as_of, expected_session: expectedSession });
+    else requiredFreshSymbols += 1;
   }
   return {
     total_records: files.length,
     current_records: current,
     valid_current_records: valid,
-    current_coverage_pct: files.length ? Number((100 * current / files.length).toFixed(2)) : 0
+    current_coverage_pct: files.length ? Number((100 * current / files.length).toFixed(2)) : 0,
+    required_symbols: required.size,
+    required_fresh_symbols: requiredFreshSymbols,
+    required_missing_symbols: requiredMissingSymbols,
+    required_stale_symbols: requiredStaleSymbols,
+    required_freshness_coverage_pct: required.size ? Number((100 * requiredFreshSymbols / required.size).toFixed(2)) : null
   };
 }
 
@@ -699,34 +709,36 @@ async function fetchText(url, fetcher, timeoutMs) {
   }
 }
 
-function fallbackUrl(provider, record, expectedSession) {
-  const symbol = normalizeSymbol(record.symbol);
+async function fallbackUrl(provider, record, expectedSession) {
   if (provider === "TAPETIDE") {
     return null;
   }
   if (provider === "YAHOO") {
+    const resolved = await resolveIndiaProviderSymbol(record, "YAHOO");
     const { start, end } = sessionToUnix(expectedSession);
-    return `${PROVIDER_ENDPOINTS.YAHOO}${encodeURIComponent(symbol + exchangeSuffix(record, provider))}?period1=${start}&period2=${end}&interval=1d&events=history`;
-  }
-  if (provider === "EODHD") {
-    const token = process.env.EODHD_API_TOKEN;
-    if (!token) return null;
-    return `${PROVIDER_ENDPOINTS.EODHD}${encodeURIComponent(symbol + exchangeSuffix(record, provider))}?from=${expectedSession}&to=${expectedSession}&period=d&fmt=json&api_token=${encodeURIComponent(token)}`;
+    return `${PROVIDER_ENDPOINTS.YAHOO}${encodeURIComponent(resolved.provider_symbol)}?period1=${start}&period2=${end}&interval=1d&events=history`;
   }
   return null;
 }
 
-function eodhdFallbackUrls(record, expectedSession) {
+async function eodhdFallbackUrls(record, expectedSession) {
   const token = process.env.EODHD_API_TOKEN;
-  if (!token) return [];
-  return eodhdSymbolCandidates(record).map(symbol =>
-    `${PROVIDER_ENDPOINTS.EODHD}${encodeURIComponent(symbol)}?from=${expectedSession}&to=${expectedSession}&period=d&fmt=json&api_token=${encodeURIComponent(token)}`
-  );
+  if (!token) return { urls: [], warning: "EODHD_NOT_CONFIGURED" };
+  const resolved = await resolveIndiaProviderSymbol(record, "EODHD");
+  if (!["VALIDATED", "DERIVED_EODHD_CANDIDATES"].includes(resolved.status)) {
+    return { urls: [], warning: resolved.warning || resolved.status };
+  }
+  return {
+    urls: resolved.candidates.map(symbol =>
+      `${PROVIDER_ENDPOINTS.EODHD}${encodeURIComponent(symbol)}?from=${expectedSession}&to=${expectedSession}&period=d&fmt=json&api_token=${encodeURIComponent(token)}`
+    ),
+    warning: null
+  };
 }
 
 async function fetchEodhdFallbackBar(record, expectedSession, fetcher, timeoutMs) {
-  const urls = eodhdFallbackUrls(record, expectedSession);
-  if (!urls.length) return { bar: null, warning: "EODHD_NOT_CONFIGURED" };
+  const { urls, warning } = await eodhdFallbackUrls(record, expectedSession);
+  if (!urls.length) return { bar: null, warning };
   const warnings = [];
   for (const url of urls) {
     try {
@@ -735,7 +747,7 @@ async function fetchEodhdFallbackBar(record, expectedSession, fetcher, timeoutMs
       if (bar?.date === expectedSession) return { bar, endpoint: sanitizeToken(url) };
       warnings.push(`${sanitizeToken(url)}:EODHD_NO_COMPLETED_BAR`);
     } catch (error) {
-      warnings.push(`${sanitizeToken(url)}:${error.message}`);
+      warnings.push(`${sanitizeToken(url)}:${sanitizeToken(error.message)}`);
     }
   }
   return { bar: null, endpoint: sanitizeToken(urls.at(-1)), warning: `EODHD_NO_COMPLETED_BAR:${warnings.join("|")}` };
@@ -746,7 +758,7 @@ async function fetchFallbackBar(provider, record, expectedSession, fetcher, time
   if (prefetched) return prefetched;
   if (provider === "TAPETIDE") return fetchTapetideMcp(record, expectedSession, fetcher, timeoutMs);
   if (provider === "EODHD") return fetchEodhdFallbackBar(record, expectedSession, fetcher, timeoutMs);
-  const url = fallbackUrl(provider, record, expectedSession);
+  const url = await fallbackUrl(provider, record, expectedSession);
   if (!url) return { bar: null, warning: `${provider}_NOT_CONFIGURED` };
   const payload = await fetchJson(url, fetcher, timeoutMs);
   const bar = provider === "TAPETIDE"
@@ -796,6 +808,11 @@ export async function appendProviderConsistentFallback({
   for (const record of records) {
     if (report.requested >= providerMaxSymbols) break;
     const existingFamily = providerFamily(record.provider);
+    if (provider === "EODHD" && existingFamily !== "EODHD") {
+      report.skipped_no_blend += 1;
+      report.warnings.push({ symbol: record.symbol, warning: "EODHD_REQUIRES_PROVIDER_CONSISTENT_REPAIR" });
+      continue;
+    }
     if (existingFamily !== provider && !(allowProviderRepair && existingFamily !== "UNKNOWN")) {
       report.skipped_no_blend += 1;
       continue;
@@ -849,6 +866,7 @@ export async function refreshIndiaIndexCache({
     retrieved_at: retrievedAt,
     expected_completed_session: expectedSession,
     latest_index_data_as_of: records.map(record => record.data_as_of).sort().at(-1) || null,
+    same_date_cache: records.length > 0 && records.every(record => record.data_as_of === expectedSession),
     requested: records.length,
     updated: 0,
     unchanged: records.filter(record => record.data_as_of === expectedSession).length,
@@ -907,6 +925,7 @@ export async function refreshIndiaIndexCache({
   const refreshedRecords = await cachedIndexRecords(indexRoot);
   report.latest_index_data_as_of = refreshedRecords.map(record => record.data_as_of).sort().at(-1) || null;
   report.unchanged = refreshedRecords.filter(record => record.data_as_of === expectedSession).length - report.updated;
+  report.same_date_cache = refreshedRecords.length > 0 && refreshedRecords.every(record => record.data_as_of === expectedSession);
   report.status = refreshedRecords.every(record => record.data_as_of === expectedSession)
     ? "UPDATED"
     : "INDEX_REFRESH_BLOCKED";
@@ -1023,6 +1042,7 @@ export async function refreshIndiaDailyBars({
     resolve(rawRoot, expectedSession)
   ],
   tryOfficialFetch = true,
+  requiredSymbols = null,
   providerOrder = (process.env.AURORA_INDIA_DAILY_PROVIDER_ORDER || "YAHOO,TAPETIDE")
     .split(",")
     .map(x => x.trim().toUpperCase())
@@ -1033,12 +1053,21 @@ export async function refreshIndiaDailyBars({
   const retrievedAt = new Date().toISOString();
   const attempts = [];
   const warnings = [];
-  const acceptable = async () => {
-    const coverage = await cacheCoverage(cacheRoot, expectedSession);
-    return { coverage, ok: coverage.valid_current_records > 0 && (coverage.current_records / Math.max(1, coverage.total_records)) >= minCurrentCoverage };
+  const requiredSymbolSet = requiredSymbols
+    ? new Set([...requiredSymbols].map(normalizeSymbol).filter(Boolean))
+    : await buildWeekdayPrioritySymbols({ scanPath: lastGoodScanPath, cacheRoot });
+  const previousReport = await readJsonOptional(reportPath, null);
+  const previousReportFresh = previousReport
+    && previousReport.status !== "DATA_REFRESH_BLOCKED"
+    && previousReport.expected_completed_session === expectedSession
+    && previousReport.latest_data_as_of === expectedSession;
+  const acceptable = async ({ requirePreviousFreshReport = false } = {}) => {
+    const coverage = await cacheCoverage(cacheRoot, expectedSession, requiredSymbolSet);
+    const coverageOk = coverage.valid_current_records > 0 && (coverage.current_records / Math.max(1, coverage.total_records)) >= minCurrentCoverage;
+    return { coverage, ok: coverageOk && (!requirePreviousFreshReport || previousReportFresh), previous_report_fresh: Boolean(previousReportFresh) };
   };
 
-  let state = await acceptable();
+  let state = await acceptable({ requirePreviousFreshReport: true });
   if (state.ok) {
     const report = {
       status: "ALREADY_CURRENT_OR_UNCHANGED",
@@ -1047,6 +1076,8 @@ export async function refreshIndiaDailyBars({
       retrieved_at: retrievedAt,
       expected_completed_session: expectedSession,
       latest_data_as_of: expectedSession,
+      same_date_cache: true,
+      previous_report_fresh: state.previous_report_fresh,
       fallback_label: "OFFICIAL_VERIFIED",
       fallback_reason: "CACHE_ALREADY_HAS_EXPECTED_COMPLETED_SESSION",
       coverage: state.coverage,
@@ -1071,6 +1102,7 @@ export async function refreshIndiaDailyBars({
           retrieved_at: retrievedAt,
           expected_completed_session: expectedSession,
           latest_data_as_of: expectedSession,
+          same_date_cache: true,
           fallback_label: "OFFICIAL_VERIFIED",
           fallback_reason: "LOCAL_OFFICIAL_DAILY_APPEND",
           coverage: state.coverage,
@@ -1100,6 +1132,7 @@ export async function refreshIndiaDailyBars({
           retrieved_at: retrievedAt,
           expected_completed_session: expectedSession,
           latest_data_as_of: expectedSession,
+          same_date_cache: true,
           fallback_label: "OFFICIAL_VERIFIED",
           fallback_reason: "OFFICIAL_NSE_FETCH_DAILY_APPEND",
           coverage: state.coverage,
@@ -1146,6 +1179,7 @@ export async function refreshIndiaDailyBars({
       retrieved_at: retrievedAt,
       expected_completed_session: expectedSession,
       latest_data_as_of: expectedSession,
+      same_date_cache: true,
       fallback_label: fallbackLabel(finalProvider),
       fallback_reason: providerAttempts.length > 1 ? "PROVIDER_REPAIR_CASCADE_DAILY_APPEND" : "PROVIDER_CONSISTENT_DAILY_APPEND",
       coverage: state.coverage,
@@ -1165,6 +1199,7 @@ export async function refreshIndiaDailyBars({
     retrieved_at: retrievedAt,
     expected_completed_session: expectedSession,
     latest_data_as_of: null,
+    same_date_cache: false,
     fallback_label: "NOT_AVAILABLE",
     fallback_reason: "NO_PROVIDER_REFRESHED_EXPECTED_COMPLETED_SESSION_WITH_VALID_PROVIDER_CONSISTENCY",
     coverage: state.coverage,
