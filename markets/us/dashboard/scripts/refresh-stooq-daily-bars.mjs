@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { resolveEodhdToken } from "./aurora-env.mjs";
 import { latestCompletedNyseSession } from "./us-market-calendar.mjs";
+import { buildProviderAliasMap, providerSymbolLookupKey, resolveProviderSymbol } from "./us-universe-reference.mjs";
 import {
   CACHE_SCHEMA_VERSION,
   loadSymbol,
@@ -16,6 +17,7 @@ import {
 const projectRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const DEFAULT_CACHE_ROOT = resolve(projectRoot, "cache/us/ohlcv");
 const DEFAULT_REPORT_PATH = resolve(projectRoot, "data/us-daily-refresh-report.json");
+const DEFAULT_UNIVERSE_REFERENCE_PATH = resolve(projectRoot, "cache/us/us-universe-reference.json");
 const STOOQ_QUOTE_ENDPOINT = "https://stooq.pl/q/l/";
 const STOOQ_HISTORY_ENDPOINT = "https://stooq.pl/q/d/l/";
 const DEFAULT_CHUNK_SIZE = 75;
@@ -90,9 +92,28 @@ export function parseYahooQuoteRows(rows) {
   }).filter(Boolean);
 }
 
+export function parseYahooChartRows(symbol, payload) {
+  const result = payload?.chart?.result?.[0];
+  const q = result?.indicators?.quote?.[0] || {};
+  const adj = result?.indicators?.adjclose?.[0]?.adjclose || [];
+  return (result?.timestamp || []).map((time, index) => {
+    const bar = normalizeBar({
+      date: nyDateFromUnixSeconds(time),
+      open: q.open?.[index],
+      high: q.high?.[index],
+      low: q.low?.[index],
+      close: q.close?.[index],
+      adjusted_close: adj[index] ?? q.close?.[index],
+      volume: q.volume?.[index]
+    });
+    return bar ? { symbol: normalizeSymbol(symbol), bar } : null;
+  }).filter(Boolean);
+}
+
 export function parseEodhdBulkRows(rows) {
   return (Array.isArray(rows) ? rows : []).map(row => {
-    const symbol = normalizeSymbol(String(row.code || row.symbol || row.ticker || "").replace(/\.US$/i, ""));
+    const eodhd_symbol = String(row.code || row.symbol || row.ticker || "").trim().toUpperCase();
+    const symbol = normalizeSymbol(eodhd_symbol.replace(/\.US$/i, ""));
     const bar = normalizeBar({
       DATE: row.date,
       OPEN: row.open,
@@ -102,7 +123,7 @@ export function parseEodhdBulkRows(rows) {
       adjusted_close: row.adjusted_close ?? row.adjustedClose ?? row.close,
       VOL: row.volume
     });
-    return symbol && bar ? { symbol, bar } : null;
+    return symbol && bar ? { symbol, eodhd_symbol, bar } : null;
   }).filter(Boolean);
 }
 
@@ -110,19 +131,23 @@ export function latestCompletedUsSession(now = new Date()) {
   return latestCompletedNyseSession(now);
 }
 
-async function cachedSymbols(cacheRoot) {
+async function cachedRecords(cacheRoot) {
   const names = await readdir(cacheRoot);
-  const symbols = [];
+  const records = [];
   for (const name of names) {
     if (!name.endsWith(".json")) continue;
     try {
       const record = JSON.parse(await readFile(resolve(cacheRoot, name), "utf8"));
-      if (record?.symbol && record.provider === "STOOQ") symbols.push(record.symbol);
+      if (record?.symbol && record.provider) records.push({ symbol: normalizeSymbol(record.symbol), provider: record.provider, provider_symbols: record.provider_symbols, instrument_type: record.instrument_type });
     } catch {
       // Ignore malformed cache records; scan/data repair will report them separately.
     }
   }
-  return [...new Set(symbols)].sort();
+  return [...new Map(records.map(record => [record.symbol, record])).values()].sort((a, b) => a.symbol.localeCompare(b.symbol));
+}
+
+async function readUniverseReference(path = DEFAULT_UNIVERSE_REFERENCE_PATH) {
+  try { return JSON.parse(await readFile(path, "utf8")); } catch { return null; }
 }
 
 async function fetchStooqQuotes(symbols, fetcher = fetch, timeoutMs = DEFAULT_TIMEOUT_MS) {
@@ -207,22 +232,13 @@ async function fetchStooqDailyHistory(symbols, expectedSession, fetcher = fetch,
   return { rows, warnings };
 }
 
-async function fetchYahooQuotes(symbols, fetcher = fetch, timeoutMs = DEFAULT_TIMEOUT_MS) {
-  const publicEndpoint = "https://query1.finance.yahoo.com/v7/finance/quote";
+async function fetchYahooDailyChart(symbol, fetcher = fetch, timeoutMs = DEFAULT_TIMEOUT_MS) {
+  const publicEndpoint = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSymbol(symbol))}`;
   const params = new URLSearchParams({
-    symbols: symbols.map(yahooSymbol).join(","),
-    fields: [
-      "symbol",
-      "regularMarketTime",
-      "regularMarketOpen",
-      "regularMarketDayHigh",
-      "regularMarketDayLow",
-      "regularMarketPrice",
-      "regularMarketVolume",
-      "currency",
-      "quoteType",
-      "exchange"
-    ].join(",")
+    range: "5d",
+    interval: "1d",
+    events: "history",
+    includeAdjustedClose: "true"
   });
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
@@ -236,10 +252,27 @@ async function fetchYahooQuotes(symbols, fetcher = fetch, timeoutMs = DEFAULT_TI
     });
     if (!response.ok) throw new Error(`YAHOO_HTTP_${response.status}`);
     const payload = await response.json();
-    return { rows: parseYahooQuoteRows(payload?.quoteResponse?.result), endpoint: publicEndpoint };
+    if (payload?.chart?.error) throw new Error(`YAHOO_ERROR_${payload.chart.error.code || "UNKNOWN"}`);
+    return { rows: parseYahooChartRows(symbol, payload), endpoint: publicEndpoint };
   } finally {
     clearTimeout(timeout);
   }
+}
+
+async function fetchYahooDailyCharts(symbols, expectedSession, fetcher = fetch, timeoutMs = DEFAULT_TIMEOUT_MS) {
+  const rows = [];
+  const warnings = [];
+  await Promise.all(symbols.map(async symbol => {
+    try {
+      const result = await fetchYahooDailyChart(symbol, fetcher, timeoutMs);
+      const current = result.rows.filter(row => row.bar.date <= expectedSession).at(-1);
+      if (current) rows.push({ ...current, endpoint: result.endpoint });
+      else warnings.push({ provider: "YAHOO_FINANCE", symbols: 1, sample: [symbol], warning: "YAHOO_CHART_NO_USABLE_DAILY_BAR" });
+    } catch (error) {
+      warnings.push({ provider: "YAHOO_FINANCE", symbols: 1, sample: [symbol], warning: error.message });
+    }
+  }));
+  return { rows, warnings };
 }
 
 async function fetchEodhdBulkLastDay(expectedSession, token, fetcher = fetch, timeoutMs = DEFAULT_TIMEOUT_MS) {
@@ -272,16 +305,25 @@ export async function refreshDailyBars({
   allowStale = false,
   eodhdToken = resolveEodhdToken(),
   fetcher = fetch,
-  now = new Date()
+  now = new Date(),
+  universeRef = null
 } = {}) {
   const expectedSession = latestCompletedUsSession(now);
-  const symbols = await cachedSymbols(cacheRoot);
+  const records = await cachedRecords(cacheRoot);
+  const loadedUniverseRef = universeRef || await readUniverseReference();
+  const referenceRows = [
+    ...(Array.isArray(loadedUniverseRef) ? loadedUniverseRef : loadedUniverseRef?.symbols || []),
+    ...records.map(record => ({ symbol: record.symbol, canonical_symbol: record.symbol, provider_symbols: record.provider_symbols, instrument_type: record.instrument_type || "COMMON_STOCK" }))
+  ];
+  const symbols = records.map(record => record.symbol);
   const quoteMap = new Map();
   const warnings = [];
   let consecutiveFailures = 0;
+  const symbolsByProvider = provider => records.filter(record => record.provider === provider).map(record => record.symbol);
 
-  for (let offset = 0; offset < symbols.length; offset += chunkSize) {
-    const chunk = symbols.slice(offset, offset + chunkSize);
+  const stooqSymbols = symbolsByProvider("STOOQ");
+  for (let offset = 0; offset < stooqSymbols.length; offset += chunkSize) {
+    const chunk = stooqSymbols.slice(offset, offset + chunkSize);
     const result = await fetchStooqQuotesAdaptive(chunk, fetcher, timeoutMs);
     let stooqRows = result.rows;
     let stooqWarnings = result.warnings;
@@ -308,56 +350,62 @@ export async function refreshDailyBars({
     }
   }
 
-  const yahooMissing = symbols.filter(symbol => !quoteMap.has(symbol));
-  if (yahooMissing.length) {
+  const yahooSymbols = symbolsByProvider("YAHOO_FINANCE");
+  if (yahooSymbols.length) {
     consecutiveFailures = 0;
-    for (let offset = 0; offset < yahooMissing.length; offset += chunkSize) {
-      const chunk = yahooMissing.slice(offset, offset + chunkSize);
-      try {
-        const fallback = await fetchYahooQuotes(chunk, fetcher, timeoutMs);
-        for (const row of fallback.rows) {
-          quoteMap.set(row.symbol, {
-            bar: row.bar,
-            provider: "YAHOO_FINANCE",
-            endpoint: fallback.endpoint,
-            fallback_label: "YAHOO_FALLBACK",
-            fallback_reason: "FREE_PRIMARY_STOOQ_DAILY_BAR_MISSING_OR_FAILED"
-          });
-        }
-        consecutiveFailures = 0;
-      } catch (error) {
-        warnings.push({ provider: "YAHOO_FINANCE", offset, symbols: chunk.length, warning: error.message });
-        consecutiveFailures += 1;
-        if (!quoteMap.size && consecutiveFailures >= maxConsecutiveFailures) break;
+    for (let offset = 0; offset < yahooSymbols.length; offset += chunkSize) {
+      const chunk = yahooSymbols.slice(offset, offset + chunkSize);
+      const fallback = await fetchYahooDailyCharts(chunk, expectedSession, fetcher, timeoutMs);
+      for (const row of fallback.rows) {
+        quoteMap.set(row.symbol, {
+          bar: row.bar,
+          provider: "YAHOO_FINANCE",
+          endpoint: row.endpoint,
+          fallback_label: "YAHOO_CHART_DAILY",
+          fallback_reason: null
+        });
       }
+      warnings.push(...fallback.warnings.map(warning => ({ ...warning, offset })));
+      if (fallback.rows.length) consecutiveFailures = 0;
+      else if (++consecutiveFailures >= maxConsecutiveFailures) break;
     }
   }
 
-  const eodhdMissing = symbols.filter(symbol => !quoteMap.has(symbol));
-  if (eodhdMissing.length && eodhdToken) {
+  const eodhdSymbols = symbolsByProvider("EODHD");
+  const eodhdEligible = new Map();
+  for (const symbol of eodhdSymbols) {
+    const resolved = resolveProviderSymbol(symbol, "EODHD", referenceRows);
+    if (resolved.symbol) eodhdEligible.set(symbol, resolved);
+    else warnings.push({ provider: "EODHD", symbol, warning: "EODHD_SYMBOL_UNMAPPED", eodhd_status: resolved.status });
+  }
+  if (eodhdEligible.size && eodhdToken) {
     try {
       const fallback = await fetchEodhdBulkLastDay(expectedSession, eodhdToken, fetcher, timeoutMs);
+      const aliasMap = buildProviderAliasMap(referenceRows, "EODHD");
       for (const row of fallback.rows) {
-        if (quoteMap.has(row.symbol)) continue;
-        quoteMap.set(row.symbol, {
+        const alias = aliasMap.get(providerSymbolLookupKey(row.eodhd_symbol || row.symbol));
+        const canonicalSymbol = alias?.canonical_symbol || normalizeSymbol(row.symbol);
+        if (quoteMap.has(canonicalSymbol)) continue;
+        if (!eodhdEligible.has(canonicalSymbol)) continue;
+        quoteMap.set(canonicalSymbol, {
           bar: row.bar,
           provider: "EODHD",
           endpoint: fallback.endpoint,
-          fallback_label: "EODHD_FALLBACK",
-          fallback_reason: "FREE_AND_YAHOO_DAILY_BAR_REFRESH_FAILED"
+          fallback_label: "EODHD_DAILY",
+          fallback_reason: null
         });
       }
       warnings.push({
         provider: "EODHD",
-        warning: "USED_EODHD_BULK_LAST_DAY_FOR_SYMBOLS_STILL_MISSING_AFTER_STOOQ_AND_YAHOO"
+        warning: "USED_EODHD_BULK_LAST_DAY_FOR_EODHD_PROVIDER_COHORT"
       });
     } catch (error) {
       warnings.push({ provider: "EODHD", warning: error.message });
     }
-  } else if (eodhdMissing.length) {
+  } else if (eodhdSymbols.length && !eodhdToken) {
     warnings.push({
       provider: "EODHD",
-      symbols: eodhdMissing.length,
+      symbols: eodhdSymbols.length,
       warning: "EODHD_TOKEN_OR_CONNECTOR_MISSING"
     });
   }
@@ -368,16 +416,30 @@ export async function refreshDailyBars({
   let stale_quote = 0;
   let invalid = 0;
   let missing_quote = 0;
+  let unchanged_current = 0;
+  let unchanged_cache_better_than_provider = 0;
   let latestDataAsOf = null;
   const providerCounts = {};
 
   for (const symbol of symbols) {
     const record = await loadSymbol(cacheRoot, symbol);
     const quote = quoteMap.get(symbol);
-    if (!record || !quote?.bar) { missing_quote += 1; continue; }
+    if (!record || !quote?.bar) {
+      if (record?.data_as_of === expectedSession) {
+        unchanged_current += 1;
+        latestDataAsOf = !latestDataAsOf || record.data_as_of > latestDataAsOf ? record.data_as_of : latestDataAsOf;
+      }
+      else missing_quote += 1;
+      continue;
+    }
     const { bar, provider, endpoint, fallback_label: fallbackLabel, fallback_reason: fallbackReason } = quote;
     if (bar.date > expectedSession) { stale_quote += 1; continue; }
-    if (bar.date < record.data_as_of) { stale_quote += 1; continue; }
+    if (bar.date < record.data_as_of) {
+      unchanged_cache_better_than_provider += 1;
+      latestDataAsOf = !latestDataAsOf || record.data_as_of > latestDataAsOf ? record.data_as_of : latestDataAsOf;
+      warnings.push({ provider, symbol, warning: "UNCHANGED_CACHE_BETTER_THAN_PROVIDER", provider_bar_date: bar.date, cache_data_as_of: record.data_as_of });
+      continue;
+    }
     latestDataAsOf = !latestDataAsOf || bar.date > latestDataAsOf ? bar.date : latestDataAsOf;
     providerCounts[provider] = (providerCounts[provider] || 0) + 1;
     const old = record.bars.find(x => x.date === bar.date);
@@ -403,9 +465,15 @@ export async function refreshDailyBars({
     else unchanged += 1;
   }
 
-  const status = inserted + corrected > 0
-    ? "UPDATED"
-    : latestDataAsOf
+  const staleUnrepaired = missing_quote + stale_quote + invalid;
+  const currentSessionComplete = staleUnrepaired === 0;
+  const status = staleUnrepaired
+    ? latestDataAsOf || unchanged_current || unchanged_cache_better_than_provider
+      ? "PARTIAL_CURRENT_SESSION"
+      : "DATA_REFRESH_BLOCKED"
+    : inserted + corrected > 0
+      ? "UPDATED"
+      : latestDataAsOf
       ? "ALREADY_CURRENT_OR_UNCHANGED"
       : "DATA_REFRESH_BLOCKED";
   const report = {
@@ -422,11 +490,14 @@ export async function refreshDailyBars({
     retrieved_at: new Date().toISOString(),
     expected_completed_session: expectedSession,
     latest_data_as_of: latestDataAsOf,
+    current_session_complete: currentSessionComplete,
     symbols_requested: symbols.length,
     quotes_loaded: quoteMap.size,
     inserted,
     corrected,
     unchanged,
+    unchanged_current,
+    unchanged_cache_better_than_provider,
     missing_quote,
     stale_quote,
     invalid,

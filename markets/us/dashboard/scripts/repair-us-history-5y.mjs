@@ -4,10 +4,12 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { CACHE_SCHEMA_VERSION, DEFAULT_RETAIN_BARS, loadSymbol, mergeBars, normalizeBar, normalizeSymbol, saveSymbol, validateSeries } from "../engine/cache-store.mjs";
 import { resolveEodhdToken } from "./aurora-env.mjs";
 import { latestCompletedNyseSession } from "./us-market-calendar.mjs";
+import { resolveProviderSymbol } from "./us-universe-reference.mjs";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const cacheDefault = resolve(root, "cache/us/ohlcv");
 const reportDefault = resolve(root, "data/us-history-repair-report.json");
+const universeReferenceDefault = resolve(root, "cache/us/us-universe-reference.json");
 const timeoutDefault = 20_000;
 const concurrencyDefault = 6;
 const minBarsDefault = 252;
@@ -15,7 +17,6 @@ const minBarsDefault = 252;
 const ymd = d => d.toISOString().slice(0, 10);
 const compact = d => String(d).replaceAll("-", "");
 const stooqSymbol = s => `${normalizeSymbol(s).toLowerCase()}.us`;
-const eodhdSymbol = s => `${normalizeSymbol(s)}.US`;
 function addYears(date, years) { const copy = new Date(date); copy.setUTCFullYear(copy.getUTCFullYear() + years); return copy; }
 function latestCompletedUsSession(now = new Date()) {
   return latestCompletedNyseSession(now);
@@ -48,6 +49,9 @@ async function symbolsFromCache(cacheRoot) {
     try { const row = JSON.parse(await readFile(resolve(cacheRoot, name), "utf8")); if (row?.symbol) symbols.push(normalizeSymbol(row.symbol)); } catch {}
   }
   return [...new Set(symbols)].sort();
+}
+async function readUniverseReference(path = universeReferenceDefault) {
+  try { return JSON.parse(await readFile(path, "utf8")); } catch { return null; }
 }
 function parseStooqCsv(text) {
   const lines = String(text || "").trim().split(/\r?\n/).filter(Boolean);
@@ -85,14 +89,17 @@ async function fetchStooq(symbol, from, to, fetcher, ms) {
   const text = await request(`${endpoint}?s=${stooqSymbol(symbol)}&d1=${compact(from)}&d2=${compact(to)}&i=d`, "csv", fetcher, ms);
   return { endpoint, bars: parseStooqCsv(text) };
 }
-async function fetchEodhd(symbol, from, to, token, fetcher, ms) {
+async function fetchEodhd(symbol, from, to, token, fetcher, ms, universeRef) {
   if (!token) throw new Error("EODHD_TOKEN_OR_CONNECTOR_MISSING");
-  const endpoint = `https://eodhd.com/api/eod/${encodeURIComponent(eodhdSymbol(symbol))}`;
+  const resolved = resolveProviderSymbol(symbol, "EODHD", universeRef);
+  if (!resolved.symbol) throw new Error("EODHD_SYMBOL_UNMAPPED");
+  const endpoint = `https://eodhd.com/api/eod/${encodeURIComponent(resolved.symbol)}`;
   const rows = await request(`${endpoint}?from=${from}&to=${to}&period=d&fmt=json&api_token=${encodeURIComponent(token)}`, "json", fetcher, ms);
   return { endpoint, bars: parseEodhdRows(rows) };
 }
 function checkHistory(rows, { minBars, expectedSession, previousAsOf, strictCurrent }) {
   const bars = mergeBars([], rows, DEFAULT_RETAIN_BARS).filter(x => x.date <= expectedSession);
+  if (bars.length > 0 && bars.length < minBars) return { ok: false, code: "IPO_SHORT_HISTORY", bars };
   if (bars.length < minBars) return { ok: false, code: "INSUFFICIENT_HISTORY", bars };
   const valid = validateSeries(bars, { minimumBars: minBars });
   if (!valid.ok) return { ok: false, code: valid.code, bars };
@@ -107,14 +114,15 @@ async function mapLimit(items, limit, worker) {
   await Promise.all(Array.from({ length: Math.min(limit, items.length) }, run));
   return result;
 }
-export async function repairUsHistory({ cacheRoot = cacheDefault, reportPath = reportDefault, from = null, to = null, lookbackYears = 5, minBars = minBarsDefault, staleOnly = true, strictCurrent = false, allowStale = false, symbols = null, limit = null, concurrency = concurrencyDefault, timeoutMs = timeoutDefault, eodhdToken = resolveEodhdToken(), fetcher = fetch, now = new Date() } = {}) {
+export async function repairUsHistory({ cacheRoot = cacheDefault, reportPath = reportDefault, from = null, to = null, lookbackYears = 5, minBars = minBarsDefault, staleOnly = true, strictCurrent = false, allowStale = false, symbols = null, limit = null, concurrency = concurrencyDefault, timeoutMs = timeoutDefault, eodhdToken = resolveEodhdToken(), fetcher = fetch, now = new Date(), universeRef = null } = {}) {
   const expectedSession = to || latestCompletedUsSession(now);
   const start = from || ymd(addYears(`${expectedSession}T00:00:00Z`, -lookbackYears));
   let universe = symbols?.length ? symbols : await symbolsFromCache(cacheRoot);
   if (limit) universe = universe.slice(0, limit);
+  const effectiveUniverseRef = universeRef || await readUniverseReference();
   const warnings = [];
   const providerCounts = {};
-  let refreshed = 0, skippedCurrent = 0, failed = 0, latestDataAsOf = null;
+  let refreshed = 0, skippedCurrent = 0, failed = 0, ipoShortHistory = 0, unchangedCacheBetterThanProvider = 0, latestDataAsOf = null;
   const rows = await mapLimit(universe, concurrency, async symbol => {
     const existing = await loadSymbol(cacheRoot, symbol);
     const previousAsOf = existing?.data_as_of || null;
@@ -122,28 +130,45 @@ export async function repairUsHistory({ cacheRoot = cacheDefault, reportPath = r
     const routes = [
       ["YAHOO_FINANCE", "YAHOO_FALLBACK", "PRIMARY_5Y_HISTORY_ROUTE", () => fetchYahoo(symbol, start, expectedSession, fetcher, timeoutMs)],
       ["STOOQ", "FREE_PRIMARY", "YAHOO_5Y_HISTORY_FAILED_OR_INCOMPLETE", () => fetchStooq(symbol, start, expectedSession, fetcher, timeoutMs)],
-      ["EODHD", "EODHD_FALLBACK", "FREE_AND_YAHOO_5Y_HISTORY_FAILED_OR_INCOMPLETE", () => fetchEodhd(symbol, start, expectedSession, eodhdToken, fetcher, timeoutMs)]
+      ["EODHD", "EODHD_FALLBACK", "FREE_AND_YAHOO_5Y_HISTORY_FAILED_OR_INCOMPLETE", () => fetchEodhd(symbol, start, expectedSession, eodhdToken, fetcher, timeoutMs, effectiveUniverseRef)]
     ];
     const localWarnings = [];
+    let shortHistoryCandidate = null;
     for (const [provider, label, reason, call] of routes) {
       try {
         const fetched = await call();
         const checked = checkHistory(fetched.bars, { minBars, expectedSession, previousAsOf, strictCurrent });
-        if (!checked.ok) { localWarnings.push({ symbol, provider, warning: checked.code, rows: checked.bars.length }); continue; }
+        if (!checked.ok) {
+          localWarnings.push({ symbol, provider, warning: checked.code, rows: checked.bars.length });
+          if (checked.code === "OLDER_THAN_EXISTING_CACHE" && previousAsOf) {
+            return { symbol, status: "UNCHANGED_CACHE_BETTER_THAN_PROVIDER", provider: existing?.provider || "CACHE", data_as_of: previousAsOf, warnings: localWarnings };
+          }
+          if (checked.code === "IPO_SHORT_HISTORY" && checked.bars.at(-1)?.date === expectedSession) {
+            shortHistoryCandidate ||= { provider, label, reason, endpoint: fetched.endpoint, bars: checked.bars };
+          }
+          continue;
+        }
         await saveSymbol(cacheRoot, { schema_version: CACHE_SCHEMA_VERSION, market: "US", symbol, currency: "USD", interval: "1d", provider, endpoint: fetched.endpoint, adjustment_status: provider === "STOOQ" ? "STOOQ_ADJUSTED_OHLC" : provider === "YAHOO_FINANCE" ? "YAHOO_ADJUSTED_CLOSE" : "EODHD_ADJUSTED_CLOSE", delayed_or_live: "EOD", retrieved_at: new Date().toISOString(), data_as_of: checked.bars.at(-1).date, fallback_label: label, fallback_reason: reason, warnings: provider === "EODHD" ? ["Full 5Y provider-consistent history repaired via EODHD fallback."] : [], bars: checked.bars });
         return { symbol, status: "REFRESHED", provider, data_as_of: checked.bars.at(-1).date, warnings: localWarnings };
       } catch (error) { localWarnings.push({ symbol, provider, warning: error.message }); }
+    }
+    if (shortHistoryCandidate) {
+      const row = shortHistoryCandidate;
+      await saveSymbol(cacheRoot, { schema_version: CACHE_SCHEMA_VERSION, market: "US", symbol, currency: "USD", interval: "1d", provider: row.provider, endpoint: row.endpoint, adjustment_status: row.provider === "STOOQ" ? "STOOQ_ADJUSTED_OHLC" : row.provider === "YAHOO_FINANCE" ? "YAHOO_ADJUSTED_CLOSE" : "EODHD_ADJUSTED_CLOSE", delayed_or_live: "EOD", retrieved_at: new Date().toISOString(), data_as_of: row.bars.at(-1).date, fallback_label: "IPO_SHORT_HISTORY", fallback_reason: row.reason, warnings: ["IPO_SHORT_HISTORY: 52W RS, IBD-style RS, and Weinstein Stage are INSUFFICIENT_HISTORY_NOT_APPLICABLE."], bars: row.bars });
+      return { symbol, status: "IPO_SHORT_HISTORY", provider: row.provider, data_as_of: row.bars.at(-1).date, warnings: localWarnings };
     }
     return { symbol, status: "FAILED", previous_as_of: previousAsOf, warnings: localWarnings };
   });
   for (const row of rows) {
     warnings.push(...(row.warnings || []));
     if (row.status === "REFRESHED") { refreshed += 1; providerCounts[row.provider] = (providerCounts[row.provider] || 0) + 1; latestDataAsOf = !latestDataAsOf || row.data_as_of > latestDataAsOf ? row.data_as_of : latestDataAsOf; }
+    else if (row.status === "IPO_SHORT_HISTORY") { ipoShortHistory += 1; providerCounts[row.provider] = (providerCounts[row.provider] || 0) + 1; latestDataAsOf = !latestDataAsOf || row.data_as_of > latestDataAsOf ? row.data_as_of : latestDataAsOf; }
+    else if (row.status === "UNCHANGED_CACHE_BETTER_THAN_PROVIDER") { unchangedCacheBetterThanProvider += 1; latestDataAsOf = !latestDataAsOf || row.data_as_of > latestDataAsOf ? row.data_as_of : latestDataAsOf; }
     else if (row.status === "SKIPPED") { skippedCurrent += 1; latestDataAsOf = !latestDataAsOf || row.data_as_of > latestDataAsOf ? row.data_as_of : latestDataAsOf; }
     else failed += 1;
   }
-  const status = refreshed ? "UPDATED" : latestDataAsOf ? "ALREADY_CURRENT_OR_UNCHANGED" : "DATA_REFRESH_BLOCKED";
-  const report = { status, route_order: ["YAHOO_FINANCE", "STOOQ", "EODHD"], retrieved_at: new Date().toISOString(), from: start, expected_completed_session: expectedSession, latest_data_as_of: latestDataAsOf, retain_bars: DEFAULT_RETAIN_BARS, symbols_requested: universe.length, refreshed, skipped_current: skippedCurrent, failed, provider_counts: providerCounts, fallback_label: providerCounts.EODHD ? "EODHD_FALLBACK" : providerCounts.YAHOO_FINANCE ? "YAHOO_FALLBACK" : providerCounts.STOOQ ? "FREE_PRIMARY" : "NOT_AVAILABLE", warnings: warnings.slice(0, 500) };
+  const status = refreshed || ipoShortHistory ? "UPDATED" : latestDataAsOf ? "ALREADY_CURRENT_OR_UNCHANGED" : "DATA_REFRESH_BLOCKED";
+  const report = { status, route_order: ["YAHOO_FINANCE", "STOOQ", "EODHD"], retrieved_at: new Date().toISOString(), from: start, expected_completed_session: expectedSession, latest_data_as_of: latestDataAsOf, retain_bars: DEFAULT_RETAIN_BARS, symbols_requested: universe.length, refreshed, skipped_current: skippedCurrent, ipo_short_history: ipoShortHistory, unchanged_cache_better_than_provider: unchangedCacheBetterThanProvider, failed, provider_counts: providerCounts, fallback_label: providerCounts.EODHD ? "EODHD_FALLBACK" : providerCounts.YAHOO_FINANCE ? "YAHOO_FALLBACK" : providerCounts.STOOQ ? "FREE_PRIMARY" : "NOT_AVAILABLE", warnings: warnings.slice(0, 500) };
   await mkdir(resolve(reportPath, ".."), { recursive: true });
   await writeFile(`${reportPath}.tmp`, JSON.stringify(report, null, 2), "utf8");
   await rename(`${reportPath}.tmp`, reportPath);

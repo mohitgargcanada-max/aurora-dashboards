@@ -10,7 +10,7 @@ const summaryPath = resolve(projectRoot, "data/us-refresh-or-repair-report.json"
 const cacheRoot = resolve(projectRoot, "cache/us/ohlcv");
 
 function isCurrent(report) {
-  return Boolean(report?.expected_completed_session && report?.latest_data_as_of === report.expected_completed_session);
+  return Boolean(report?.expected_completed_session && report?.latest_data_as_of === report.expected_completed_session && report.current_session_complete !== false);
 }
 
 export function isAlreadyCurrentSummary(report, expectedSession) {
@@ -176,7 +176,11 @@ async function main() {
     const daily = await refreshDailyBars({ allowStale: false });
     result.daily_refresh = daily;
     result.final_status = daily.status;
-    if (!isCurrent(daily) && !allowStale) throw new Error("US daily refresh completed but latest bar is not the expected completed session");
+    if (!isCurrent(daily) && !allowStale) {
+      const partialError = new Error("US daily refresh completed but latest bar is not the expected completed session");
+      partialError.report = daily;
+      throw partialError;
+    }
     try {
       result.history_repair = await repairUsHistory({ staleOnly: true, strictCurrent: false, allowStale: true });
     } catch (repairAfterDailyError) {
