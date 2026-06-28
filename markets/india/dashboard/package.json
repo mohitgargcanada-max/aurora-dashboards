@@ -16,7 +16,7 @@
     "scan:full": "node scripts/run-strict-full-scan.mjs",
     "scan:weekday": "node scripts/run-weekday-active-refresh.mjs",
     "scan:full:cache-only": "node scripts/run-full-dashboard-scan.mjs",
-    "test": "node tests/cache-store.test.mjs && node tests/bhavcopy-parser.test.mjs && node tests/daily-refresh.test.mjs && node tests/freshness-guard.test.mjs && node tests/scan-guard.test.mjs"
+    "test": "node tests/cache-store.test.mjs && node tests/bhavcopy-parser.test.mjs && node tests/india-market-calendar.test.mjs && node tests/daily-refresh.test.mjs && node tests/freshness-guard.test.mjs && node tests/scan-guard.test.mjs"
   },
   "dependencies": {
     "adm-zip": "^0.5.17"
