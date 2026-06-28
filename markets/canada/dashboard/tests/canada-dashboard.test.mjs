@@ -4,7 +4,7 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
 import { CANADA_PROFILE, FINAL_BUCKETS, REQUIRED_CANDIDATE_COLUMNS, validateYahooSymbol, mapCanadaTheme, liquidityLabel } from "../engine/canada-adapter.mjs";
-import { auditIndexRecords, coverageGuard, providerBlendStatus } from "../engine/freshness-guard.mjs";
+import { auditIndexRecords, CANADA_PROVIDER_ROUTE, coverageGuard, providerBlendStatus } from "../engine/freshness-guard.mjs";
 import { canadaCalendarSummary, isCanadaTradingDay, previousCanadaTradingDay } from "../engine/trading-calendar.mjs";
 import { writeJson, readJson } from "../engine/cache-store.mjs";
 import { alignedSeries } from "../engine/indicators.mjs";
@@ -49,6 +49,7 @@ assert.equal(coverage.status, "DATA_STALE_STOCKS_BLOCKED");
 assert.equal(coverageGuard({ expectedSession: "2026-06-26", records: [] }).status, "EMPTY_SCAN_BLOCKED");
 assert.equal(providerBlendStatus({ provider: "YAHOO_FINANCE", bars: [{ provider: "EODHD" }] }).ok, false);
 assert.equal(coverageGuard({ expectedSession: "2026-06-26", records: [{ symbol: "RY.TO", data_as_of: "2026-06-26", provider: "YAHOO_FINANCE", bars: [{ provider: "EODHD" }] }] }).status, "PROVIDER_BLEND_BLOCKED");
+assert.ok(CANADA_PROVIDER_ROUTE.includes("EODHD_FALLBACK_NOT_IMPLEMENTED_NOT_TESTED"));
 
 const stock = [{ date: "2026-01-02", close: 10 }, { date: "2026-01-05", close: 11 }];
 const bm = [{ date: "2026-01-02", close: 100 }, { date: "2026-01-05", close: 100 }];
@@ -79,12 +80,16 @@ const html = renderCanadaDashboard({
 });
 assert.match(html, /AURORA Canada Unified Dashboard/);
 assert.match(html, /RS means benchmark-relative strength, never RSI/);
+assert.match(html, /EODHD_FALLBACK_NOT_IMPLEMENTED_NOT_TESTED/);
 
 const repoRoot = resolve(fileURLToPath(new URL("../../../../", import.meta.url)));
 const helper = await readFile(resolve(repoRoot, "scripts/prepare-canada-pages-artifact.sh"), "utf8");
 assert.match(helper, /markets\/canada/);
+assert.match(helper, /markets\/us/);
+assert.match(helper, /markets\/india/);
 assert.match(helper, /canada-\*\.json/);
-assert.doesNotMatch(helper, /markets\/us|markets\/india|AURORA_US|AURORA_India/);
+assert.match(helper, /AURORA_US_Dashboard/);
+assert.match(helper, /AURORA_India_Unified_Dashboard/);
 
 const dir = await mkdtemp(join(tmpdir(), "aurora-canada-"));
 const path = join(dir, "nested", "file.json");

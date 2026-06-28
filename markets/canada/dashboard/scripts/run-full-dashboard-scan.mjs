@@ -14,7 +14,7 @@ const universePath = resolve(root, "config/canada-universe-seed.json");
 const dashboardPath = resolve(root, "..", "AURORA_Canada_Unified_Dashboard.html");
 const scanPath = resolve(dataRoot, "canada-full-dashboard-scan.json");
 const expectedSession = process.argv[2] || process.env.AURORA_TARGET_SESSION || latestCompletedCanadaSession();
-const canadaRoute = "OFFICIAL_CANADA_LISTINGS -> YAHOO_FINANCE -> EODHD_FALLBACK_NOT_USED";
+const canadaRoute = "OFFICIAL_CANADA_LISTINGS -> YAHOO_FINANCE -> EODHD_FALLBACK_NOT_IMPLEMENTED_NOT_TESTED";
 
 async function exists(path) { try { await access(path); return true; } catch { return false; } }
 async function loadRecords(dir) {
@@ -24,9 +24,13 @@ async function loadRecords(dir) {
   } catch { return []; }
 }
 
-if (!(await exists(ohlcvRoot)) || !(await exists(indexRoot))) {
-  console.error("Canada cache missing; running free Yahoo bootstrap.");
+if (!(await exists(ohlcvRoot))) {
+  console.error("Canada stock cache missing; running free Yahoo stock bootstrap.");
   await import("./backfill-canada-history.mjs");
+}
+if (!(await exists(indexRoot))) {
+  console.error("Canada index cache missing; running free Yahoo index bootstrap.");
+  await import("./refresh-canada-index-bars.mjs");
 }
 
 const universe = await readJson(universePath, []);

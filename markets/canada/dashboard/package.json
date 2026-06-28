@@ -9,6 +9,7 @@
     "cache:audit:indices": "node scripts/audit-indices.mjs",
     "scan:full": "node scripts/run-full-dashboard-scan.mjs",
     "scan:weekday": "node scripts/run-weekday-active-refresh.mjs",
+    "scan:smoke": "node scripts/run-fixture-scan-smoke.mjs",
     "backfill:history": "node scripts/backfill-canada-history.mjs"
   },
   "dependencies": {}

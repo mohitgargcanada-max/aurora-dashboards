@@ -12,8 +12,8 @@ function normalizeChart(symbol, payload, providerMeta) {
     const open = quote.open?.[i];
     const high = quote.high?.[i];
     const low = quote.low?.[i];
-    const close = adjclose?.[i] ?? quote.close?.[i];
-    const rawClose = quote.close?.[i];
+    const close = adjclose?.[i] ?? quote.close?.[i] ?? (i === timestamps.length - 1 ? result.meta?.regularMarketPrice : undefined);
+    const rawClose = quote.close?.[i] ?? (i === timestamps.length - 1 ? result.meta?.regularMarketPrice : undefined);
     const volume = quote.volume?.[i] ?? 0;
     if ([open, high, low, close].every(Number.isFinite)) {
       const date = new Date(timestamps[i] * 1000).toISOString().slice(0, 10);

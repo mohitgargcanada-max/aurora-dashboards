@@ -1,6 +1,6 @@
 import { latestCompletedCanadaSession } from "./trading-calendar.mjs";
 
-export const CANADA_PROVIDER_ROUTE = ["OFFICIAL_CANADA_LISTINGS", "YAHOO_FINANCE", "EODHD_FALLBACK_NOT_USED"];
+export const CANADA_PROVIDER_ROUTE = ["OFFICIAL_CANADA_LISTINGS", "YAHOO_FINANCE", "EODHD_FALLBACK_NOT_IMPLEMENTED_NOT_TESTED"];
 
 export function providerBlendStatus(record) {
   const providers = new Set();
