@@ -1,6 +1,9 @@
 const fmt = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", hour12: false });
 const dateFmt = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto", year: "numeric", month: "2-digit", day: "2-digit" });
 
+export const CANADA_EXCHANGE_CALENDAR_SOURCE_URL = "https://www.tsx.com/en/trading/calendars-and-trading-hours/calendar";
+export const CANADA_EXCHANGE_TRADING_HOURS_SOURCE_URL = "https://www.tsx.com/en/trading/calendars-and-trading-hours/trading-hours";
+
 function ymd(date) { return date.toISOString().slice(0, 10); }
 function utcDateFromYmd(value) { return new Date(`${value}T12:00:00Z`); }
 function dayOfWeek(value) { return utcDateFromYmd(value).getUTCDay(); }
@@ -10,6 +13,16 @@ function observedWeekendHoliday(value) {
   if (dow === 6) return addDays(value, -1);
   if (dow === 0) return addDays(value, 1);
   return value;
+}
+function observedChristmasAndBoxingDay(year) {
+  const christmas = `${year}-12-25`;
+  const boxing = `${year}-12-26`;
+  const christmasDow = dayOfWeek(christmas);
+  const boxingDow = dayOfWeek(boxing);
+  if (christmasDow === 6) return [addDays(christmas, -1), addDays(boxing, 1)];
+  if (christmasDow === 0) return [addDays(christmas, 1), addDays(boxing, 1)];
+  if (boxingDow === 6 || boxingDow === 0) return [christmas, addDays(boxing, boxingDow === 6 ? 2 : 1)];
+  return [christmas, boxing];
 }
 function nthWeekday(year, monthIndex, weekday, nth) {
   const d = new Date(Date.UTC(year, monthIndex, 1, 12));
@@ -43,23 +56,48 @@ function easterSunday(year) {
 
 export function canadaMarketHolidays(year) {
   const easter = easterSunday(year);
+  const [christmasDay, boxingDay] = observedChristmasAndBoxingDay(year);
   return new Set([
     observedWeekendHoliday(`${year}-01-01`),
     addDays(easter, -2),
     nthWeekday(year, 1, 1, 3),
     lastWeekday(year, 4, 1),
     observedWeekendHoliday(`${year}-07-01`),
+    nthWeekday(year, 7, 1, 1),
     nthWeekday(year, 8, 1, 1),
     nthWeekday(year, 9, 1, 2),
-    observedWeekendHoliday(`${year}-12-25`),
-    observedWeekendHoliday(`${year}-12-26`)
+    christmasDay,
+    boxingDay
   ]);
+}
+
+export function canadaExchangeHolidayForDate(value) {
+  return canadaMarketHolidays(Number(value.slice(0, 4))).has(value) ? { date: value, market_closed: true } : null;
 }
 
 export function isCanadaTradingDay(value) {
   const dow = dayOfWeek(value);
   if (dow === 0 || dow === 6) return false;
   return !canadaMarketHolidays(Number(value.slice(0, 4))).has(value);
+}
+
+export function marketDateInToronto(now = new Date()) {
+  return dateFmt.format(now);
+}
+
+export function canadaCalendarSummary(now = new Date()) {
+  const today = marketDateInToronto(now);
+  return {
+    exchange: "TSX/TSXV",
+    source: "TMX TSX/TSXV Calendars & Trading Hours",
+    source_url: CANADA_EXCHANGE_CALENDAR_SOURCE_URL,
+    trading_hours_url: CANADA_EXCHANGE_TRADING_HOURS_SOURCE_URL,
+    today,
+    is_market_holiday: !isCanadaTradingDay(today),
+    today_holiday: canadaExchangeHolidayForDate(today),
+    regular_open_time_et: "09:30",
+    scheduled_scan_time_et: "09:00"
+  };
 }
 
 export function previousCanadaTradingDay(value) {

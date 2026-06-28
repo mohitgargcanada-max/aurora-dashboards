@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
 import { CANADA_PROFILE, FINAL_BUCKETS, REQUIRED_CANDIDATE_COLUMNS, validateYahooSymbol, mapCanadaTheme, liquidityLabel } from "../engine/canada-adapter.mjs";
 import { auditIndexRecords, coverageGuard, providerBlendStatus } from "../engine/freshness-guard.mjs";
-import { isCanadaTradingDay, previousCanadaTradingDay } from "../engine/trading-calendar.mjs";
+import { canadaCalendarSummary, isCanadaTradingDay, previousCanadaTradingDay } from "../engine/trading-calendar.mjs";
 import { writeJson, readJson } from "../engine/cache-store.mjs";
 import { alignedSeries } from "../engine/indicators.mjs";
 import { renderCanadaDashboard } from "../engine/scan-engine.mjs";
@@ -22,6 +22,11 @@ assert.equal(liquidityLabel({ addv20: 2_000_000, avgVolume20: 150_000, price: 10
 assert.equal(liquidityLabel({ addv20: 500_000, avgVolume20: 150_000, price: 10 }), "LIQUIDITY_THIN_CAUTION");
 assert.equal(isCanadaTradingDay("2026-06-27"), false);
 assert.equal(previousCanadaTradingDay("2026-06-27"), "2026-06-26");
+assert.equal(isCanadaTradingDay("2026-08-03"), false);
+assert.equal(isCanadaTradingDay("2026-12-28"), false);
+assert.equal(isCanadaTradingDay("2026-08-04"), true);
+assert.equal(canadaCalendarSummary(new Date("2026-08-03T13:00:00Z")).is_market_holiday, true);
+assert.equal(canadaCalendarSummary(new Date("2026-08-04T13:00:00Z")).scheduled_scan_time_et, "09:00");
 
 const freshAudit = auditIndexRecords([
   { symbol: "^GSPTSE", data_as_of: "2026-06-26", provider: "YAHOO_FINANCE" },

@@ -3,8 +3,8 @@ name: AURORA Canada Dashboard
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 13 * * 0-5"
-    - cron: "0 14 * * 0-5"
+    - cron: "0 13 * * 1-5"
+    - cron: "0 14 * * 1-5"
 
 permissions:
   contents: write
@@ -28,14 +28,16 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Gate scheduled run to 9am New York/Toronto
+      - name: Gate scheduled run to 9:00 AM Toronto trading day
         if: github.event_name == 'schedule'
-        run: node scripts/nyse-time-gate.mjs
+        run: node scripts/canada-time-gate.mjs
 
       - name: Install Canada dashboard dependencies
+        if: github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1'
         run: npm ci --prefix markets/canada/dashboard
 
       - name: Run Canada dashboard validation
+        if: github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1'
         run: |
           npm --prefix markets/canada/dashboard test
           npm --prefix markets/canada/dashboard run cache:refresh:indices
@@ -45,20 +47,20 @@ jobs:
           bash -n scripts/prepare-canada-pages-artifact.sh
 
       - name: Prepare GitHub Pages artifact
-        if: success()
+        if: success() && (github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1')
         run: bash scripts/prepare-canada-pages-artifact.sh public
 
       - name: Configure GitHub Pages
-        if: success()
+        if: success() && (github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1')
         uses: actions/configure-pages@v5
 
       - name: Upload GitHub Pages artifact
-        if: success()
+        if: success() && (github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1')
         uses: actions/upload-pages-artifact@v3
         with:
           path: public
 
       - name: Deploy GitHub Pages
-        if: success()
+        if: success() && (github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1')
         id: deployment
         uses: actions/deploy-pages@v4
