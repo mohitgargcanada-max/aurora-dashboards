@@ -14,7 +14,7 @@ const universePath = resolve(root, "config/canada-universe-seed.json");
 const dashboardPath = resolve(root, "..", "AURORA_Canada_Unified_Dashboard.html");
 const scanPath = resolve(dataRoot, "canada-full-dashboard-scan.json");
 const expectedSession = process.argv[2] || process.env.AURORA_TARGET_SESSION || latestCompletedCanadaSession();
-const canadaRoute = "OFFICIAL_CANADA_LISTINGS -> YAHOO_FINANCE -> EODHD_FALLBACK_NOT_IMPLEMENTED_NOT_TESTED";
+const canadaRoute = "OFFICIAL_CANADA_LISTINGS -> YAHOO_FINANCE -> EODHD_FALLBACK";
 
 async function exists(path) { try { await access(path); return true; } catch { return false; } }
 async function loadRecords(dir) {
@@ -25,11 +25,11 @@ async function loadRecords(dir) {
 }
 
 if (!(await exists(ohlcvRoot))) {
-  console.error("Canada stock cache missing; running free Yahoo stock bootstrap.");
+  console.error("Canada stock cache missing; running free-first stock bootstrap.");
   await import("./backfill-canada-history.mjs");
 }
 if (!(await exists(indexRoot))) {
-  console.error("Canada index cache missing; running free Yahoo index bootstrap.");
+  console.error("Canada index cache missing; running free-first index bootstrap.");
   await import("./refresh-canada-index-bars.mjs");
 }
 
@@ -58,6 +58,8 @@ if (blocked.length) {
     latest_index_data_as_of: indexRecords.map(x => x.data_as_of).sort().at(-1) || null,
     route: canadaRoute,
     stale_symbols: indexAudit.stale_symbols,
+    blocking_stale_symbols: indexAudit.blocking_stale_symbols,
+    optional_stale_symbols: indexAudit.optional_stale_symbols,
     coverage,
     index_audit: indexAudit,
     provider_route: indexAudit.provider_route,
@@ -65,7 +67,7 @@ if (blocked.length) {
     scanned_candidates: 0,
     rejected_count: 0,
     rejection_reason_counts: {},
-    next_condition: "Refresh Canada Yahoo caches for the expected completed session. Preserve last-good dashboard."
+    next_condition: "Refresh Canada Yahoo/EODHD caches for the expected completed session. Preserve last-good dashboard."
   };
   await writeJson(resolve(dataRoot, "canada-daily-refresh-report.json"), report);
   console.error(JSON.stringify(report, null, 2));
@@ -94,11 +96,11 @@ if (!rows.length) {
   process.exit(1);
 }
 const model = buildDashboardModel({ rows, rejected, indexAudit, coverage, expectedSession });
-const scan = { market: "CANADA", expected_completed_session: expectedSession, latest_stock_data_as_of: stockRecords.map(x => x.data_as_of).sort().at(-1), latest_index_data_as_of: indexRecords.map(x => x.data_as_of).sort().at(-1), route: canadaRoute, provider_route: indexAudit.provider_route, coverage, feature_matrix_count: rows.length, scanned_candidates: rows.length, rejected_count: rejected.length, rejection_reason_counts: rejectionReasonCounts(rejected), weekly_universe: model.weeklyUniverse, weekly_focus: model.weeklyFocus, daily_top_1_4: model.dailyTop, rsle_top_20: model.rsleTop20, developing_watchlist_next_20: model.developing, rejected };
+const scan = { market: "CANADA", expected_completed_session: expectedSession, latest_stock_data_as_of: stockRecords.map(x => x.data_as_of).sort().at(-1), latest_index_data_as_of: indexRecords.map(x => x.data_as_of).sort().at(-1), route: canadaRoute, provider_route: indexAudit.provider_route, coverage, index_context_status: indexAudit.context_status, feature_matrix_count: rows.length, scanned_candidates: rows.length, rejected_count: rejected.length, rejection_reason_counts: rejectionReasonCounts(rejected), weekly_universe: model.weeklyUniverse, weekly_focus: model.weeklyFocus, daily_top_1_4: model.dailyTop, rsle_top_20: model.rsleTop20, developing_watchlist_next_20: model.developing, rejected };
 await writeJson(scanPath, scan);
-await writeJson(resolve(dataRoot, "canada-daily-refresh-report.json"), { market: "CANADA", status: "FULL_LOCAL_SCAN", expected_completed_session: expectedSession, latest_stock_data_as_of: scan.latest_stock_data_as_of, latest_index_data_as_of: scan.latest_index_data_as_of, route: canadaRoute, coverage, feature_matrix_count: rows.length, scanned_candidates: rows.length, rejected_count: rejected.length, rejection_reason_counts: scan.rejection_reason_counts, provider_route: indexAudit.provider_route });
+await writeJson(resolve(dataRoot, "canada-daily-refresh-report.json"), { market: "CANADA", status: "FULL_LOCAL_SCAN", expected_completed_session: expectedSession, latest_stock_data_as_of: scan.latest_stock_data_as_of, latest_index_data_as_of: scan.latest_index_data_as_of, route: canadaRoute, coverage, index_context_status: indexAudit.context_status, optional_stale_symbols: indexAudit.optional_stale_symbols, feature_matrix_count: rows.length, scanned_candidates: rows.length, rejected_count: rejected.length, rejection_reason_counts: scan.rejection_reason_counts, provider_route: indexAudit.provider_route });
 const html = renderCanadaDashboard(model);
 const tmp = `${dashboardPath}.tmp`;
 await writeFile(tmp, html);
 await rename(tmp, dashboardPath);
-console.log(JSON.stringify({ status: "FULL_LOCAL_SCAN", expected_completed_session: expectedSession, rows: rows.length, daily_top: model.dailyTop.length }, null, 2));
+console.log(JSON.stringify({ status: "FULL_LOCAL_SCAN", expected_completed_session: expectedSession, rows: rows.length, daily_top: model.dailyTop.length, index_context_status: indexAudit.context_status }, null, 2));
