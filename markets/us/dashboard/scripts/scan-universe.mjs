@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { marketDimmer, weeklyWatchlistScore } from "../engine/aurora.mjs";
 import { loadSymbol } from "../engine/cache-store.mjs";
+import { buildMarketConfirmationStack, buildMaRespectWatchlists, buildMyhApproachingRows } from "../../../shared/market-confirmation-and-ma-respect.mjs";
 import { applyPatternQualityExecutionCap } from "../../../shared/pattern-quality-execution-cap.mjs";
 import { buildWeeklyUniverseForMode, parseScanArgs, resolveScanMode, runLightweightFullUniverseDiscovery, scanRunMetadata } from "../../../shared/scan-orchestration.mjs";
 import { isoTimestamp } from "./dashboard-state.mjs";
@@ -437,6 +438,20 @@ const referenceRows = referenceBasket.map(symbol => candidates.find(x => x.ticke
 const referencePass = referenceRows.filter(x => ["PASS", "PARTIAL"].includes(x.rs_trifecta)).length;
 const referenceBasketState = referenceRows.length && referencePass / referenceRows.length >= 0.6 ? "REFERENCE_BASKET_CONFIRMING" : referenceRows.length && referencePass / referenceRows.length >= 0.3 ? "REFERENCE_BASKET_MIXED" : "REFERENCE_BASKET_SQUATTING";
 const sectionSort = xs => xs.sort((a, b) => b.weekly_watchlist_score - a.weekly_watchlist_score || b.technical_strength_score - a.technical_strength_score).slice(0, 50);
+const marketConfirmation = buildMarketConfirmationStack({
+  oneil_market_cycle: marketLabels.oneil,
+  aurora_mc2_state: marketLabels.aurora,
+  market_permission: marketPermission,
+  market_dimmer: dimmer,
+  dimmer_label: marketLabels.dimmer_label,
+  benchmark_ma_stack: `SPY ${spyCloses.at(-1) > spyE21 ? "above" : "below"} EMA21`
+}, {
+  symbol: "SPY",
+  benchmark_rs21_state: spyCloses.at(-1) > spyE21 ? "BENCHMARK_RS21_HOLDING" : "BENCHMARK_RS21_BELOW",
+  bars: spy
+});
+const maRespect = buildMaRespectWatchlists(candidates, { mutateRows: true });
+const myhApproaching = buildMyhApproachingRows(candidates, { mutateRows: true });
 const state = {
   generated_at: generatedAt,
   run: {
@@ -504,7 +519,8 @@ const state = {
     sector_theme_evidence: sectorEvidence || "SECTOR_THEME_EVIDENCE_PARTIAL",
     cycle_age_sessions: 0,
     dimmer_components: `index ${spyCloses.at(-1) > spyE21 ? 1 : 0}/${spyCloses.at(-1) > spyS50 ? 1 : 0}; breadth ${aboveEma21Count}/${valid}; risk ${riskConfirm}/3`,
-    reason: `${marketLabels.oneil}: ${aboveEma21Count}/${valid} above EMA21, ${leadershipBreadthCount}/${valid} RS leaders, ${riskConfirm}/3 risk proxies above EMA21.`
+    reason: `${marketLabels.oneil}: ${aboveEma21Count}/${valid} above EMA21, ${leadershipBreadthCount}/${valid} RS leaders, ${riskConfirm}/3 risk proxies above EMA21.`,
+    ...marketConfirmation
   },
   benchmarks,
   sector_rrg,
@@ -514,6 +530,10 @@ const state = {
   developing_watchlist_20: nearWatchlist,
   sections: {
     rs21_rsnh: sectionSort(candidates.filter(x => x.rs_ema21 === "ABOVE" || x.scan_memberships.includes("S22_RS_LINE_NEW_HIGH"))),
+    myh_approaching: sectionSort(myhApproaching.myh_approaching_rows),
+    ma10_respect: sectionSort(maRespect.ema10_respect_rows),
+    ma21_respect: sectionSort(maRespect.ema21_respect_rows),
+    ma50_respect: sectionSort(maRespect.sma50_respect_rows),
     pbx_pullback: sectionSort(candidates.filter(x => x.bucket === "PULLBACK_WATCH" || x.pbx_quality.startsWith("PBX_VALID") || x.pbx_quality === "PBX_ACCEPTABLE")),
     compression_vcp: sectionSort(candidates.filter(x => x.compressed || x.scan_memberships.includes("S10_VCP_HV_PROXY"))),
     basepivot_patterns: sectionSort(candidates.filter(x => Math.abs(x.distance_to_trigger_pct) <= 7 || x.pattern_proxy !== "NO_CLEAR_BASE")),

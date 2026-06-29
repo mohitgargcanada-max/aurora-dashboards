@@ -20,6 +20,6 @@
     "validate": "node scripts/validate-artifact.mjs",
     "validate:dashboard-json": "node scripts/validate-dashboard-json-export.mjs",
     "test:json-export": "node tests/dashboard-json-export.test.mjs",
-    "test": "node ../../shared/tests/pattern-quality-execution-cap.test.mjs && node tests/aurora.test.mjs && node tests/source-routing.test.mjs && node tests/data-sources.test.mjs && node tests/cache-store.test.mjs && node tests/us-market-calendar.test.mjs && node tests/daily-refresh.test.mjs && node tests/refresh-wrapper.test.mjs && node tests/us-universe-reference.test.mjs && node tests/dashboard-state.test.mjs && node tests/scan-orchestration.test.mjs && node tests/dashboard-json-export.test.mjs && node tests/universe-routing.test.mjs && node tests/ui-copy.test.mjs"
+    "test": "node ../../shared/tests/pattern-quality-execution-cap.test.mjs && node ../../shared/tests/market-confirmation-and-ma-respect.test.mjs && node tests/aurora.test.mjs && node tests/source-routing.test.mjs && node tests/data-sources.test.mjs && node tests/cache-store.test.mjs && node tests/us-market-calendar.test.mjs && node tests/daily-refresh.test.mjs && node tests/refresh-wrapper.test.mjs && node tests/us-universe-reference.test.mjs && node tests/dashboard-state.test.mjs && node tests/scan-orchestration.test.mjs && node tests/dashboard-json-export.test.mjs && node tests/universe-routing.test.mjs && node tests/ui-copy.test.mjs"
   }
 }
