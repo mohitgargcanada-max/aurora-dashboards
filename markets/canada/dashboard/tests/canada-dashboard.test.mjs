@@ -8,8 +8,9 @@ import { auditIndexRecords, CANADA_PROVIDER_ROUTE, coverageGuard, providerBlendS
 import { canadaCalendarSummary, isCanadaTradingDay, previousCanadaTradingDay } from "../engine/trading-calendar.mjs";
 import { writeJson, readJson } from "../engine/cache-store.mjs";
 import { alignedSeries } from "../engine/indicators.mjs";
-import { renderCanadaDashboard } from "../engine/scan-engine.mjs";
+import { buildDashboardModel, renderCanadaDashboard } from "../engine/scan-engine.mjs";
 import { mapYahooToEodhdSymbol, normalizeEodhdDaily, resolveEodhdToken } from "../engine/eodhd-client.mjs";
+import { FINAL_BUCKETS as LOCKED_FINAL_BUCKETS, SCAN_MODES } from "../../../shared/scan-orchestration.mjs";
 
 assert.equal(CANADA_PROFILE.market, "CANADA");
 assert.equal(CANADA_PROFILE.currency, "CAD");
@@ -86,6 +87,101 @@ assert.equal(alignedSeries(stock, bm).length, 2);
 assert.ok(REQUIRED_CANDIDATE_COLUMNS.includes("User Note"));
 assert.ok(FINAL_BUCKETS.includes("TRIGGER_READY"));
 assert.ok(!FINAL_BUCKETS.includes("RSLE_TRIGGER_READY"));
+assert.equal(CANADA_PROFILE.benchmark_primary, "^GSPTSE");
+assert.equal(CANADA_PROFILE.currency, "CAD");
+
+const baseCanadaRow = (symbol, overrides = {}) => ({
+  symbol,
+  exchange: "TSX",
+  provider: "YAHOO_FINANCE",
+  theme: "Canadian Banks",
+  theme_confidence: "HIGH",
+  price: 10,
+  addv20: 2_000_000,
+  avg_volume20: 150_000,
+  liquidity_label: "LIQUIDITY_PASS",
+  final_bucket: "TRIGGER_READY",
+  leadership_score: 90,
+  tactical_score: 80,
+  rs_rating: 90,
+  rs21_state: "ABOVE_HOLDING",
+  rs_trifecta: "PASS",
+  rsnh: false,
+  rrg: { quadrant: "LEADING", ratio: 105, momentum: 101 },
+  rmv5: 5,
+  rmv15: 8,
+  rmv25: 12,
+  rmv_label: "RMV_VERY_TIGHT",
+  basepivot_quality: "BASEPIVOT_QUALITY_A",
+  basepivot_status: "BASEPIVOT_ACTIVE",
+  pbx_label: "PBX_VALID_PULLBACK",
+  ve2: { signature: "VE2_VOLUME_NEUTRAL", grade: "B", rvol20: 1, dryupLabel: "DRYUP_NEUTRAL", distributionLabel: "DIST_OK" },
+  axm: { axm21_label: "AXM_OK", axm10: 0.5, axm21: 1, axm_composite_label: "AXM_OK" },
+  compression: true,
+  entry_reference: 10,
+  entry_stop: 9.5,
+  entry_risk_pct: 5,
+  thesis_stop: 9,
+  thesis_risk_pct: 10,
+  caution: "none",
+  next_condition: "next completed-session trigger acceptance",
+  ...overrides
+});
+const canadaRows = [
+  baseCanadaRow("NEW.TO", { leadership_score: 99 }),
+  baseCanadaRow("RY.TO", { leadership_score: 80 }),
+  baseCanadaRow("SHOP.TO", { leadership_score: 70 })
+];
+const canadaModelFull = buildDashboardModel({
+  rows: canadaRows,
+  rejected: [],
+  indexAudit: freshAudit,
+  coverage,
+  expectedSession: "2026-06-26",
+  scanMode: SCAN_MODES.SUNDAY_FULL_REBUILD,
+  generatedAt: "2026-06-28T00:00:00.000Z"
+});
+assert.deepEqual(canadaModelFull.weeklyContract.weekly_universe_symbols, ["NEW.TO", "RY.TO", "SHOP.TO"]);
+assert.equal(canadaModelFull.weeklyContract.market, "CANADA");
+assert.equal(canadaModelFull.discovery.ohlcv_fetch_calls, 0);
+
+const canadaModelWeekday = buildDashboardModel({
+  rows: [
+    baseCanadaRow("NEW.TO", { leadership_score: 99 }),
+    baseCanadaRow("RY.TO", { leadership_score: 80, trigger_gap_pct: 0.5, entry_risk_pct: 6, caution: "temporary pullback", next_condition: "TRIGGER_ACCEPTANCE" }),
+    baseCanadaRow("SHOP.TO", { leadership_score: 70, thesis_risk_pct: 24, caution: "wide thesis risk context" })
+  ],
+  rejected: [],
+  indexAudit: freshAudit,
+  coverage,
+  expectedSession: "2026-06-29",
+  scanMode: SCAN_MODES.WEEKDAY_EOD_UPDATE,
+  previousWeeklyContract: { market: "CANADA", weekly_contract_id: "CANADA-2026-W26-2026-06-26", weekly_list_created_asof: "2026-06-26", weekly_universe_symbols: ["RY.TO", "SHOP.TO"], daily_status: {}, removal_flag: {}, removal_reason: {} },
+  generatedAt: "2026-06-29T22:00:00.000Z"
+});
+assert.deepEqual(canadaModelWeekday.weeklyContract.weekly_universe_symbols, ["RY.TO", "SHOP.TO"]);
+assert.equal(canadaModelWeekday.weeklyUniverse.some(row => row.symbol === "NEW.TO"), false);
+assert.ok(canadaModelWeekday.rsleTop20.some(row => row.symbol === "NEW.TO"));
+assert.equal(canadaModelWeekday.dailyTop.some(row => row.symbol === "NEW.TO"), false);
+assert.equal(canadaModelWeekday.weeklyUniverse.find(row => row.symbol === "RY.TO").entry_risk_pct, 6);
+assert.equal(canadaModelWeekday.weeklyUniverse.find(row => row.symbol === "RY.TO").next_condition, "TRIGGER_ACCEPTANCE");
+assert.equal(canadaModelWeekday.weeklyUniverse.find(row => row.symbol === "SHOP.TO").removal_flag, false);
+assert.ok(canadaModelWeekday.dailyTop.length <= 4);
+assert.ok(canadaModelWeekday.rsleTop20.length <= 20);
+
+const canadaModelHardRemove = buildDashboardModel({
+  rows: [baseCanadaRow("RY.TO"), baseCanadaRow("SHOP.TO", { final_bucket: "AVOID_FRESH_LONG", stage_label: "STAGE_4" })],
+  rejected: [],
+  indexAudit: freshAudit,
+  coverage,
+  expectedSession: "2026-06-29",
+  scanMode: SCAN_MODES.WEEKDAY_EOD_UPDATE,
+  previousWeeklyContract: { market: "CANADA", weekly_contract_id: "CANADA-2026-W26-2026-06-26", weekly_list_created_asof: "2026-06-26", weekly_universe_symbols: ["RY.TO", "SHOP.TO"], daily_status: {}, removal_flag: {}, removal_reason: {} },
+  generatedAt: "2026-06-29T22:00:00.000Z"
+});
+assert.deepEqual(canadaModelHardRemove.weeklyContract.weekly_universe_symbols, ["RY.TO"]);
+assert.equal(canadaModelHardRemove.weeklyContract.removal_flag["SHOP.TO"], true);
+assert.deepEqual(LOCKED_FINAL_BUCKETS, FINAL_BUCKETS);
 
 const html = renderCanadaDashboard({
   expectedSession: "2026-06-26",

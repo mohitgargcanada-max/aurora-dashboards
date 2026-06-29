@@ -2,6 +2,7 @@ import { CANADA_PROFILE, FINAL_BUCKETS, REQUIRED_CANDIDATE_COLUMNS, liquidityLab
 import { providerBlendStatus } from "./freshness-guard.mjs";
 import { alignedSeries, assignPercentiles, atr, axmMatrix, clamp, emaSeries, escapeHtml, latest, mean, rmv, rmvLabel, round, rrgFromRsLine, rs21State, smaSeries, weightedRsRaw } from "./indicators.mjs";
 import { loadSellExtensionWatchlistRows, renderSellExtensionWatchlistHtml } from "../../../../scripts/active-ledger/sell-extension-watchlist.mjs";
+import { buildWeeklyUniverseForMode, runLightweightFullUniverseDiscovery } from "../../../shared/scan-orchestration.mjs";
 
 const sellExtensionWatchlistRows = await loadSellExtensionWatchlistRows(new URL("../state/active-tracking-ledger.json", import.meta.url));
 
@@ -248,9 +249,20 @@ function stockThemeLeadership(sections) {
   return [...counts.entries()].map(([theme, rec]) => ({ theme, weighted: rec.weekly * 3 + rec.daily * 4 + rec.rsle * 2 + rec.developing, ...rec, symbols: [...rec.symbols].slice(0, 8).join(", ") })).sort((a, b) => b.weighted - a.weighted);
 }
 
-export function buildDashboardModel({ rows, rejected, indexAudit, coverage, expectedSession }) {
+export function buildDashboardModel({ rows, rejected, indexAudit, coverage, expectedSession, scanMode = "SUNDAY_FULL_REBUILD", previousWeeklyContract = null, generatedAt = new Date().toISOString() }) {
   const eligible = rows.filter(r => r.liquidity_label !== "LIQUIDITY_DATA_REPAIR");
-  const weeklyUniverse = eligible.slice(0, 20);
+  const discovery = runLightweightFullUniverseDiscovery({ market: "CANADA", session: expectedSession, cache: { featureMatrix: rows } });
+  const weeklyPlan = buildWeeklyUniverseForMode({
+    mode: scanMode,
+    previousContract: previousWeeklyContract,
+    rankedCandidates: eligible,
+    featureMatrix: rows,
+    session: expectedSession,
+    generatedAt,
+    targetMax: 20,
+    market: "CANADA"
+  });
+  const weeklyUniverse = weeklyPlan.weeklyUniverse;
   const weeklyFocus = weeklyUniverse.filter(r => ["TRIGGER_READY", "EARLY_ENTRY_WATCH", "PULLBACK_WATCH"].includes(r.final_bucket)).slice(0, 12);
   const dailyTop = weeklyFocus.filter(r => r.final_bucket === "TRIGGER_READY").slice(0, 4);
   const rsleTop20 = [...eligible].sort((a, b) => b.leadership_score - a.leadership_score || b.tactical_score - a.tactical_score).slice(0, 20);
@@ -263,7 +275,7 @@ export function buildDashboardModel({ rows, rejected, indexAudit, coverage, expe
   const compression = eligible.filter(r => r.compression).slice(0, 20);
   const noChase = eligible.filter(r => r.final_bucket === "NO_CHASE" || r.axm.axm_composite_label !== "AXM_OK").slice(0, 20);
   const themes = stockThemeLeadership([["weekly", weeklyUniverse], ["focus", weeklyFocus], ["daily", dailyTop], ["rsle", rsleTop20], ["developing", developing]]);
-  return { expectedSession, rows, rejected, indexAudit, coverage, weeklyUniverse, weeklyFocus, dailyTop, rsleTop20, developing, nearRsHigh, pullbacks, basepivots, rmvp, ve2, compression, noChase, themes };
+  return { expectedSession, rows, rejected, indexAudit, coverage, weeklyUniverse, weeklyFocus, dailyTop, rsleTop20, developing, nearRsHigh, pullbacks, basepivots, rmvp, ve2, compression, noChase, themes, weeklyContract: weeklyPlan.weeklyContract, cadenceWarnings: weeklyPlan.warnings, discovery };
 }
 
 export function renderCanadaDashboard(model) {
