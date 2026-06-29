@@ -21,6 +21,28 @@ on:
         description: "Optional Canada symbol for forced Yahoo-failure EODHD fallback verification, e.g. RY.TO"
         required: false
         default: ""
+      market_cache_mode:
+        description: "Market cache integration mode"
+        required: false
+        default: "off"
+        type: choice
+        options:
+          - off
+          - dry-run
+          - apply
+      market_cache_snapshot:
+        description: "Market cache snapshot type"
+        required: false
+        default: "latest"
+        type: choice
+        options:
+          - latest
+          - weekly
+          - monthly
+      market_cache_snapshot_id:
+        description: "Snapshot id: latest, YYYY-WW, or YYYY-MM"
+        required: false
+        default: "latest"
   schedule:
     - cron: "0 13 * * 1-5"
     - cron: "0 14 * * 1-5"
@@ -56,6 +78,52 @@ jobs:
           npm --prefix markets/canada/dashboard test
           npm --prefix markets/canada/dashboard run scan:smoke
           bash -n scripts/prepare-canada-pages-artifact.sh
+
+      - name: Restore Canada market cache
+        if: github.event_name != 'pull_request' && (github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1')
+        env:
+          AURORA_MARKET_CACHE_PAT: ${{ secrets.AURORA_MARKET_CACHE_PAT }}
+        run: |
+          MODE="${{ github.event.inputs.market_cache_mode || 'off' }}"
+          SNAPSHOT="${{ github.event.inputs.market_cache_snapshot || 'latest' }}"
+          SNAPSHOT_ID="${{ github.event.inputs.market_cache_snapshot_id || 'latest' }}"
+
+          if [ "$MODE" = "off" ]; then
+            echo "Market cache restore disabled."
+            exit 0
+          fi
+
+          if [ -z "${AURORA_MARKET_CACHE_PAT:-}" ]; then
+            if [ "$MODE" = "apply" ]; then
+              echo "AURORA_MARKET_CACHE_PAT is required for apply mode."
+              exit 1
+            fi
+            echo "AURORA_MARKET_CACHE_PAT missing; dry-run restore skipped."
+            exit 0
+          fi
+
+          CACHE_REPO_DIR="$RUNNER_TEMP/aurora-market-cache"
+          git -c http.extraheader="AUTHORIZATION: bearer ${AURORA_MARKET_CACHE_PAT}" clone \
+            https://github.com/mohitgargcanada-max/aurora-market-cache.git \
+            "$CACHE_REPO_DIR"
+
+          if [ "$MODE" = "apply" ]; then
+            node scripts/market-cache/restore-market-cache.mjs \
+              --market canada \
+              --target markets/canada/dashboard/cache \
+              --cache-repo "$CACHE_REPO_DIR" \
+              --snapshot "$SNAPSHOT" \
+              --snapshot-id "$SNAPSHOT_ID" \
+              --apply
+          else
+            node scripts/market-cache/restore-market-cache.mjs \
+              --market canada \
+              --target markets/canada/dashboard/cache \
+              --cache-repo "$CACHE_REPO_DIR" \
+              --snapshot "$SNAPSHOT" \
+              --snapshot-id "$SNAPSHOT_ID" \
+              --dry-run
+          fi
 
       - name: Run Canada dashboard validation
         if: github.event_name != 'pull_request' && (github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1')
@@ -107,6 +175,52 @@ jobs:
         if: github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1'
         run: npm ci --prefix markets/canada/dashboard
 
+      - name: Restore Canada market cache
+        if: github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1'
+        env:
+          AURORA_MARKET_CACHE_PAT: ${{ secrets.AURORA_MARKET_CACHE_PAT }}
+        run: |
+          MODE="${{ github.event.inputs.market_cache_mode || 'off' }}"
+          SNAPSHOT="${{ github.event.inputs.market_cache_snapshot || 'latest' }}"
+          SNAPSHOT_ID="${{ github.event.inputs.market_cache_snapshot_id || 'latest' }}"
+
+          if [ "$MODE" = "off" ]; then
+            echo "Market cache restore disabled."
+            exit 0
+          fi
+
+          if [ -z "${AURORA_MARKET_CACHE_PAT:-}" ]; then
+            if [ "$MODE" = "apply" ]; then
+              echo "AURORA_MARKET_CACHE_PAT is required for apply mode."
+              exit 1
+            fi
+            echo "AURORA_MARKET_CACHE_PAT missing; dry-run restore skipped."
+            exit 0
+          fi
+
+          CACHE_REPO_DIR="$RUNNER_TEMP/aurora-market-cache"
+          git -c http.extraheader="AUTHORIZATION: bearer ${AURORA_MARKET_CACHE_PAT}" clone \
+            https://github.com/mohitgargcanada-max/aurora-market-cache.git \
+            "$CACHE_REPO_DIR"
+
+          if [ "$MODE" = "apply" ]; then
+            node scripts/market-cache/restore-market-cache.mjs \
+              --market canada \
+              --target markets/canada/dashboard/cache \
+              --cache-repo "$CACHE_REPO_DIR" \
+              --snapshot "$SNAPSHOT" \
+              --snapshot-id "$SNAPSHOT_ID" \
+              --apply
+          else
+            node scripts/market-cache/restore-market-cache.mjs \
+              --market canada \
+              --target markets/canada/dashboard/cache \
+              --cache-repo "$CACHE_REPO_DIR" \
+              --snapshot "$SNAPSHOT" \
+              --snapshot-id "$SNAPSHOT_ID" \
+              --dry-run
+          fi
+
       - name: Generate Canada dashboard
         if: github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1'
         env:
@@ -118,6 +232,65 @@ jobs:
           npm --prefix markets/canada/dashboard run cache:audit:indices
           npm --prefix markets/canada/dashboard run scan:full
           npm --prefix markets/canada/dashboard run scan:weekday
+
+      - name: Back up Canada market cache
+        if: success() && (github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1')
+        env:
+          AURORA_MARKET_CACHE_PAT: ${{ secrets.AURORA_MARKET_CACHE_PAT }}
+        run: |
+          MODE="${{ github.event.inputs.market_cache_mode || 'off' }}"
+          SNAPSHOT="${{ github.event.inputs.market_cache_snapshot || 'latest' }}"
+          SNAPSHOT_ID="${{ github.event.inputs.market_cache_snapshot_id || 'latest' }}"
+
+          if [ "$MODE" = "off" ]; then
+            echo "Market cache backup disabled."
+            exit 0
+          fi
+
+          if [ -z "${AURORA_MARKET_CACHE_PAT:-}" ]; then
+            if [ "$MODE" = "apply" ]; then
+              echo "AURORA_MARKET_CACHE_PAT is required for apply mode."
+              exit 1
+            fi
+            echo "AURORA_MARKET_CACHE_PAT missing; dry-run backup skipped."
+            exit 0
+          fi
+
+          CACHE_REPO_DIR="$RUNNER_TEMP/aurora-market-cache"
+          if [ ! -d "$CACHE_REPO_DIR/.git" ]; then
+            git -c http.extraheader="AUTHORIZATION: bearer ${AURORA_MARKET_CACHE_PAT}" clone \
+              https://github.com/mohitgargcanada-max/aurora-market-cache.git \
+              "$CACHE_REPO_DIR"
+          fi
+
+          if [ "$MODE" = "apply" ]; then
+            node scripts/market-cache/backup-market-cache.mjs \
+              --market canada \
+              --source markets/canada/dashboard/cache \
+              --cache-repo "$CACHE_REPO_DIR" \
+              --snapshot "$SNAPSHOT" \
+              --snapshot-id "$SNAPSHOT_ID" \
+              --apply
+
+            cd "$CACHE_REPO_DIR"
+            if [ -n "$(git status --short)" ]; then
+              git config user.name "github-actions[bot]"
+              git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+              git add .
+              git commit -m "cache: update canada $SNAPSHOT $SNAPSHOT_ID from ${GITHUB_SHA::7}"
+              git -c http.extraheader="AUTHORIZATION: bearer ${AURORA_MARKET_CACHE_PAT}" push origin HEAD
+            else
+              echo "No cache changes to push."
+            fi
+          else
+            node scripts/market-cache/backup-market-cache.mjs \
+              --market canada \
+              --source markets/canada/dashboard/cache \
+              --cache-repo "$CACHE_REPO_DIR" \
+              --snapshot "$SNAPSHOT" \
+              --snapshot-id "$SNAPSHOT_ID" \
+              --dry-run
+          fi
 
       - name: Prepare unified GitHub Pages artifact
         if: success() && (github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1')

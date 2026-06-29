@@ -22,7 +22,7 @@ markets/india/dashboard/cache
 markets/canada/dashboard/cache
 ```
 
-The framework is dry-run-first. Nothing is copied or restored unless `--apply` is passed. It is not wired into production workflows yet.
+The framework is dry-run-first. Nothing is copied or restored unless `--apply` is passed.
 
 ## Separate repo model
 
@@ -83,3 +83,19 @@ node scripts/market-cache/restore-market-cache.mjs --market us --cache-repo ../a
 - Do not blend providers or modify OHLCV content.
 - Restore validates manifest fields and SHA256 checksums before copying.
 - Restore does not delete existing local cache files in this first framework PR.
+
+## Workflow integration
+
+The US, India, and Canada dashboard workflows expose manual `workflow_dispatch` controls for market-cache integration:
+
+```text
+market_cache_mode: off | dry-run | apply
+market_cache_snapshot: latest | weekly | monthly
+market_cache_snapshot_id: latest | YYYY-WW | YYYY-MM
+```
+
+The default mode is `off`. Scheduled workflows remain off unless a future PR explicitly changes that policy.
+
+When manually selected, `dry-run` validates the integration path without writing local cache files or pushing cache changes. `apply` requires the `AURORA_MARKET_CACHE_PAT` secret, restores cache before the scan, and backs up cache only after the dashboard scan/generation step succeeds.
+
+No real cache is uploaded unless `apply` is selected manually. Workflow integration still relies on the framework exclusions for generated dashboard HTML, `dashboard/data/*.json`, and `.git/`.
