@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadSellExtensionWatchlistRows, renderSellExtensionWatchlistHtml } from "../../../../scripts/active-ledger/sell-extension-watchlist.mjs";
 import { stampGeneratedAt } from "./dashboard-state.mjs";
+import { writeUsDashboardJsonExport } from "./write-dashboard-json-export.mjs";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const sellExtensionWatchlistRows = await loadSellExtensionWatchlistRows(resolve(root, "state/active-tracking-ledger.json"));
@@ -11,6 +12,7 @@ const state = stampGeneratedAt(JSON.parse(await readFile(statePath, "utf8")));
 const output = resolve(root, "../AURORA_US_Dashboard.html");
 const temp = `${output}.tmp`;
 const stateTemp = `${statePath}.tmp`;
+const shouldWriteJson = !process.argv.includes("--no-write-json");
 
 const esc = value => String(value ?? "-").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmt = (value, digits = 2, prefix = "") => Number.isFinite(value) ? `${prefix}${Number(value).toFixed(digits)}` : "-";
@@ -133,4 +135,11 @@ await writeFile(temp, html, "utf8");
 await rename(temp, output);
 await writeFile(stateTemp, JSON.stringify(state), "utf8");
 await rename(stateTemp, statePath);
+if (shouldWriteJson) {
+  await writeUsDashboardJsonExport({
+    outputDir: resolve(root, "data"),
+    scan: state,
+    generatedAt: state.generated_at
+  });
+}
 console.log(output);
