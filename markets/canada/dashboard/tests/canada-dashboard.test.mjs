@@ -183,6 +183,37 @@ assert.deepEqual(canadaModelHardRemove.weeklyContract.weekly_universe_symbols, [
 assert.equal(canadaModelHardRemove.weeklyContract.removal_flag["SHOP.TO"], true);
 assert.deepEqual(LOCKED_FINAL_BUCKETS, FINAL_BUCKETS);
 
+const canadaModelPatternCap = buildDashboardModel({
+  rows: [
+    baseCanadaRow("MOCKCA", {
+      final_bucket: "TRIGGER_READY",
+      rs_trifecta: "FAIL",
+      rs_rating: 99,
+      rs21_state: "RS21_RECLAIM_0D",
+      rrg: { quadrant: "IMPROVING", ratio: 101, momentum: 102 },
+      base_stage_risk: "BASE_4_LATE_STAGE_RISK",
+      basepivot_quality: "BASEPIVOT_QUALITY_C",
+      basepivot_status: "BASEPIVOT_ACTIVE_AFTER_WEAK_BREAKOUT",
+      pattern_proxy: "VCP_STYLE",
+      pbx_duration_label: "PBX_STALE",
+      ve2_distribution_label: "DISTRIBUTION_PRESENT",
+      entry_risk_pct: 1.1
+    })
+  ],
+  rejected: [],
+  indexAudit: freshAudit,
+  coverage,
+  expectedSession: "2026-06-29",
+  scanMode: SCAN_MODES.SUNDAY_FULL_REBUILD,
+  generatedAt: "2026-06-29T22:00:00.000Z"
+});
+assert.equal(canadaModelPatternCap.rows[0].symbol, "MOCKCA");
+assert.equal(canadaModelPatternCap.rows[0].pattern_quality_execution_cap, true);
+assert.notEqual(canadaModelPatternCap.rows[0].final_bucket, "TRIGGER_READY");
+assert.equal(canadaModelPatternCap.dailyTop.some(row => row.symbol === "MOCKCA"), false);
+assert.ok(canadaModelPatternCap.rsleTop20.some(row => row.symbol === "MOCKCA"));
+assert.ok(canadaModelPatternCap.rows[0].promotion_block_reason.includes("PATTERN_QUALITY_EXECUTION_CAP"));
+
 const html = renderCanadaDashboard({
   expectedSession: "2026-06-26",
   rows: [],

@@ -18,6 +18,7 @@ await cp(resolve(root, "scripts/run-full-dashboard-scan.mjs"), resolve(fixtureRo
 await cp(resolve(root, "engine/cache-store.mjs"), resolve(fixtureRoot, "engine/cache-store.mjs"));
 await cp(resolve(root, "engine/freshness-guard.mjs"), resolve(fixtureRoot, "engine/freshness-guard.mjs"));
 await cp(resolve(root, "engine/trading-calendar.mjs"), resolve(fixtureRoot, "engine/trading-calendar.mjs"));
+await cp(resolve(root, "../../shared/pattern-quality-execution-cap.mjs"), resolve(tempRoot, "markets/shared/pattern-quality-execution-cap.mjs"));
 await cp(resolve(root, "../../shared/scan-orchestration.mjs"), resolve(tempRoot, "markets/shared/scan-orchestration.mjs"));
 await cp(resolve(root, "cache/india/indices"), resolve(fixtureRoot, "cache/india/indices"), { recursive: true });
 

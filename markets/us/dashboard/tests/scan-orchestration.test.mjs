@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { selectDailyTop, selectWeeklyUniverse } from "../engine/aurora.mjs";
+import { applyPatternQualityExecutionCap } from "../../../shared/pattern-quality-execution-cap.mjs";
 import {
   buildWeeklyUniverseForMode,
   FINAL_BUCKETS,
@@ -119,6 +120,26 @@ assert.ok(dailyTop.length <= 4);
 const rsleTop20 = [candidate("NEW", { rsle_rank: 1 }), candidate("AAA", { rsle_rank: 2 })];
 assert.ok(rsleTop20.some(row => row.ticker === "NEW"));
 assert.equal(weekday.weeklyContract.weekly_universe_symbols.includes("NEW"), false);
+
+const mockUs = applyPatternQualityExecutionCap(candidate("MOCKUS", {
+  rs_trifecta: "FAIL",
+  rs_rating: 99,
+  rs21_state: "RS21_RECLAIM_0D",
+  rrg_quadrant: "IMPROVING",
+  base_stage_risk: "BASE_4_LATE_STAGE_RISK",
+  basepivot_quality: "BASEPIVOT_QUALITY_C",
+  basepivot_state: "BASEPIVOT_ACTIVE_AFTER_WEAK_BREAKOUT",
+  pattern_proxy: "VCP_STYLE",
+  pbx_duration_label: "PBX_STALE",
+  ve2_distribution_label: "DISTRIBUTION_PRESENT",
+  entry_risk_pct: 1.1
+})).candidate;
+assert.equal(mockUs.pattern_quality_execution_cap, true);
+assert.notEqual(mockUs.final_bucket, "TRIGGER_READY");
+assert.equal([mockUs].filter(row => !row.pattern_quality_execution_cap && row.final_bucket === "TRIGGER_READY").length, 0);
+assert.ok(mockUs.promotion_block_reason.includes("PATTERN_QUALITY_EXECUTION_CAP"));
+assert.ok(["EARLY_ENTRY_WATCH", "RSNH_WATCH_ONLY"].includes(mockUs.final_bucket));
+assert.equal(mockUs.rs_trifecta, "FAIL");
 
 const metadata = scanRunMetadata({
   mode: SCAN_MODES.WEEKDAY_EOD_UPDATE,
