@@ -1,6 +1,9 @@
 import { CANADA_PROFILE, FINAL_BUCKETS, REQUIRED_CANDIDATE_COLUMNS, liquidityLabel, mapCanadaTheme } from "./canada-adapter.mjs";
 import { providerBlendStatus } from "./freshness-guard.mjs";
 import { alignedSeries, assignPercentiles, atr, axmMatrix, clamp, emaSeries, escapeHtml, latest, mean, rmv, rmvLabel, round, rrgFromRsLine, rs21State, smaSeries, weightedRsRaw } from "./indicators.mjs";
+import { loadSellExtensionWatchlistRows, renderSellExtensionWatchlistHtml } from "../../../../scripts/active-ledger/sell-extension-watchlist.mjs";
+
+const sellExtensionWatchlistRows = await loadSellExtensionWatchlistRows(new URL("../state/active-tracking-ledger.json", import.meta.url));
 
 const money = value => Number.isFinite(value) ? `$${Number(value).toLocaleString("en-CA", { maximumFractionDigits: 2 })}` : "—";
 const num = (value, digits = 2) => Number.isFinite(value) ? Number(value).toLocaleString("en-CA", { maximumFractionDigits: digits }) : "—";
@@ -188,26 +191,8 @@ function renderTable(title, id, rows, note = "") {
   return `<h2 id="${id}">${escapeHtml(title)}</h2>${note ? `<p class="notice">${escapeHtml(note)}</p>` : ""}<div class="table-wrap"><table><thead><tr>${REQUIRED_CANDIDATE_COLUMNS.map(c => `<th>${escapeHtml(c)}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table></div>`;
 }
 
-const sellExtensionWatchlistColumns = [
-  "Symbol",
-  "Original List",
-  "First Published",
-  "Entry Reference",
-  "Latest Close",
-  "Gain/Loss from Entry",
-  "AXM10 / AXM21 / AXM50",
-  "Distance from 21EMA / 50SMA",
-  "PX Label",
-  "AURORA-X State",
-  "VE2 Risk",
-  "Sell / Extension Reason",
-  "Caution Note",
-  "Next Action",
-  "Lifecycle Status"
-];
-
 function sellExtensionWatchlistHtml() {
-  return `<h2 id="sell-extension">AURORA Sell / Extension Watchlist</h2><p class="notice">No tracked names currently require sell / extension review.</p><p class="notice">Extension alone is not a sell signal. This section is a review/caution area for previously tracked names when AXM/PX/AURORA-X/VE2/MA-break/failed-breakout/thesis-stop evidence appears.</p><p class="notice">Market FOMO / ATR Heat is context-only. It may add caution notes in future, but it does not block candidates, change ranking, create sell signals, or alter AURORA buckets.</p><div class="table-wrap"><table><thead><tr>${sellExtensionWatchlistColumns.map(column => `<th>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody><tr><td colspan="${sellExtensionWatchlistColumns.length}">No entries yet. Names will appear here only after they are already tracked and trigger extension/sell-risk review evidence.</td></tr></tbody></table></div>`;
+  return renderSellExtensionWatchlistHtml(sellExtensionWatchlistRows, { escapeHtml, formatMoney: money });
 }
 
 const finalBucketCopy = "TRADE_READY, TRIGGER_READY, EARLY_ENTRY_WATCH, PULLBACK_WATCH, RSNH_WATCH_ONLY, NO_CHASE, PROTECT_PROFIT_REVIEW, REPAIR_WATCH, AVOID_FRESH_LONG";

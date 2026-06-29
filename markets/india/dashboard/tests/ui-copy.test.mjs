@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
-const source = await readFile(resolve("scripts/run-full-dashboard-scan.mjs"), "utf8");
+const rendererSource = await readFile(resolve("scripts/run-full-dashboard-scan.mjs"), "utf8");
+const helperSource = await readFile(resolve("../../../scripts/active-ledger/sell-extension-watchlist.mjs"), "utf8");
+const source = `${rendererSource}\n${helperSource}`;
 
 const finalBucketCopy = "TRADE_READY, TRIGGER_READY, EARLY_ENTRY_WATCH, PULLBACK_WATCH, RSNH_WATCH_ONLY, NO_CHASE, PROTECT_PROFIT_REVIEW, REPAIR_WATCH, AVOID_FRESH_LONG";
 
@@ -25,6 +27,8 @@ for (const text of [
   "Market FOMO / ATR Heat is context-only",
   "No entries yet. Names will appear here only after they are already tracked and trigger extension/sell-risk review evidence.",
   "sell-extension",
+  "loadSellExtensionWatchlistRows",
+  "state/active-tracking-ledger.json",
   finalBucketCopy,
   "Symbol",
   "Original List",
