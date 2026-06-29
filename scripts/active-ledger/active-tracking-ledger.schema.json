@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AURORA Active Tracking Ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "market",
+    "created_at",
+    "updated_at",
+    "entries"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "market": {
+      "enum": ["us", "india", "canada"]
+    },
+    "created_at": {
+      "type": ["string", "null"],
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "symbol",
+          "market",
+          "first_published_date",
+          "first_published_list",
+          "theme",
+          "initial_bucket",
+          "current_bucket",
+          "entry_reference",
+          "entry_stop",
+          "thesis_stop",
+          "highest_close_since_publish",
+          "latest_close",
+          "latest_axm21_label",
+          "latest_axm50_label",
+          "latest_px_label",
+          "latest_aurora_x_state",
+          "latest_market_fomo_label",
+          "latest_market_fomo_score",
+          "extension_status",
+          "lifecycle_status",
+          "last_review_date",
+          "exit_date",
+          "exit_reason",
+          "notes"
+        ],
+        "properties": {
+          "symbol": {
+            "type": "string"
+          },
+          "market": {
+            "enum": ["us", "india", "canada"]
+          },
+          "first_published_date": {
+            "type": "string",
+            "pattern": "^$|^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "first_published_list": {
+            "enum": [
+              "WEEKLY_UNIVERSE",
+              "WEEKLY_FOCUS",
+              "DAILY_TOP_1_4",
+              "RSLE_TOP_20",
+              "RSLE_DEVELOPING_21_40",
+              "MANUAL_REVIEW"
+            ]
+          },
+          "theme": {
+            "type": "string"
+          },
+          "initial_bucket": {
+            "enum": [
+              "TRADE_READY",
+              "TRIGGER_READY",
+              "EARLY_ENTRY_WATCH",
+              "PULLBACK_WATCH",
+              "RSNH_WATCH_ONLY",
+              "NO_CHASE",
+              "PROTECT_PROFIT_REVIEW",
+              "REPAIR_WATCH",
+              "AVOID_FRESH_LONG"
+            ]
+          },
+          "current_bucket": {
+            "enum": [
+              "TRADE_READY",
+              "TRIGGER_READY",
+              "EARLY_ENTRY_WATCH",
+              "PULLBACK_WATCH",
+              "RSNH_WATCH_ONLY",
+              "NO_CHASE",
+              "PROTECT_PROFIT_REVIEW",
+              "REPAIR_WATCH",
+              "AVOID_FRESH_LONG"
+            ]
+          },
+          "entry_reference": {
+            "type": ["number", "null"]
+          },
+          "entry_stop": {
+            "type": ["number", "null"]
+          },
+          "thesis_stop": {
+            "type": ["number", "null"]
+          },
+          "highest_close_since_publish": {
+            "type": ["number", "null"]
+          },
+          "latest_close": {
+            "type": ["number", "null"]
+          },
+          "latest_axm21_label": {
+            "type": "string"
+          },
+          "latest_axm50_label": {
+            "type": "string"
+          },
+          "latest_px_label": {
+            "type": "string"
+          },
+          "latest_aurora_x_state": {
+            "type": "string"
+          },
+          "latest_market_fomo_label": {
+            "enum": [
+              "FOMO_0_COOL",
+              "FOMO_1_NORMAL",
+              "FOMO_2_WARM",
+              "FOMO_3_HOT",
+              "FOMO_4_EUPHORIC",
+              "FOMO_5_CLIMAX_RISK",
+              "UNKNOWN"
+            ]
+          },
+          "latest_market_fomo_score": {
+            "type": ["number", "null"]
+          },
+          "extension_status": {
+            "enum": [
+              "NORMAL",
+              "EXTENDED_REVIEW",
+              "NO_CHASE_REVIEW",
+              "PROTECT_PROFIT_REVIEW",
+              "SELL_RISK_REVIEW",
+              "RESET_REQUIRED",
+              "DATA_REPAIR"
+            ]
+          },
+          "lifecycle_status": {
+            "enum": [
+              "ACTIVE",
+              "WATCH_ONLY",
+              "EXTENDED_REVIEW",
+              "PROTECT_PROFIT_REVIEW",
+              "SELL_RISK_REVIEW",
+              "EXITED",
+              "DATA_REPAIR"
+            ]
+          },
+          "last_review_date": {
+            "type": "string",
+            "pattern": "^$|^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "exit_date": {
+            "type": ["string", "null"],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "exit_reason": {
+            "type": ["string", "null"]
+          },
+          "notes": {
+            "type": "array"
+          }
+        }
+      }
+    }
+  }
+}
