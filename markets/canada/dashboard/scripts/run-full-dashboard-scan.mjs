@@ -101,7 +101,7 @@ if (!rows.length) {
   process.exit(1);
 }
 const previousWeeklyContract = await readJson(weeklyContractPath, null);
-const model = buildDashboardModel({ rows, rejected, indexAudit, coverage, expectedSession, scanMode: scanMode.run_mode, previousWeeklyContract, generatedAt });
+const model = buildDashboardModel({ rows, rejected, indexAudit, coverage, expectedSession, scanMode: scanMode.run_mode, previousWeeklyContract, generatedAt, benchmarkRecord });
 const latestStockDataAsOf = stockRecords.map(x => x.data_as_of).sort().at(-1);
 const metadata = scanRunMetadata({
   mode: scanMode.run_mode,
@@ -118,7 +118,7 @@ const metadata = scanRunMetadata({
   calculatedSymbols: rows.length,
   warnings: model.cadenceWarnings
 });
-const scan = { market: "CANADA", ...metadata, expected_completed_session: expectedSession, latest_stock_data_as_of: latestStockDataAsOf, latest_index_data_as_of: indexRecords.map(x => x.data_as_of).sort().at(-1), route: canadaRoute, provider_route: indexAudit.provider_route, coverage, index_context_status: indexAudit.context_status, feature_matrix_count: rows.length, scanned_candidates: rows.length, rejected_count: rejected.length, rejection_reason_counts: rejectionReasonCounts(rejected), weekly_contract: model.weeklyContract, weekly_universe: model.weeklyUniverse, weekly_focus: model.weeklyFocus, daily_top_1_4: model.dailyTop, rsle_top_20: model.rsleTop20, developing_watchlist_next_20: model.developing, rejected };
+const scan = { market: "CANADA", ...metadata, expected_completed_session: expectedSession, latest_stock_data_as_of: latestStockDataAsOf, latest_index_data_as_of: indexRecords.map(x => x.data_as_of).sort().at(-1), route: canadaRoute, provider_route: indexAudit.provider_route, coverage, index_context_status: indexAudit.context_status, market_confirmation: model.marketConfirmation, feature_matrix_count: rows.length, scanned_candidates: rows.length, rejected_count: rejected.length, rejection_reason_counts: rejectionReasonCounts(rejected), weekly_contract: model.weeklyContract, weekly_universe: model.weeklyUniverse, weekly_focus: model.weeklyFocus, daily_top_1_4: model.dailyTop, rsle_top_20: model.rsleTop20, developing_watchlist_next_20: model.developing, myh_approaching: model.myhApproachingRows, ma10_respect: model.ma10Respect, ma21_respect: model.ma21Respect, ma50_respect: model.ma50Respect, rejected };
 await writeJson(weeklyContractPath, model.weeklyContract);
 await writeJson(scanPath, scan);
 await writeJson(resolve(dataRoot, "canada-daily-refresh-report.json"), { market: "CANADA", status: "FULL_LOCAL_SCAN", ...metadata, expected_completed_session: expectedSession, latest_stock_data_as_of: scan.latest_stock_data_as_of, latest_index_data_as_of: scan.latest_index_data_as_of, route: canadaRoute, coverage, index_context_status: indexAudit.context_status, optional_stale_symbols: indexAudit.optional_stale_symbols, feature_matrix_count: rows.length, scanned_candidates: rows.length, rejected_count: rejected.length, rejection_reason_counts: scan.rejection_reason_counts, provider_route: indexAudit.provider_route });
