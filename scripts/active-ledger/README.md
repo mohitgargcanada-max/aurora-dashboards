@@ -39,6 +39,20 @@ Extension alone is not a sell signal. It is review context for a future Sell / E
 
 Future PRs will populate entries and render the Sell / Extension Watchlist. This PR only adds schema, validation, tests, and empty per-market ledgers.
 
+## Population from dashboard lifecycle lists
+
+`populate-active-tracking-ledger.mjs` can derive candidate ledger entries from existing dashboard lifecycle lists such as `WEEKLY_UNIVERSE`, `WEEKLY_FOCUS`, `DAILY_TOP_1_4`, `RSLE_TOP_20`, and `RSLE_DEVELOPING_21_40`.
+
+The helper is dry-run by default. `--apply` is required to write a ledger file:
+
+```bash
+node scripts/active-ledger/populate-active-tracking-ledger.mjs --market us --ledger markets/us/dashboard/state/active-tracking-ledger.json --scan-file markets/us/dashboard/data/us-full-dashboard-scan.json --as-of YYYY-MM-DD
+```
+
+This source/test PR does not populate real ledgers. It reads existing dashboard scan JSON only, does not fetch market data, does not run scans, does not change scheduled workflows, and does not change AURORA formulas, ranking, scoring, bucket, provider, data-acquisition, or execution logic.
+
+Diagnostic labels never become final buckets. MFH/FOMO remains context-only and does not alter candidate inclusion, ranking, buckets, sell signals, or AURORA logic.
+
 ## Validation
 
 Validate all committed ledgers:
