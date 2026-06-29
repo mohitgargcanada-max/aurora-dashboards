@@ -2,11 +2,13 @@ import { spawn } from "node:child_process";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { latestCompletedIndiaSession } from "../engine/trading-calendar.mjs";
+import { parseScanArgs } from "../../../shared/scan-orchestration.mjs";
 import { buildWeekdayPrioritySymbols, refreshIndiaDailyBars, refreshIndiaIndexCache } from "./refresh-india-daily-bars.mjs";
 
 const projectRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const scanPath = resolve(projectRoot, "data/india-full-dashboard-scan.json");
-const expectedSession = process.argv.find(arg => /^\d{4}-\d{2}-\d{2}$/.test(arg)) || process.env.AURORA_TARGET_SESSION || latestCompletedIndiaSession();
+const cliOptions = parseScanArgs(process.argv.slice(2));
+const expectedSession = cliOptions.session || process.env.AURORA_TARGET_SESSION || latestCompletedIndiaSession();
 
 async function activeSymbols() {
   return buildWeekdayPrioritySymbols({ scanPath });
@@ -58,4 +60,4 @@ console.log(JSON.stringify({
   same_date_cache: indexReport.same_date_cache
 }, null, 2));
 
-await run(process.execPath, ["scripts/run-full-dashboard-scan.mjs", expectedSession]);
+await run(process.execPath, ["scripts/run-full-dashboard-scan.mjs", `--mode=${cliOptions.mode || "WEEKDAY_EOD_UPDATE"}`, `--session=${expectedSession}`]);

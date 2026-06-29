@@ -3,6 +3,9 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { latestCompletedIndiaSession } from "../engine/trading-calendar.mjs";
 import { auditIndexRecords, deriveExpectedCompletedSession, INDIA_PROVIDER_ROUTE, rejectionReasonCounts } from "../engine/freshness-guard.mjs";
+import { buildMarketConfirmationStack, buildMaRespectWatchlists, buildMyhApproachingRows } from "../../../shared/market-confirmation-and-ma-respect.mjs";
+import { applyPatternQualityExecutionCap } from "../../../shared/pattern-quality-execution-cap.mjs";
+import { buildWeeklyUniverseForMode, parseScanArgs, resolveScanMode, runLightweightFullUniverseDiscovery, scanRunMetadata } from "../../../shared/scan-orchestration.mjs";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const cacheRoot = resolve(root, "cache/india/ohlcv");
@@ -11,9 +14,13 @@ const dataRoot = resolve(root, "data");
 const universePath = resolve(dataRoot, "india-universe.json");
 const dashboardPath = resolve(root, "..", "AURORA_India_Unified_Dashboard.html");
 const scanPath = resolve(dataRoot, "india-full-dashboard-scan.json");
+const weeklyContractPath = resolve(dataRoot, "india-weekly-contract.json");
+const cliOptions = parseScanArgs(process.argv.slice(2));
+const scanMode = resolveScanMode({ mode: cliOptions.mode });
+const generatedAt = new Date().toISOString();
 const expectedSession = await deriveExpectedCompletedSession({
   refreshReportPath: resolve(dataRoot, "india-daily-refresh-report.json"),
-  explicitSession: process.argv[2] || process.env.AURORA_TARGET_SESSION || latestCompletedIndiaSession(),
+  explicitSession: cliOptions.session || process.env.AURORA_TARGET_SESSION || latestCompletedIndiaSession(),
   stockCacheRoot: cacheRoot
 });
 if (!expectedSession) throw new Error("Unable to derive expected completed India session");
@@ -662,8 +669,13 @@ function executionFocusScore(row, marketContext) {
   return round(0.20 * triggerProximity + 0.18 * rs + 0.16 * setupTightness + 0.14 * structure + 0.10 * volume + 0.10 * theme + 0.07 * risk + 0.05 * permission);
 }
 
-async function loadJson(path) {
-  return JSON.parse(await readFile(path, "utf8"));
+async function loadJson(path, fallback) {
+  try {
+    return JSON.parse(await readFile(path, "utf8"));
+  } catch (error) {
+    if (arguments.length > 1) return fallback;
+    throw error;
+  }
 }
 
 async function writeJsonAtomic(path, payload) {
@@ -941,6 +953,7 @@ for (const row of featureRows) {
   row.caution = notes.join("; ") || "none from calculated technical fields";
   row.execution_permission = row.source_lane === "BSE_EXCLUSIVE_CAUTION" ? "BSE_EXCLUSIVE_CAUTION" : row.entry_permission;
   row.next_condition = row.entry_permission === "WATCH_FOR_TIGHTER_SHELF" ? "Wait for inside bar, RMV5 coil, pullback shelf or retest." : row.setup_label === "TRIGGER_READY" ? "Needs next-session trigger acceptance above BasePivot/RMVP with VE2 confirmation." : "Needs price/volume confirmation and market permission.";
+  applyPatternQualityExecutionCap(row, { market: "INDIA" });
   if (!row.setup_label) {
     rejected.push({ exchange: row.exchange, symbol: row.symbol, reason: "NO_RECOGNIZABLE_SETUP_GEOMETRY", series: row.series, rows: row.rows, next_condition: "Wait for RS21 reclaim, trigger proximity, compression, pullback, or RMVP." });
     continue;
@@ -1143,8 +1156,15 @@ function userNote(row) {
 
 const sectorRows = await sectorRrg();
 const marketContext = buildMarketContext(featureRows, rows, sectorRows);
+const marketConfirmation = buildMarketConfirmationStack(marketContext, {
+  symbol: "NIFTY500",
+  benchmark_rs21_state: marketContext.benchmark_ma_stack.above_ema21 ? "BENCHMARK_RS21_HOLDING" : "BENCHMARK_RS21_BELOW",
+  bars: benchmarkRecord.bars
+});
 
 for (const row of rows) row.user_note = userNote(row);
+const maRespect = buildMaRespectWatchlists(rows, { mutateRows: true });
+const myhApproaching = buildMyhApproachingRows(rows, { mutateRows: true });
 
 for (const row of rows) {
   row.weekly_watchlist_score = weeklyScore(row, marketContext);
@@ -1155,20 +1175,33 @@ rows.sort((a, b) => b.total_score - a.total_score || b.addv20_inr - a.addv20_inr
 const weeklyEligible = rows
   .filter(x => x.source_lane !== "BSE_EXCLUSIVE_CAUTION" && !["NO_CHASE", "AVOID_FRESH_LONG", "REPAIR_WATCH"].includes(x.final_bucket) && x.weekly_watchlist_score >= 55)
   .sort((a, b) => b.weekly_watchlist_score - a.weekly_watchlist_score || b.leadership_score - a.leadership_score || b.addv20_inr - a.addv20_inr);
-const weeklyUniverse = [];
+const weeklyRebuildUniverse = [];
 const sourceLaneCounts = new Map();
 for (const row of weeklyEligible) {
   const lane = row.source_lane || "UNKNOWN";
   const cap = lane === "NSE_RESTRICTED_CAUTION" ? 3 : 20;
   if ((sourceLaneCounts.get(lane) || 0) >= cap) continue;
   row.weekly_tier = weeklyTier(row, marketContext);
-  weeklyUniverse.push({ ...row, weekly_rank: weeklyUniverse.length + 1 });
+  weeklyRebuildUniverse.push({ ...row, weekly_rank: weeklyRebuildUniverse.length + 1 });
   sourceLaneCounts.set(lane, (sourceLaneCounts.get(lane) || 0) + 1);
-  if (weeklyUniverse.length >= 20) break;
+  if (weeklyRebuildUniverse.length >= 20) break;
 }
+const discovery = runLightweightFullUniverseDiscovery({ market: "INDIA", session: expectedSession, cache: { featureMatrix: rows } });
+const previousWeeklyContract = await loadJson(weeklyContractPath, null);
+const weeklyPlan = buildWeeklyUniverseForMode({
+  mode: scanMode.run_mode,
+  previousContract: previousWeeklyContract,
+  rankedCandidates: weeklyRebuildUniverse,
+  featureMatrix: rows,
+  session: expectedSession,
+  generatedAt,
+  targetMax: 20,
+  market: "INDIA"
+});
+const weeklyUniverse = weeklyPlan.weeklyUniverse.map((row, index) => ({ ...row, weekly_tier: row.weekly_tier || weeklyTier(row, marketContext), weekly_rank: index + 1 }));
 
 const focusList = weeklyUniverse
-  .filter(x => x.weekly_tier === "WEEKLY_FOCUS" && freshExecutionCandidate(x) && x.addv20_inr >= LIQUIDITY_MIN_INR && x.entry_risk_pct <= 7 && !["WATCHLIST_ONLY", "DEFENSE_MODE"].includes(marketContext.final_market_permission))
+  .filter(x => !x.pattern_quality_execution_cap && x.weekly_tier === "WEEKLY_FOCUS" && freshExecutionCandidate(x) && x.addv20_inr >= LIQUIDITY_MIN_INR && x.entry_risk_pct <= 7 && !["WATCHLIST_ONLY", "DEFENSE_MODE"].includes(marketContext.final_market_permission))
   .map(x => ({ ...x, execution_focus_score: executionFocusScore(x, marketContext) }))
   .filter(x => x.execution_focus_score >= 70 && !["AVOID_FRESH_LONG", "NO_CHASE"].includes(x.final_bucket))
   .sort((a, b) => b.execution_focus_score - a.execution_focus_score);
@@ -1197,11 +1230,30 @@ const rmvpEntries = rows.filter(x => ["RMVP_QUALITY_A", "RMVP_QUALITY_B"].includ
 const volumeSignatures = rows.filter(x => ["A", "B"].includes(x.ve2_pattern_volume_grade)).slice(0, 25);
 const noChase = rows.filter(x => x.setup_label === "NO_CHASE_RISK").slice(0, 25);
 const rejectionCounts = rejectionReasonCounts(rejected);
+const latestDataAsOf = featureRows.map(x => x.data_as_of).filter(Boolean).sort().at(-1) || expectedSession;
+const runMetadata = scanRunMetadata({
+  mode: scanMode.run_mode,
+  reason: scanMode.run_mode_reason,
+  market: "INDIA",
+  dataAsOf: latestDataAsOf,
+  completedSession: expectedSession,
+  generatedAt,
+  weeklyContract: weeklyPlan.weeklyContract,
+  discovery,
+  expectedSymbols: files.length,
+  loadedSymbols: files.length,
+  validLatestSymbols: featureRows.length,
+  calculatedSymbols: rows.length,
+  warnings: weeklyPlan.warnings
+});
 
 const result = {
-  generated_at: new Date().toISOString(),
+  generated_at: generatedAt,
   data_as_of: expectedSession,
+  ...runMetadata,
   benchmark: "NIFTY500",
+  benchmark_symbol: "^CNX500",
+  benchmark_provider_symbol: "NIFTY500.INDX",
   provider_route: INDIA_PROVIDER_ROUTE,
   total_cache_records: files.length,
   feature_matrix_count: featureRows.length,
@@ -1211,6 +1263,8 @@ const result = {
   top_rejection_reasons: Object.entries(rejectionCounts).slice(0, 10).map(([reason, count]) => ({ reason, count })),
   liquidity_min_inr: LIQUIDITY_MIN_INR,
   market_context: marketContext,
+  market_confirmation: marketConfirmation,
+  weekly_contract: weeklyPlan.weeklyContract,
   weekly_universe: weeklyUniverse,
   focus_list: focusList.slice(0, 16).map((x, i) => ({ ...x, focus_rank: i + 1 })),
   daily_top_1_4: dailyTop,
@@ -1219,7 +1273,11 @@ const result = {
   bse_exclusive_overlay_20: bseOverlay,
   stock_sector_theme_leadership: stockSectorThemeRows,
   near_rs_high: nearRsHigh,
+  myh_approaching: myhApproaching.myh_approaching_rows,
   multi_year_highs: multiYearHighs,
+  ma10_respect: maRespect.ema10_respect_rows,
+  ma21_respect: maRespect.ema21_respect_rows,
+  ma50_respect: maRespect.sma50_respect_rows,
   pullbacks,
   compression,
   basepivots: basePivots,
@@ -1240,6 +1298,7 @@ if ((result.feature_matrix_count === 0 || result.scanned_candidates === 0) && pr
 }
 
 await writeJsonAtomic(scanPath, result);
+await writeJsonAtomic(weeklyContractPath, weeklyPlan.weeklyContract);
 
 let sellExtensionWatchlistRows = [];
 let renderSellExtensionWatchlistHtml;
@@ -1358,6 +1417,7 @@ const marketRows = [
   { field: "AURORA-MC2 Cycle State", value: `<strong>${escape(marketContext.mc2_cycle_state)}</strong>`, meaning: "Locked AURORA market-cycle label" },
   { field: "Final Market Permission", value: `<strong>${escape(marketContext.final_market_permission)}</strong>`, meaning: marketContext.action_bias },
   { field: "Market Dimmer", value: `<strong>${marketContext.market_dimmer}/5</strong>`, meaning: `${marketContext.market_dimmer_label}; ${marketContext.reason}` },
+  { field: "Three-System Market Confirmation", value: `<strong>${escape(marketConfirmation.market_confirmation_state)}</strong>`, meaning: `O'Neil: ${marketConfirmation.oneil_cycle_state}; Benchmark RS21: ${marketConfirmation.benchmark_rs21_state}; Benchmark Weinstein: ${marketConfirmation.benchmark_weinstein_stage}` },
   { field: "Benchmark MA Stack", value: `EMA21 ${marketContext.benchmark_ma_stack.above_ema21 ? "above" : "below"} / EMA50 ${marketContext.benchmark_ma_stack.above_ema50 ? "above" : "below"} / EMA200 ${marketContext.benchmark_ma_stack.above_ema200 ? "above" : "below"}`, meaning: marketContext.mc2_cycle_state },
   { field: "Breadth", value: `${marketContext.breadth.above_ema21_count}/${marketContext.breadth.valid_nse_denominator} above EMA21 = ${num(marketContext.breadth.above_ema21_pct)}%`, meaning: `${marketContext.breadth.above_ema50_count}/${marketContext.breadth.valid_nse_denominator} above EMA50 = ${num(marketContext.breadth.above_ema50_pct)}%` },
   { field: "RS Leadership Breadth", value: `${marketContext.breadth.leadership_count}/${marketContext.breadth.valid_nse_denominator} = ${num(marketContext.breadth.leadership_pct)}%`, meaning: `${marketContext.leadership_breadth_state}; RS rating >= 80, liquidity pass, above EMA21 and RS Trifecta partial/pass` },
@@ -1436,8 +1496,8 @@ const howToReadHtml = `<h2 id="guide">How to read this dashboard</h2><div class=
 </tbody></table></div>`;
 
 const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AURORA India Unified Dashboard</title><style>
-:root{--ink:#17201c;--muted:#66716b;--paper:#f7f8f5;--panel:#fff;--line:#d9ddd7;--green:#146b45;--greenbg:#e8f4ed;--amber:#895b00;--amberbg:#fff3d4;--red:#9b2f2f;--redbg:#fae9e7;--blue:#195a78;--bluebg:#e6f2f7}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.45 Inter,Arial,sans-serif}header.hero{background:#153f2d;color:white;padding:22px 28px;border-bottom:4px solid #d8ad42}.hero h1{margin:0;font-size:26px}.hero p{margin:5px 0 0;color:#deebe3}.nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.nav a{color:white;text-decoration:none;border:1px solid #72917f;padding:6px 10px;border-radius:4px}.wrap{padding:20px 28px 42px}.summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.metric{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px}.metric b{display:block;font-size:17px;margin-top:4px}.metric small,td small{display:block;color:var(--muted);margin-top:3px}h2{font-size:19px;margin:28px 0 10px}.notice{background:var(--amberbg);border-left:4px solid #c38b16;padding:10px 12px;border-radius:4px}.goodnote{background:var(--greenbg);border-left:4px solid var(--green);padding:10px 12px;border-radius:4px}.table-wrap{overflow-x:auto;overflow-y:auto;max-height:70vh;position:relative;border:1px solid var(--line);background:white;border-radius:6px}table{border-collapse:collapse;width:100%;min-width:1660px}th,td{text-align:left;vertical-align:top;padding:8px 9px;border-bottom:1px solid var(--line);font-size:12px}th{background:#edf1ec;position:sticky;top:0;z-index:2;white-space:nowrap}.status{display:inline-block;padding:3px 6px;border-radius:4px;font-size:11px;font-weight:700;background:var(--bluebg);color:var(--blue);white-space:nowrap}.TRIGGER_READY,.STANDARD_ENTRY{color:var(--green);background:var(--greenbg)}.PULLBACK,.COMPRESSION,.RMVP_EARLY_ENTRY,.RS21_RECLAIM_ENTRY{color:var(--blue);background:var(--bluebg)}.NO_CHASE_RISK{color:var(--red);background:var(--redbg)}input{padding:8px;border:1px solid var(--line);border-radius:4px;min-width:260px}.foot{color:var(--muted);margin-top:18px}@media(max-width:900px){.summary{grid-template-columns:1fr 1fr}.wrap{padding:16px}header.hero{padding:18px}table{min-width:1280px}}</style></head><body><header class="hero"><h1>AURORA India Unified Dashboard</h1><p>Full local scan · Completed session ${escape(expectedSession)} · NSE core + BSE-exclusive overlay · Free-first cache only</p><nav class="nav"><a href="#market">Market</a><a href="#guide">Column Guide</a><a href="#weekly">Weekly Universe</a><a href="#focus">Focus</a><a href="#top">Daily Top</a><a href="#rsle">RSLE Top 20</a><a href="#developing">Developing 20</a><a href="#bse">BSE Overlay</a><a href="#rrg">RRG</a><a href="#stocksectors">Theme Leadership</a><a href="#rrglegend">RRG Map</a><a href="#rshigh">Near RS High</a><a href="#myh">Multi-Year High</a><a href="#pullbacks">PBX Pullback</a><a href="#basepivots">BasePivot</a><a href="#rmvp">RMVP</a><a href="#ve2">VE2 Volume</a><a href="#compression">Compression</a><a href="#risk">No-Chase</a><a href="#sell-extension">Sell / Extension</a><a href="#rejected">Rejected/Data Repair</a><a href="#provenance">Provenance</a></nav></header><main class="wrap">
-<section class="summary"><div class="metric">Run state<b>FULL_LOCAL_SCAN</b><small>No paid API calls</small></div><div class="metric">Session<b>${escape(expectedSession)}</b><small>latest completed bar</small></div><div class="metric">Market Cycle<b>${escape(marketContext.oneil_style_market_label)}</b><small>${escape(marketContext.mc2_cycle_state)}</small></div><div class="metric">Daily Top<b>${dailyTop.length}</b><small>maximum four, no padding</small></div><div class="metric">Market Permission<b>${escape(marketContext.final_market_permission)}</b><small>${escape(marketContext.market_dimmer_label)}</small></div></section>
+:root{--ink:#17201c;--muted:#66716b;--paper:#f7f8f5;--panel:#fff;--line:#d9ddd7;--green:#146b45;--greenbg:#e8f4ed;--amber:#895b00;--amberbg:#fff3d4;--red:#9b2f2f;--redbg:#fae9e7;--blue:#195a78;--bluebg:#e6f2f7}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.45 Inter,Arial,sans-serif}header.hero{background:#153f2d;color:white;padding:22px 28px;border-bottom:4px solid #d8ad42}.hero h1{margin:0;font-size:26px}.hero p{margin:5px 0 0;color:#deebe3}.nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.nav a{color:white;text-decoration:none;border:1px solid #72917f;padding:6px 10px;border-radius:4px}.wrap{padding:20px 28px 42px}.summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.metric{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px}.metric b{display:block;font-size:17px;margin-top:4px}.metric small,td small{display:block;color:var(--muted);margin-top:3px}h2{font-size:19px;margin:28px 0 10px}.notice{background:var(--amberbg);border-left:4px solid #c38b16;padding:10px 12px;border-radius:4px}.goodnote{background:var(--greenbg);border-left:4px solid var(--green);padding:10px 12px;border-radius:4px}.table-wrap{overflow-x:auto;overflow-y:auto;max-height:70vh;position:relative;border:1px solid var(--line);background:white;border-radius:6px}table{border-collapse:collapse;width:100%;min-width:1660px}th,td{text-align:left;vertical-align:top;padding:8px 9px;border-bottom:1px solid var(--line);font-size:12px}th{background:#edf1ec;position:sticky;top:0;z-index:2;white-space:nowrap}.status{display:inline-block;padding:3px 6px;border-radius:4px;font-size:11px;font-weight:700;background:var(--bluebg);color:var(--blue);white-space:nowrap}.TRIGGER_READY,.STANDARD_ENTRY{color:var(--green);background:var(--greenbg)}.PULLBACK,.COMPRESSION,.RMVP_EARLY_ENTRY,.RS21_RECLAIM_ENTRY{color:var(--blue);background:var(--bluebg)}.NO_CHASE_RISK{color:var(--red);background:var(--redbg)}input{padding:8px;border:1px solid var(--line);border-radius:4px;min-width:260px}.foot{color:var(--muted);margin-top:18px}@media(max-width:900px){.summary{grid-template-columns:1fr 1fr}.wrap{padding:16px}header.hero{padding:18px}table{min-width:1280px}}</style></head><body><header class="hero"><h1>AURORA India Unified Dashboard</h1><p>Full local scan · Completed session ${escape(expectedSession)} · NSE core + BSE-exclusive overlay · Free-first cache only</p><nav class="nav"><a href="#market">Market</a><a href="#guide">Column Guide</a><a href="#weekly">Weekly Universe</a><a href="#focus">Focus</a><a href="#top">Daily Top</a><a href="#rsle">RSLE Top 20</a><a href="#developing">Developing 20</a><a href="#bse">BSE Overlay</a><a href="#rrg">RRG</a><a href="#stocksectors">Theme Leadership</a><a href="#rrglegend">RRG Map</a><a href="#rshigh">Near RS High</a><a href="#myh-approaching">MYH Approaching</a><a href="#myh">Multi-Year High</a><a href="#ma10">10EMA Respect</a><a href="#ma21">21EMA Respect</a><a href="#ma50">50SMA Respect</a><a href="#pullbacks">PBX Pullback</a><a href="#basepivots">BasePivot</a><a href="#rmvp">RMVP</a><a href="#ve2">VE2 Volume</a><a href="#compression">Compression</a><a href="#risk">No-Chase</a><a href="#sell-extension">Sell / Extension</a><a href="#rejected">Rejected/Data Repair</a><a href="#provenance">Provenance</a></nav></header><main class="wrap">
+<section class="summary"><div class="metric">Run state<b>FULL_LOCAL_SCAN</b><small>No paid API calls</small></div><div class="metric">Session<b>${escape(expectedSession)}</b><small>latest completed bar</small></div><div class="metric">Market Cycle<b>${escape(marketContext.oneil_style_market_label)}</b><small>${escape(marketContext.mc2_cycle_state)}</small></div><div class="metric">Daily Top<b>${dailyTop.length}</b><small>maximum four, no padding</small></div><div class="metric">Market Permission<b>${escape(marketContext.final_market_permission)}</b><small>${escape(marketContext.market_dimmer_label)}</small></div><div class="metric">3-System<b>${escape(marketConfirmation.market_confirmation_state)}</b><small>${escape(marketConfirmation.benchmark_rs21_state)} · ${escape(marketConfirmation.benchmark_weinstein_stage)}</small></div></section>
 <h2 id="market">Market Summary Strength Stack</h2><p class="goodnote">Benchmark: NIFTY500 via cached index history. Market context is recalculated every scan using AURORA-MC2 plus an O'Neil-style user-facing cycle label. Unknown inputs receive conservative partial score, not a silent upgrade.</p><div class="table-wrap"><table><thead><tr>${marketFields.map(([label]) => `<th>${label}</th>`).join("")}</tr></thead><tbody>${rowsHtml(marketRows, marketFields)}</tbody></table></div>
 ${howToReadHtml}
 <h2>Column Guide</h2><div class="table-wrap"><table><thead><tr>${columnGuideFields.map(([label]) => `<th>${label}</th>`).join("")}</tr></thead><tbody>${rowsHtml(columnGuideRows, columnGuideFields)}</tbody></table></div>
@@ -1452,7 +1512,11 @@ ${table("BSE-Exclusive Overlay", "bse", bseOverlay, "Short-history BSE-only disc
 <h2 id="stocksectors">Stock Theme Leadership</h2><p class="notice">${stockThemeCopy} India examples: Auto Components, EMS / Electronics, Defence, Capital Markets, Energy / Infra, Pharma / CDMO.</p><div class="table-wrap"><table><thead><tr>${stockSectorThemeFields.map(([label]) => `<th>${label}</th>`).join("")}</tr></thead><tbody>${rowsHtml(result.stock_sector_theme_leadership, stockSectorThemeFields)}</tbody></table></div>
 <h2 id="rrglegend">RRG Quadrant Map</h2><div class="table-wrap"><table><thead><tr>${rrgLegendFields.map(([label]) => `<th>${label}</th>`).join("")}</tr></thead><tbody>${rowsHtml(rrgLegendRows, rrgLegendFields)}</tbody></table></div>
 ${table("Near RS High", "rshigh", nearRsHigh.slice(0, 20), "Stocks whose RS line is within 1.5% of its recent RS high.")}
+${table("AURORA-MYH Approaching / Multi-Year High", "myh-approaching", result.myh_approaching.slice(0, 20), "Approaching multi-year high is a leadership radar lane, not a standalone buy signal.")}
 ${table("AURORA-MYH Multi-Year High", "myh", multiYearHighs.slice(0, 20), "AURORA-MYH leadership lane from the master scan: MYH_2Y / MYH_3Y / MYH_5Y with MYH_NEAR_HIGH, MYH_BREAKOUT_CONFIRMED, or MYH_BREAKOUT_FAILED. Requires enough retained history; not a standalone buy signal.")}
+${table("Strong RS 10EMA Respect Watchlist", "ma10", result.ma10_respect.slice(0, 20), "Tracks high-momentum leaders repeatedly respecting 10EMA. Watchlist only.")}
+${table("Strong RS 21EMA Respect Watchlist", "ma21", result.ma21_respect.slice(0, 20), "Tracks strong RS leaders defending or reclaiming 21EMA. Watchlist only.")}
+${table("Strong RS 50SMA Respect Watchlist", "ma50", result.ma50_respect.slice(0, 20), "Tracks deeper structural resets in strong RS stocks. Watchlist only.")}
 ${table("PBX Pullback", "pullbacks", pullbacks.slice(0, 20), "Power Pullback Engine candidates using depth, duration, MA defense, reversal quality, and failure cluster.")}
 ${table("BasePivot / Patterns", "basepivots", basePivots.slice(0, 20), "BPX structural pivot candidates. BPX identifies structure; VE2 validates fuel.")}
 ${table("RMVP / Early Entry", "rmvp", rmvpEntries.slice(0, 20), "Low-cheat RMV pivot candidates with tight tactical support.")}

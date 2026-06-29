@@ -4,6 +4,9 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { marketDimmer, weeklyWatchlistScore } from "../engine/aurora.mjs";
 import { loadSymbol } from "../engine/cache-store.mjs";
+import { buildMarketConfirmationStack, buildMaRespectWatchlists, buildMyhApproachingRows } from "../../../shared/market-confirmation-and-ma-respect.mjs";
+import { applyPatternQualityExecutionCap } from "../../../shared/pattern-quality-execution-cap.mjs";
+import { buildWeeklyUniverseForMode, parseScanArgs, resolveScanMode, runLightweightFullUniverseDiscovery, scanRunMetadata } from "../../../shared/scan-orchestration.mjs";
 import { isoTimestamp } from "./dashboard-state.mjs";
 import { nyseCalendarSummary } from "./us-market-calendar.mjs";
 import { enrichmentStatuses, universeReferenceRow } from "./us-universe-reference.mjs";
@@ -14,7 +17,10 @@ const gicsConfig = JSON.parse(await readFile(resolve(root, "config/gics_sector_p
 const cacheRoot = resolve(root, "cache/us/ohlcv");
 const archive = resolve(root, "cache/us/d_us_txt.zip");
 const output = resolve(root, "data/us-dashboard-state.json");
+const weeklyContractOutput = resolve(root, "data/us-weekly-contract.json");
 const universeReferenceOutput = resolve(root, "cache/us/us-universe-reference.json");
+const cliOptions = parseScanArgs(process.argv.slice(2));
+const scanMode = resolveScanMode({ mode: cliOptions.mode });
 const round = (x, n = 2) => Number.isFinite(x) ? Number(x.toFixed(n)) : null;
 const mean = xs => xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null;
 const sma = (xs, n) => xs.length >= n ? mean(xs.slice(-n)) : null;
@@ -114,6 +120,13 @@ async function loadClassificationCache() {
     return {};
   }
 }
+async function readJson(path, fallback = null) {
+  try {
+    return JSON.parse(await readFile(path, "utf8"));
+  } catch {
+    return fallback;
+  }
+}
 function classificationFor(symbol, cache) {
   const row = cache[symbol];
   if (!row || row.classification_status === "UNKNOWN") {
@@ -160,6 +173,7 @@ const benchmarkRecords = Object.fromEntries((await Promise.all(benchmarkSymbols.
 const spy = benchmarkRecords.SPY?.bars || [];
 if (spy.length < 252) throw new Error("SPY benchmark cache is insufficient");
 const asOf = spy.at(-1).date;
+const completedSession = cliOptions.session || asOf;
 const generatedAt = isoTimestamp();
 const classificationCache = await loadClassificationCache();
 const universeReference = securityMaster.map(row => universeReferenceRow(row, classificationCache[row.symbol]));
@@ -322,7 +336,8 @@ for (const c of candidates) {
   c.aurora_sig_score = round(c.technical_strength_score + c.score_components.fundamental + c.score_components.extension);
   c.weekly_watchlist_score = weeklyWatchlistScore(c);
   c.wwl_tier = c.weekly_watchlist_score >= 85 ? "WWL_A_PLUS" : c.weekly_watchlist_score >= 75 ? "WWL_A" : c.weekly_watchlist_score >= 65 ? "WWL_B" : c.weekly_watchlist_score >= 55 ? "WWL_C" : "WWL_REJECT";
-  c.weekly_focus_state = c.weekly_watchlist_score >= 70 && ["TRIGGER_READY", "EARLY_ENTRY_WATCH", "PULLBACK_WATCH"].includes(c.bucket) && c.entry_risk_pct <= 10 && !["WATCHLIST_ONLY", "DEFENSE_MODE"].includes(c.market_permission) ? "WEEKLY_FOCUS" : "WEEKLY_CONTEXT";
+  applyPatternQualityExecutionCap(c, { market: "US" });
+  c.weekly_focus_state = !c.pattern_quality_execution_cap && c.weekly_watchlist_score >= 70 && ["TRIGGER_READY", "EARLY_ENTRY_WATCH", "PULLBACK_WATCH"].includes(c.bucket) && c.entry_risk_pct <= 10 && !["WATCHLIST_ONLY", "DEFENSE_MODE"].includes(c.market_permission) ? "WEEKLY_FOCUS" : "WEEKLY_CONTEXT";
   const noteParts = [];
   if (c.rs_score_pct >= 80) noteParts.push("strong RS leadership");
   if (c.rs_ema21 === "ABOVE") noteParts.push("RS above EMA21");
@@ -334,9 +349,21 @@ for (const c of candidates) {
   c.user_note = `${noteParts.join("; ") || "calculated technical context only"}. Next: ${c.bucket === "TRIGGER_READY" ? "needs next-session trigger acceptance with VE2 confirmation" : "needs price/volume confirmation and market permission"}.`;
 }
 const ranked = candidates.filter(x => x.avg_dollar_volume_20_usd_equiv >= 20_000_000 && x.stage !== "STAGE_4" && x.bucket !== "AVOID_FRESH_LONG").sort((a, b) => b.weekly_watchlist_score - a.weekly_watchlist_score || b.technical_strength_score - a.technical_strength_score);
-const weekly = ranked.slice(0, trackingConfig.weekly_max);
+const discovery = runLightweightFullUniverseDiscovery({ market: "us", session: completedSession, cache: { featureMatrix: candidates } });
+const previousWeeklyContract = await readJson(weeklyContractOutput, null);
+const weeklyPlan = buildWeeklyUniverseForMode({
+  mode: scanMode.run_mode,
+  previousContract: previousWeeklyContract,
+  rankedCandidates: ranked,
+  featureMatrix: candidates,
+  session: completedSession,
+  generatedAt,
+  targetMax: trackingConfig.weekly_max,
+  market: "US"
+});
+const weekly = weeklyPlan.weeklyUniverse;
 const weeklyFocus = weekly.filter(x => x.weekly_focus_state === "WEEKLY_FOCUS");
-const daily = weeklyFocus.filter(x => ["TRIGGER_READY", "EARLY_ENTRY_WATCH", "PULLBACK_WATCH"].includes(x.bucket) && x.entry_risk_pct <= 7 && !["WATCHLIST_ONLY", "DEFENSE_MODE"].includes(x.market_permission)).slice(0, 4);
+const daily = weeklyFocus.filter(x => !x.pattern_quality_execution_cap && ["TRIGGER_READY", "EARLY_ENTRY_WATCH", "PULLBACK_WATCH"].includes(x.bucket) && x.entry_risk_pct <= 7 && !["WATCHLIST_ONLY", "DEFENSE_MODE"].includes(x.market_permission)).slice(0, 4);
 const weeklySymbols = new Set(weekly.map(x => x.ticker));
 for (const candidate of candidates) {
   const failed = [];
@@ -411,12 +438,41 @@ const referenceRows = referenceBasket.map(symbol => candidates.find(x => x.ticke
 const referencePass = referenceRows.filter(x => ["PASS", "PARTIAL"].includes(x.rs_trifecta)).length;
 const referenceBasketState = referenceRows.length && referencePass / referenceRows.length >= 0.6 ? "REFERENCE_BASKET_CONFIRMING" : referenceRows.length && referencePass / referenceRows.length >= 0.3 ? "REFERENCE_BASKET_MIXED" : "REFERENCE_BASKET_SQUATTING";
 const sectionSort = xs => xs.sort((a, b) => b.weekly_watchlist_score - a.weekly_watchlist_score || b.technical_strength_score - a.technical_strength_score).slice(0, 50);
+const marketConfirmation = buildMarketConfirmationStack({
+  oneil_market_cycle: marketLabels.oneil,
+  aurora_mc2_state: marketLabels.aurora,
+  market_permission: marketPermission,
+  market_dimmer: dimmer,
+  dimmer_label: marketLabels.dimmer_label,
+  benchmark_ma_stack: `SPY ${spyCloses.at(-1) > spyE21 ? "above" : "below"} EMA21`
+}, {
+  symbol: "SPY",
+  benchmark_rs21_state: spyCloses.at(-1) > spyE21 ? "BENCHMARK_RS21_HOLDING" : "BENCHMARK_RS21_BELOW",
+  bars: spy
+});
+const maRespect = buildMaRespectWatchlists(candidates, { mutateRows: true });
+const myhApproaching = buildMyhApproachingRows(candidates, { mutateRows: true });
 const state = {
   generated_at: generatedAt,
   run: {
-    run_type: "SUNDAY_FULL_UNIVERSE_REBUILD",
+    run_type: scanMode.run_mode,
     status: "CALCULATED_WITH_DECLARED_GAPS",
     data_as_of: asOf,
+    ...scanRunMetadata({
+      mode: scanMode.run_mode,
+      reason: scanMode.run_mode_reason,
+      dataAsOf: asOf,
+      completedSession,
+      generatedAt,
+      weeklyContract: weeklyPlan.weeklyContract,
+      discovery,
+      market: "US",
+      expectedSymbols: technicalEligibleCount,
+      loadedSymbols: loaded,
+      validLatestSymbols: current,
+      calculatedSymbols: valid,
+      warnings: weeklyPlan.warnings
+    }),
     provider: "STOOQ",
     fallback_label: "FREE_PRIMARY",
     universe_status: "STOOQ_STOCK_PATH_CLASSIFIED",
@@ -463,7 +519,8 @@ const state = {
     sector_theme_evidence: sectorEvidence || "SECTOR_THEME_EVIDENCE_PARTIAL",
     cycle_age_sessions: 0,
     dimmer_components: `index ${spyCloses.at(-1) > spyE21 ? 1 : 0}/${spyCloses.at(-1) > spyS50 ? 1 : 0}; breadth ${aboveEma21Count}/${valid}; risk ${riskConfirm}/3`,
-    reason: `${marketLabels.oneil}: ${aboveEma21Count}/${valid} above EMA21, ${leadershipBreadthCount}/${valid} RS leaders, ${riskConfirm}/3 risk proxies above EMA21.`
+    reason: `${marketLabels.oneil}: ${aboveEma21Count}/${valid} above EMA21, ${leadershipBreadthCount}/${valid} RS leaders, ${riskConfirm}/3 risk proxies above EMA21.`,
+    ...marketConfirmation
   },
   benchmarks,
   sector_rrg,
@@ -473,6 +530,10 @@ const state = {
   developing_watchlist_20: nearWatchlist,
   sections: {
     rs21_rsnh: sectionSort(candidates.filter(x => x.rs_ema21 === "ABOVE" || x.scan_memberships.includes("S22_RS_LINE_NEW_HIGH"))),
+    myh_approaching: sectionSort(myhApproaching.myh_approaching_rows),
+    ma10_respect: sectionSort(maRespect.ema10_respect_rows),
+    ma21_respect: sectionSort(maRespect.ema21_respect_rows),
+    ma50_respect: sectionSort(maRespect.sma50_respect_rows),
     pbx_pullback: sectionSort(candidates.filter(x => x.bucket === "PULLBACK_WATCH" || x.pbx_quality.startsWith("PBX_VALID") || x.pbx_quality === "PBX_ACCEPTABLE")),
     compression_vcp: sectionSort(candidates.filter(x => x.compressed || x.scan_memberships.includes("S10_VCP_HV_PROXY"))),
     basepivot_patterns: sectionSort(candidates.filter(x => Math.abs(x.distance_to_trigger_pct) <= 7 || x.pattern_proxy !== "NO_CLEAR_BASE")),
@@ -527,6 +588,7 @@ for (const event of state.events) {
 }
 state.routing_counts = Object.fromEntries(["WEEKLY_UNIVERSE", "NEAR_WATCHLIST", "SCANNER_CANDIDATE", "REJECTED", "DATA_REPAIR"].map(route => [route, candidates.filter(x => x.universe_route === route).length]));
 state.near_watchlist = nearWatchlist;
+state.weekly_contract = weeklyPlan.weeklyContract;
 state.tracking_basket = {
   count: trackingBasket.length,
   max_total: trackingConfig.max_total,
@@ -575,6 +637,11 @@ state.all_candidates = candidates.map(candidate => ({
   ve2_label: candidate.ve2_label,
   basepivot_quality: candidate.basepivot_quality,
   rmvp_quality: candidate.rmvp_quality,
+  pattern_quality_execution_cap: candidate.pattern_quality_execution_cap,
+  pattern_quality_cap_reason: candidate.pattern_quality_cap_reason,
+  pattern_quality_cap_level: candidate.pattern_quality_cap_level,
+  promotion_block_reason: candidate.promotion_block_reason,
+  quality_notes: candidate.quality_notes,
   pattern_proxy: candidate.pattern_proxy,
   pattern_note: candidate.pattern_note,
   user_note: candidate.user_note,
@@ -585,5 +652,6 @@ state.all_candidates = candidates.map(candidate => ({
   provider: candidate.provider,
   data_as_of: candidate.data_as_of
 }));
+const weeklyTemp = `${weeklyContractOutput}.tmp`; await writeFile(weeklyTemp, JSON.stringify(weeklyPlan.weeklyContract, null, 2), "utf8"); await rename(weeklyTemp, weeklyContractOutput);
 const temp = `${output}.tmp`; await writeFile(temp, JSON.stringify(state), "utf8"); await rename(temp, output);
 console.log(JSON.stringify({ security_master: securityMaster.length, loaded, current, calculated: valid, coverage_pct: state.run.coverage_pct, weekly: weekly.length, daily_top: daily.length, as_of: asOf }));
