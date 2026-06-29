@@ -2,6 +2,29 @@ name: AURORA India Dashboard
 
 on:
   workflow_dispatch:
+    inputs:
+      market_cache_mode:
+        description: "Market cache integration mode"
+        required: false
+        default: "off"
+        type: choice
+        options:
+          - off
+          - dry-run
+          - apply
+      market_cache_snapshot:
+        description: "Market cache snapshot type"
+        required: false
+        default: "latest"
+        type: choice
+        options:
+          - latest
+          - weekly
+          - monthly
+      market_cache_snapshot_id:
+        description: "Snapshot id: latest, YYYY-WW, or YYYY-MM"
+        required: false
+        default: "latest"
   schedule:
     - cron: "30 3 * * 1-5"
 
@@ -35,6 +58,52 @@ jobs:
         if: github.event_name != 'schedule' || env.RUN_INDIA_DASHBOARD == '1'
         run: npm ci --prefix markets/india/dashboard
 
+      - name: Restore India market cache
+        if: github.event_name != 'schedule' || env.RUN_INDIA_DASHBOARD == '1'
+        env:
+          AURORA_MARKET_CACHE_PAT: ${{ secrets.AURORA_MARKET_CACHE_PAT }}
+        run: |
+          MODE="${{ github.event.inputs.market_cache_mode || 'off' }}"
+          SNAPSHOT="${{ github.event.inputs.market_cache_snapshot || 'latest' }}"
+          SNAPSHOT_ID="${{ github.event.inputs.market_cache_snapshot_id || 'latest' }}"
+
+          if [ "$MODE" = "off" ]; then
+            echo "Market cache restore disabled."
+            exit 0
+          fi
+
+          if [ -z "${AURORA_MARKET_CACHE_PAT:-}" ]; then
+            if [ "$MODE" = "apply" ]; then
+              echo "AURORA_MARKET_CACHE_PAT is required for apply mode."
+              exit 1
+            fi
+            echo "AURORA_MARKET_CACHE_PAT missing; dry-run restore skipped."
+            exit 0
+          fi
+
+          CACHE_REPO_DIR="$RUNNER_TEMP/aurora-market-cache"
+          git -c http.extraheader="AUTHORIZATION: bearer ${AURORA_MARKET_CACHE_PAT}" clone \
+            https://github.com/mohitgargcanada-max/aurora-market-cache.git \
+            "$CACHE_REPO_DIR"
+
+          if [ "$MODE" = "apply" ]; then
+            node scripts/market-cache/restore-market-cache.mjs \
+              --market india \
+              --target markets/india/dashboard/cache \
+              --cache-repo "$CACHE_REPO_DIR" \
+              --snapshot "$SNAPSHOT" \
+              --snapshot-id "$SNAPSHOT_ID" \
+              --apply
+          else
+            node scripts/market-cache/restore-market-cache.mjs \
+              --market india \
+              --target markets/india/dashboard/cache \
+              --cache-repo "$CACHE_REPO_DIR" \
+              --snapshot "$SNAPSHOT" \
+              --snapshot-id "$SNAPSHOT_ID" \
+              --dry-run
+          fi
+
       - name: Run India dashboard
         if: github.event_name != 'schedule' || env.RUN_INDIA_DASHBOARD == '1'
         env:
@@ -44,6 +113,65 @@ jobs:
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
         run: bash scripts/run-market.sh india
+
+      - name: Back up India market cache
+        if: success() && (github.event_name != 'schedule' || env.RUN_INDIA_DASHBOARD == '1')
+        env:
+          AURORA_MARKET_CACHE_PAT: ${{ secrets.AURORA_MARKET_CACHE_PAT }}
+        run: |
+          MODE="${{ github.event.inputs.market_cache_mode || 'off' }}"
+          SNAPSHOT="${{ github.event.inputs.market_cache_snapshot || 'latest' }}"
+          SNAPSHOT_ID="${{ github.event.inputs.market_cache_snapshot_id || 'latest' }}"
+
+          if [ "$MODE" = "off" ]; then
+            echo "Market cache backup disabled."
+            exit 0
+          fi
+
+          if [ -z "${AURORA_MARKET_CACHE_PAT:-}" ]; then
+            if [ "$MODE" = "apply" ]; then
+              echo "AURORA_MARKET_CACHE_PAT is required for apply mode."
+              exit 1
+            fi
+            echo "AURORA_MARKET_CACHE_PAT missing; dry-run backup skipped."
+            exit 0
+          fi
+
+          CACHE_REPO_DIR="$RUNNER_TEMP/aurora-market-cache"
+          if [ ! -d "$CACHE_REPO_DIR/.git" ]; then
+            git -c http.extraheader="AUTHORIZATION: bearer ${AURORA_MARKET_CACHE_PAT}" clone \
+              https://github.com/mohitgargcanada-max/aurora-market-cache.git \
+              "$CACHE_REPO_DIR"
+          fi
+
+          if [ "$MODE" = "apply" ]; then
+            node scripts/market-cache/backup-market-cache.mjs \
+              --market india \
+              --source markets/india/dashboard/cache \
+              --cache-repo "$CACHE_REPO_DIR" \
+              --snapshot "$SNAPSHOT" \
+              --snapshot-id "$SNAPSHOT_ID" \
+              --apply
+
+            cd "$CACHE_REPO_DIR"
+            if [ -n "$(git status --short)" ]; then
+              git config user.name "github-actions[bot]"
+              git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+              git add .
+              git commit -m "cache: update india $SNAPSHOT $SNAPSHOT_ID from ${GITHUB_SHA::7}"
+              git -c http.extraheader="AUTHORIZATION: bearer ${AURORA_MARKET_CACHE_PAT}" push origin HEAD
+            else
+              echo "No cache changes to push."
+            fi
+          else
+            node scripts/market-cache/backup-market-cache.mjs \
+              --market india \
+              --source markets/india/dashboard/cache \
+              --cache-repo "$CACHE_REPO_DIR" \
+              --snapshot "$SNAPSHOT" \
+              --snapshot-id "$SNAPSHOT_ID" \
+              --dry-run
+          fi
 
       - name: Commit updated India outputs
         if: github.event_name != 'schedule' || env.RUN_INDIA_DASHBOARD == '1'
