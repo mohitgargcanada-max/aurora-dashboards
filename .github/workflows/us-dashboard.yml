@@ -25,6 +25,15 @@ on:
         description: "Snapshot id: latest, YYYY-WW, or YYYY-MM"
         required: false
         default: "latest"
+      active_ledger_mode:
+        description: "Active tracking ledger population mode"
+        required: false
+        default: "off"
+        type: choice
+        options:
+          - off
+          - dry-run
+          - apply
   schedule:
     - cron: "0 13 * * 1-5"
     - cron: "0 14 * * 1-5"
@@ -255,6 +264,34 @@ jobs:
             echo "US visual validation passed."
           else
             echo "US visual validation blocked or failed; dashboard generation still completed." >&2
+          fi
+
+      - name: Populate US active tracking ledger
+        if: success() && github.event_name == 'workflow_dispatch'
+        run: |
+          MODE="${{ github.event.inputs.active_ledger_mode || 'off' }}"
+
+          if [ "$MODE" = "off" ]; then
+            echo "Active ledger population disabled."
+            exit 0
+          fi
+
+          AS_OF="$(date -u +%F)"
+
+          if [ "$MODE" = "apply" ]; then
+            node scripts/active-ledger/populate-active-tracking-ledger.mjs \
+              --market us \
+              --ledger markets/us/dashboard/state/active-tracking-ledger.json \
+              --scan-file markets/us/dashboard/data/us-full-dashboard-scan.json \
+              --as-of "$AS_OF" \
+              --apply
+          else
+            node scripts/active-ledger/populate-active-tracking-ledger.mjs \
+              --market us \
+              --ledger markets/us/dashboard/state/active-tracking-ledger.json \
+              --scan-file markets/us/dashboard/data/us-full-dashboard-scan.json \
+              --as-of "$AS_OF" \
+              --dry-run
           fi
 
       - name: Back up US market cache
