@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { marketDimmer, weeklyWatchlistScore } from "../engine/aurora.mjs";
 import { loadSymbol } from "../engine/cache-store.mjs";
+import { buildWeeklyUniverseForMode, parseScanArgs, resolveScanMode, runLightweightFullUniverseDiscovery, scanRunMetadata } from "../../../shared/scan-orchestration.mjs";
 import { isoTimestamp } from "./dashboard-state.mjs";
 import { nyseCalendarSummary } from "./us-market-calendar.mjs";
 import { enrichmentStatuses, universeReferenceRow } from "./us-universe-reference.mjs";
@@ -14,7 +15,10 @@ const gicsConfig = JSON.parse(await readFile(resolve(root, "config/gics_sector_p
 const cacheRoot = resolve(root, "cache/us/ohlcv");
 const archive = resolve(root, "cache/us/d_us_txt.zip");
 const output = resolve(root, "data/us-dashboard-state.json");
+const weeklyContractOutput = resolve(root, "data/us-weekly-contract.json");
 const universeReferenceOutput = resolve(root, "cache/us/us-universe-reference.json");
+const cliOptions = parseScanArgs(process.argv.slice(2));
+const scanMode = resolveScanMode({ mode: cliOptions.mode });
 const round = (x, n = 2) => Number.isFinite(x) ? Number(x.toFixed(n)) : null;
 const mean = xs => xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null;
 const sma = (xs, n) => xs.length >= n ? mean(xs.slice(-n)) : null;
@@ -114,6 +118,13 @@ async function loadClassificationCache() {
     return {};
   }
 }
+async function readJson(path, fallback = null) {
+  try {
+    return JSON.parse(await readFile(path, "utf8"));
+  } catch {
+    return fallback;
+  }
+}
 function classificationFor(symbol, cache) {
   const row = cache[symbol];
   if (!row || row.classification_status === "UNKNOWN") {
@@ -160,6 +171,7 @@ const benchmarkRecords = Object.fromEntries((await Promise.all(benchmarkSymbols.
 const spy = benchmarkRecords.SPY?.bars || [];
 if (spy.length < 252) throw new Error("SPY benchmark cache is insufficient");
 const asOf = spy.at(-1).date;
+const completedSession = cliOptions.session || asOf;
 const generatedAt = isoTimestamp();
 const classificationCache = await loadClassificationCache();
 const universeReference = securityMaster.map(row => universeReferenceRow(row, classificationCache[row.symbol]));
@@ -334,7 +346,19 @@ for (const c of candidates) {
   c.user_note = `${noteParts.join("; ") || "calculated technical context only"}. Next: ${c.bucket === "TRIGGER_READY" ? "needs next-session trigger acceptance with VE2 confirmation" : "needs price/volume confirmation and market permission"}.`;
 }
 const ranked = candidates.filter(x => x.avg_dollar_volume_20_usd_equiv >= 20_000_000 && x.stage !== "STAGE_4" && x.bucket !== "AVOID_FRESH_LONG").sort((a, b) => b.weekly_watchlist_score - a.weekly_watchlist_score || b.technical_strength_score - a.technical_strength_score);
-const weekly = ranked.slice(0, trackingConfig.weekly_max);
+const discovery = runLightweightFullUniverseDiscovery({ market: "us", session: completedSession, cache: { featureMatrix: candidates } });
+const previousWeeklyContract = await readJson(weeklyContractOutput, null);
+const weeklyPlan = buildWeeklyUniverseForMode({
+  mode: scanMode.run_mode,
+  previousContract: previousWeeklyContract,
+  rankedCandidates: ranked,
+  featureMatrix: candidates,
+  session: completedSession,
+  generatedAt,
+  targetMax: trackingConfig.weekly_max,
+  market: "US"
+});
+const weekly = weeklyPlan.weeklyUniverse;
 const weeklyFocus = weekly.filter(x => x.weekly_focus_state === "WEEKLY_FOCUS");
 const daily = weeklyFocus.filter(x => ["TRIGGER_READY", "EARLY_ENTRY_WATCH", "PULLBACK_WATCH"].includes(x.bucket) && x.entry_risk_pct <= 7 && !["WATCHLIST_ONLY", "DEFENSE_MODE"].includes(x.market_permission)).slice(0, 4);
 const weeklySymbols = new Set(weekly.map(x => x.ticker));
@@ -414,9 +438,24 @@ const sectionSort = xs => xs.sort((a, b) => b.weekly_watchlist_score - a.weekly_
 const state = {
   generated_at: generatedAt,
   run: {
-    run_type: "SUNDAY_FULL_UNIVERSE_REBUILD",
+    run_type: scanMode.run_mode,
     status: "CALCULATED_WITH_DECLARED_GAPS",
     data_as_of: asOf,
+    ...scanRunMetadata({
+      mode: scanMode.run_mode,
+      reason: scanMode.run_mode_reason,
+      dataAsOf: asOf,
+      completedSession,
+      generatedAt,
+      weeklyContract: weeklyPlan.weeklyContract,
+      discovery,
+      market: "US",
+      expectedSymbols: technicalEligibleCount,
+      loadedSymbols: loaded,
+      validLatestSymbols: current,
+      calculatedSymbols: valid,
+      warnings: weeklyPlan.warnings
+    }),
     provider: "STOOQ",
     fallback_label: "FREE_PRIMARY",
     universe_status: "STOOQ_STOCK_PATH_CLASSIFIED",
@@ -527,6 +566,7 @@ for (const event of state.events) {
 }
 state.routing_counts = Object.fromEntries(["WEEKLY_UNIVERSE", "NEAR_WATCHLIST", "SCANNER_CANDIDATE", "REJECTED", "DATA_REPAIR"].map(route => [route, candidates.filter(x => x.universe_route === route).length]));
 state.near_watchlist = nearWatchlist;
+state.weekly_contract = weeklyPlan.weeklyContract;
 state.tracking_basket = {
   count: trackingBasket.length,
   max_total: trackingConfig.max_total,
@@ -585,5 +625,6 @@ state.all_candidates = candidates.map(candidate => ({
   provider: candidate.provider,
   data_as_of: candidate.data_as_of
 }));
+const weeklyTemp = `${weeklyContractOutput}.tmp`; await writeFile(weeklyTemp, JSON.stringify(weeklyPlan.weeklyContract, null, 2), "utf8"); await rename(weeklyTemp, weeklyContractOutput);
 const temp = `${output}.tmp`; await writeFile(temp, JSON.stringify(state), "utf8"); await rename(temp, output);
 console.log(JSON.stringify({ security_master: securityMaster.length, loaded, current, calculated: valid, coverage_pct: state.run.coverage_pct, weekly: weekly.length, daily_top: daily.length, as_of: asOf }));

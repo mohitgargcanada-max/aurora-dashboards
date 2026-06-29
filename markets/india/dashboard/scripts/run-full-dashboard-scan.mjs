@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { latestCompletedIndiaSession } from "../engine/trading-calendar.mjs";
 import { auditIndexRecords, deriveExpectedCompletedSession, INDIA_PROVIDER_ROUTE, rejectionReasonCounts } from "../engine/freshness-guard.mjs";
+import { buildWeeklyUniverseForMode, parseScanArgs, resolveScanMode, runLightweightFullUniverseDiscovery, scanRunMetadata } from "../../../shared/scan-orchestration.mjs";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const cacheRoot = resolve(root, "cache/india/ohlcv");
@@ -11,9 +12,13 @@ const dataRoot = resolve(root, "data");
 const universePath = resolve(dataRoot, "india-universe.json");
 const dashboardPath = resolve(root, "..", "AURORA_India_Unified_Dashboard.html");
 const scanPath = resolve(dataRoot, "india-full-dashboard-scan.json");
+const weeklyContractPath = resolve(dataRoot, "india-weekly-contract.json");
+const cliOptions = parseScanArgs(process.argv.slice(2));
+const scanMode = resolveScanMode({ mode: cliOptions.mode });
+const generatedAt = new Date().toISOString();
 const expectedSession = await deriveExpectedCompletedSession({
   refreshReportPath: resolve(dataRoot, "india-daily-refresh-report.json"),
-  explicitSession: process.argv[2] || process.env.AURORA_TARGET_SESSION || latestCompletedIndiaSession(),
+  explicitSession: cliOptions.session || process.env.AURORA_TARGET_SESSION || latestCompletedIndiaSession(),
   stockCacheRoot: cacheRoot
 });
 if (!expectedSession) throw new Error("Unable to derive expected completed India session");
@@ -662,8 +667,13 @@ function executionFocusScore(row, marketContext) {
   return round(0.20 * triggerProximity + 0.18 * rs + 0.16 * setupTightness + 0.14 * structure + 0.10 * volume + 0.10 * theme + 0.07 * risk + 0.05 * permission);
 }
 
-async function loadJson(path) {
-  return JSON.parse(await readFile(path, "utf8"));
+async function loadJson(path, fallback) {
+  try {
+    return JSON.parse(await readFile(path, "utf8"));
+  } catch (error) {
+    if (arguments.length > 1) return fallback;
+    throw error;
+  }
 }
 
 async function writeJsonAtomic(path, payload) {
@@ -1155,17 +1165,30 @@ rows.sort((a, b) => b.total_score - a.total_score || b.addv20_inr - a.addv20_inr
 const weeklyEligible = rows
   .filter(x => x.source_lane !== "BSE_EXCLUSIVE_CAUTION" && !["NO_CHASE", "AVOID_FRESH_LONG", "REPAIR_WATCH"].includes(x.final_bucket) && x.weekly_watchlist_score >= 55)
   .sort((a, b) => b.weekly_watchlist_score - a.weekly_watchlist_score || b.leadership_score - a.leadership_score || b.addv20_inr - a.addv20_inr);
-const weeklyUniverse = [];
+const weeklyRebuildUniverse = [];
 const sourceLaneCounts = new Map();
 for (const row of weeklyEligible) {
   const lane = row.source_lane || "UNKNOWN";
   const cap = lane === "NSE_RESTRICTED_CAUTION" ? 3 : 20;
   if ((sourceLaneCounts.get(lane) || 0) >= cap) continue;
   row.weekly_tier = weeklyTier(row, marketContext);
-  weeklyUniverse.push({ ...row, weekly_rank: weeklyUniverse.length + 1 });
+  weeklyRebuildUniverse.push({ ...row, weekly_rank: weeklyRebuildUniverse.length + 1 });
   sourceLaneCounts.set(lane, (sourceLaneCounts.get(lane) || 0) + 1);
-  if (weeklyUniverse.length >= 20) break;
+  if (weeklyRebuildUniverse.length >= 20) break;
 }
+const discovery = runLightweightFullUniverseDiscovery({ market: "INDIA", session: expectedSession, cache: { featureMatrix: rows } });
+const previousWeeklyContract = await loadJson(weeklyContractPath, null);
+const weeklyPlan = buildWeeklyUniverseForMode({
+  mode: scanMode.run_mode,
+  previousContract: previousWeeklyContract,
+  rankedCandidates: weeklyRebuildUniverse,
+  featureMatrix: rows,
+  session: expectedSession,
+  generatedAt,
+  targetMax: 20,
+  market: "INDIA"
+});
+const weeklyUniverse = weeklyPlan.weeklyUniverse.map((row, index) => ({ ...row, weekly_tier: row.weekly_tier || weeklyTier(row, marketContext), weekly_rank: index + 1 }));
 
 const focusList = weeklyUniverse
   .filter(x => x.weekly_tier === "WEEKLY_FOCUS" && freshExecutionCandidate(x) && x.addv20_inr >= LIQUIDITY_MIN_INR && x.entry_risk_pct <= 7 && !["WATCHLIST_ONLY", "DEFENSE_MODE"].includes(marketContext.final_market_permission))
@@ -1197,11 +1220,30 @@ const rmvpEntries = rows.filter(x => ["RMVP_QUALITY_A", "RMVP_QUALITY_B"].includ
 const volumeSignatures = rows.filter(x => ["A", "B"].includes(x.ve2_pattern_volume_grade)).slice(0, 25);
 const noChase = rows.filter(x => x.setup_label === "NO_CHASE_RISK").slice(0, 25);
 const rejectionCounts = rejectionReasonCounts(rejected);
+const latestDataAsOf = featureRows.map(x => x.data_as_of).filter(Boolean).sort().at(-1) || expectedSession;
+const runMetadata = scanRunMetadata({
+  mode: scanMode.run_mode,
+  reason: scanMode.run_mode_reason,
+  market: "INDIA",
+  dataAsOf: latestDataAsOf,
+  completedSession: expectedSession,
+  generatedAt,
+  weeklyContract: weeklyPlan.weeklyContract,
+  discovery,
+  expectedSymbols: files.length,
+  loadedSymbols: files.length,
+  validLatestSymbols: featureRows.length,
+  calculatedSymbols: rows.length,
+  warnings: weeklyPlan.warnings
+});
 
 const result = {
-  generated_at: new Date().toISOString(),
+  generated_at: generatedAt,
   data_as_of: expectedSession,
+  ...runMetadata,
   benchmark: "NIFTY500",
+  benchmark_symbol: "^CNX500",
+  benchmark_provider_symbol: "NIFTY500.INDX",
   provider_route: INDIA_PROVIDER_ROUTE,
   total_cache_records: files.length,
   feature_matrix_count: featureRows.length,
@@ -1211,6 +1253,7 @@ const result = {
   top_rejection_reasons: Object.entries(rejectionCounts).slice(0, 10).map(([reason, count]) => ({ reason, count })),
   liquidity_min_inr: LIQUIDITY_MIN_INR,
   market_context: marketContext,
+  weekly_contract: weeklyPlan.weeklyContract,
   weekly_universe: weeklyUniverse,
   focus_list: focusList.slice(0, 16).map((x, i) => ({ ...x, focus_rank: i + 1 })),
   daily_top_1_4: dailyTop,
@@ -1240,6 +1283,7 @@ if ((result.feature_matrix_count === 0 || result.scanned_candidates === 0) && pr
 }
 
 await writeJsonAtomic(scanPath, result);
+await writeJsonAtomic(weeklyContractPath, weeklyPlan.weeklyContract);
 
 let sellExtensionWatchlistRows = [];
 let renderSellExtensionWatchlistHtml;

@@ -3,9 +3,11 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { refreshIndiaIndexCache } from "./refresh-india-daily-bars.mjs";
+import { parseScanArgs } from "../../../shared/scan-orchestration.mjs";
 
 const projectRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const refreshReportPath = resolve(projectRoot, "data/india-daily-refresh-report.json");
+const cliOptions = parseScanArgs(process.argv.slice(2));
 
 function run(command, args) {
   return new Promise((resolvePromise, reject) => {
@@ -22,7 +24,7 @@ function run(command, args) {
 }
 
 function explicitSession() {
-  return process.argv.find(arg => /^\d{4}-\d{2}-\d{2}$/.test(arg)) || process.env.AURORA_TARGET_SESSION || null;
+  return cliOptions.session || process.env.AURORA_TARGET_SESSION || null;
 }
 
 async function readRefreshReport() {
@@ -70,4 +72,4 @@ console.log(JSON.stringify({
   latest_index_data_as_of: indexReport.latest_index_data_as_of,
   same_date_cache: indexReport.same_date_cache
 }, null, 2));
-await run(process.execPath, ["scripts/run-full-dashboard-scan.mjs", expectedSession]);
+await run(process.execPath, ["scripts/run-full-dashboard-scan.mjs", `--mode=${cliOptions.mode || "SUNDAY_FULL_REBUILD"}`, `--session=${expectedSession}`]);

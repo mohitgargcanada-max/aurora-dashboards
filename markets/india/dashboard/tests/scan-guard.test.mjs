@@ -7,16 +7,18 @@ import { fileURLToPath } from "node:url";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const tempRoot = resolve(tmpdir(), `aurora-scan-guard-${process.pid}`);
-const fixtureRoot = resolve(tempRoot, "dashboard");
+const fixtureRoot = resolve(tempRoot, "markets/india/dashboard");
 await rm(tempRoot, { recursive: true, force: true });
 await mkdir(resolve(fixtureRoot, "scripts"), { recursive: true });
 await mkdir(resolve(fixtureRoot, "engine"), { recursive: true });
 await mkdir(resolve(fixtureRoot, "data"), { recursive: true });
 await mkdir(resolve(fixtureRoot, "cache/india/ohlcv"), { recursive: true });
+await mkdir(resolve(tempRoot, "markets/shared"), { recursive: true });
 await cp(resolve(root, "scripts/run-full-dashboard-scan.mjs"), resolve(fixtureRoot, "scripts/run-full-dashboard-scan.mjs"));
 await cp(resolve(root, "engine/cache-store.mjs"), resolve(fixtureRoot, "engine/cache-store.mjs"));
 await cp(resolve(root, "engine/freshness-guard.mjs"), resolve(fixtureRoot, "engine/freshness-guard.mjs"));
 await cp(resolve(root, "engine/trading-calendar.mjs"), resolve(fixtureRoot, "engine/trading-calendar.mjs"));
+await cp(resolve(root, "../../shared/scan-orchestration.mjs"), resolve(tempRoot, "markets/shared/scan-orchestration.mjs"));
 await cp(resolve(root, "cache/india/indices"), resolve(fixtureRoot, "cache/india/indices"), { recursive: true });
 
 const script = resolve(fixtureRoot, "scripts/run-full-dashboard-scan.mjs");
