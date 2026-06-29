@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { marketDimmer, weeklyWatchlistScore } from "../engine/aurora.mjs";
 import { loadSymbol } from "../engine/cache-store.mjs";
+import { applyPatternQualityExecutionCap } from "../../../shared/pattern-quality-execution-cap.mjs";
 import { buildWeeklyUniverseForMode, parseScanArgs, resolveScanMode, runLightweightFullUniverseDiscovery, scanRunMetadata } from "../../../shared/scan-orchestration.mjs";
 import { isoTimestamp } from "./dashboard-state.mjs";
 import { nyseCalendarSummary } from "./us-market-calendar.mjs";
@@ -334,7 +335,8 @@ for (const c of candidates) {
   c.aurora_sig_score = round(c.technical_strength_score + c.score_components.fundamental + c.score_components.extension);
   c.weekly_watchlist_score = weeklyWatchlistScore(c);
   c.wwl_tier = c.weekly_watchlist_score >= 85 ? "WWL_A_PLUS" : c.weekly_watchlist_score >= 75 ? "WWL_A" : c.weekly_watchlist_score >= 65 ? "WWL_B" : c.weekly_watchlist_score >= 55 ? "WWL_C" : "WWL_REJECT";
-  c.weekly_focus_state = c.weekly_watchlist_score >= 70 && ["TRIGGER_READY", "EARLY_ENTRY_WATCH", "PULLBACK_WATCH"].includes(c.bucket) && c.entry_risk_pct <= 10 && !["WATCHLIST_ONLY", "DEFENSE_MODE"].includes(c.market_permission) ? "WEEKLY_FOCUS" : "WEEKLY_CONTEXT";
+  applyPatternQualityExecutionCap(c, { market: "US" });
+  c.weekly_focus_state = !c.pattern_quality_execution_cap && c.weekly_watchlist_score >= 70 && ["TRIGGER_READY", "EARLY_ENTRY_WATCH", "PULLBACK_WATCH"].includes(c.bucket) && c.entry_risk_pct <= 10 && !["WATCHLIST_ONLY", "DEFENSE_MODE"].includes(c.market_permission) ? "WEEKLY_FOCUS" : "WEEKLY_CONTEXT";
   const noteParts = [];
   if (c.rs_score_pct >= 80) noteParts.push("strong RS leadership");
   if (c.rs_ema21 === "ABOVE") noteParts.push("RS above EMA21");
@@ -360,7 +362,7 @@ const weeklyPlan = buildWeeklyUniverseForMode({
 });
 const weekly = weeklyPlan.weeklyUniverse;
 const weeklyFocus = weekly.filter(x => x.weekly_focus_state === "WEEKLY_FOCUS");
-const daily = weeklyFocus.filter(x => ["TRIGGER_READY", "EARLY_ENTRY_WATCH", "PULLBACK_WATCH"].includes(x.bucket) && x.entry_risk_pct <= 7 && !["WATCHLIST_ONLY", "DEFENSE_MODE"].includes(x.market_permission)).slice(0, 4);
+const daily = weeklyFocus.filter(x => !x.pattern_quality_execution_cap && ["TRIGGER_READY", "EARLY_ENTRY_WATCH", "PULLBACK_WATCH"].includes(x.bucket) && x.entry_risk_pct <= 7 && !["WATCHLIST_ONLY", "DEFENSE_MODE"].includes(x.market_permission)).slice(0, 4);
 const weeklySymbols = new Set(weekly.map(x => x.ticker));
 for (const candidate of candidates) {
   const failed = [];
@@ -615,6 +617,11 @@ state.all_candidates = candidates.map(candidate => ({
   ve2_label: candidate.ve2_label,
   basepivot_quality: candidate.basepivot_quality,
   rmvp_quality: candidate.rmvp_quality,
+  pattern_quality_execution_cap: candidate.pattern_quality_execution_cap,
+  pattern_quality_cap_reason: candidate.pattern_quality_cap_reason,
+  pattern_quality_cap_level: candidate.pattern_quality_cap_level,
+  promotion_block_reason: candidate.promotion_block_reason,
+  quality_notes: candidate.quality_notes,
   pattern_proxy: candidate.pattern_proxy,
   pattern_note: candidate.pattern_note,
   user_note: candidate.user_note,

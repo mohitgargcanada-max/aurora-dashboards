@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { latestCompletedIndiaSession } from "../engine/trading-calendar.mjs";
 import { auditIndexRecords, deriveExpectedCompletedSession, INDIA_PROVIDER_ROUTE, rejectionReasonCounts } from "../engine/freshness-guard.mjs";
+import { applyPatternQualityExecutionCap } from "../../../shared/pattern-quality-execution-cap.mjs";
 import { buildWeeklyUniverseForMode, parseScanArgs, resolveScanMode, runLightweightFullUniverseDiscovery, scanRunMetadata } from "../../../shared/scan-orchestration.mjs";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
@@ -951,6 +952,7 @@ for (const row of featureRows) {
   row.caution = notes.join("; ") || "none from calculated technical fields";
   row.execution_permission = row.source_lane === "BSE_EXCLUSIVE_CAUTION" ? "BSE_EXCLUSIVE_CAUTION" : row.entry_permission;
   row.next_condition = row.entry_permission === "WATCH_FOR_TIGHTER_SHELF" ? "Wait for inside bar, RMV5 coil, pullback shelf or retest." : row.setup_label === "TRIGGER_READY" ? "Needs next-session trigger acceptance above BasePivot/RMVP with VE2 confirmation." : "Needs price/volume confirmation and market permission.";
+  applyPatternQualityExecutionCap(row, { market: "INDIA" });
   if (!row.setup_label) {
     rejected.push({ exchange: row.exchange, symbol: row.symbol, reason: "NO_RECOGNIZABLE_SETUP_GEOMETRY", series: row.series, rows: row.rows, next_condition: "Wait for RS21 reclaim, trigger proximity, compression, pullback, or RMVP." });
     continue;
@@ -1191,7 +1193,7 @@ const weeklyPlan = buildWeeklyUniverseForMode({
 const weeklyUniverse = weeklyPlan.weeklyUniverse.map((row, index) => ({ ...row, weekly_tier: row.weekly_tier || weeklyTier(row, marketContext), weekly_rank: index + 1 }));
 
 const focusList = weeklyUniverse
-  .filter(x => x.weekly_tier === "WEEKLY_FOCUS" && freshExecutionCandidate(x) && x.addv20_inr >= LIQUIDITY_MIN_INR && x.entry_risk_pct <= 7 && !["WATCHLIST_ONLY", "DEFENSE_MODE"].includes(marketContext.final_market_permission))
+  .filter(x => !x.pattern_quality_execution_cap && x.weekly_tier === "WEEKLY_FOCUS" && freshExecutionCandidate(x) && x.addv20_inr >= LIQUIDITY_MIN_INR && x.entry_risk_pct <= 7 && !["WATCHLIST_ONLY", "DEFENSE_MODE"].includes(marketContext.final_market_permission))
   .map(x => ({ ...x, execution_focus_score: executionFocusScore(x, marketContext) }))
   .filter(x => x.execution_focus_score >= 70 && !["AVOID_FRESH_LONG", "NO_CHASE"].includes(x.final_bucket))
   .sort((a, b) => b.execution_focus_score - a.execution_focus_score);

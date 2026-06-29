@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { applyPatternQualityExecutionCap } from "../../../shared/pattern-quality-execution-cap.mjs";
 import {
   buildWeeklyUniverseForMode,
   FINAL_BUCKETS,
@@ -100,6 +101,26 @@ const rsleTop20 = [row("NEW", { rank: 1 }), row("AAA", { rank: 2 })];
 assert.ok(rsleTop20.some(item => item.symbol === "NEW"));
 assert.equal(weekday.weeklyContract.weekly_universe_symbols.includes("NEW"), false);
 assert.ok(rsleTop20.length <= 20);
+
+const mockIn = applyPatternQualityExecutionCap(row("MOCKIN", {
+  rs_trifecta_label: "FAIL",
+  rs_rating: 99,
+  rs21_state: "RS21_RECLAIM_0D",
+  rrg: { quadrant: "IMPROVING" },
+  base_stage_risk: "BASE_4_LATE_STAGE_RISK",
+  basepivot_quality: "BASEPIVOT_QUALITY_C",
+  basepivot_status: "BASEPIVOT_ACTIVE_AFTER_WEAK_BREAKOUT",
+  pattern_proxy: "BASE_ON_BASE_POSSIBLE",
+  pbx_duration_label: "PBX_STALE",
+  ve2_distribution_label: "DISTRIBUTION_PRESENT",
+  entry_risk_pct: 1.1
+})).candidate;
+assert.equal(mockIn.pattern_quality_execution_cap, true);
+assert.notEqual(mockIn.final_bucket, "TRIGGER_READY");
+assert.equal([mockIn].filter(item => !item.pattern_quality_execution_cap && item.final_bucket === "TRIGGER_READY").length, 0);
+assert.ok(mockIn.promotion_block_reason.includes("PATTERN_QUALITY_EXECUTION_CAP"));
+assert.ok(["EARLY_ENTRY_WATCH", "RSNH_WATCH_ONLY"].includes(mockIn.final_bucket));
+assert.equal(mockIn.rs_trifecta_label, "FAIL");
 
 const metadata = scanRunMetadata({
   mode: SCAN_MODES.WEEKDAY_EOD_UPDATE,

@@ -2,6 +2,7 @@ import { CANADA_PROFILE, FINAL_BUCKETS, REQUIRED_CANDIDATE_COLUMNS, liquidityLab
 import { providerBlendStatus } from "./freshness-guard.mjs";
 import { alignedSeries, assignPercentiles, atr, axmMatrix, clamp, emaSeries, escapeHtml, latest, mean, rmv, rmvLabel, round, rrgFromRsLine, rs21State, smaSeries, weightedRsRaw } from "./indicators.mjs";
 import { loadSellExtensionWatchlistRows, renderSellExtensionWatchlistHtml } from "../../../../scripts/active-ledger/sell-extension-watchlist.mjs";
+import { applyPatternQualityExecutionCap } from "../../../shared/pattern-quality-execution-cap.mjs";
 import { buildWeeklyUniverseForMode, runLightweightFullUniverseDiscovery } from "../../../shared/scan-orchestration.mjs";
 
 const sellExtensionWatchlistRows = await loadSellExtensionWatchlistRows(new URL("../state/active-tracking-ledger.json", import.meta.url));
@@ -177,6 +178,7 @@ export function buildCanadaFeatureMatrix({ universe, stockRecords, benchmarkReco
     if (!FINAL_BUCKETS.includes(row.final_bucket)) row.final_bucket = "REPAIR_WATCH";
     if (row.liquidity_label === "LIQUIDITY_THIN_CAUTION") row.caution = "liquidity below Canada execution floor; discovery retained but execution capped";
     if (row.basepivot_false_breakout_status !== "BASEPIVOT_OK") row.caution = row.basepivot_false_breakout_status;
+    applyPatternQualityExecutionCap(row, { market: "CANADA" });
   }
   rows.sort((a, b) => b.aurora_sig_score - a.aurora_sig_score || a.symbol.localeCompare(b.symbol));
   return { rows, rejected };
@@ -250,6 +252,7 @@ function stockThemeLeadership(sections) {
 }
 
 export function buildDashboardModel({ rows, rejected, indexAudit, coverage, expectedSession, scanMode = "SUNDAY_FULL_REBUILD", previousWeeklyContract = null, generatedAt = new Date().toISOString() }) {
+  for (const row of rows) applyPatternQualityExecutionCap(row, { market: "CANADA" });
   const eligible = rows.filter(r => r.liquidity_label !== "LIQUIDITY_DATA_REPAIR");
   const discovery = runLightweightFullUniverseDiscovery({ market: "CANADA", session: expectedSession, cache: { featureMatrix: rows } });
   const weeklyPlan = buildWeeklyUniverseForMode({
@@ -263,8 +266,8 @@ export function buildDashboardModel({ rows, rejected, indexAudit, coverage, expe
     market: "CANADA"
   });
   const weeklyUniverse = weeklyPlan.weeklyUniverse;
-  const weeklyFocus = weeklyUniverse.filter(r => ["TRIGGER_READY", "EARLY_ENTRY_WATCH", "PULLBACK_WATCH"].includes(r.final_bucket)).slice(0, 12);
-  const dailyTop = weeklyFocus.filter(r => r.final_bucket === "TRIGGER_READY").slice(0, 4);
+  const weeklyFocus = weeklyUniverse.filter(r => !r.pattern_quality_execution_cap && ["TRIGGER_READY", "EARLY_ENTRY_WATCH", "PULLBACK_WATCH"].includes(r.final_bucket)).slice(0, 12);
+  const dailyTop = weeklyFocus.filter(r => !r.pattern_quality_execution_cap && r.final_bucket === "TRIGGER_READY").slice(0, 4);
   const rsleTop20 = [...eligible].sort((a, b) => b.leadership_score - a.leadership_score || b.tactical_score - a.tactical_score).slice(0, 20);
   const developing = [...eligible].filter(r => !rsleTop20.includes(r)).sort((a, b) => b.leadership_score - a.leadership_score).slice(0, 20);
   const nearRsHigh = eligible.filter(r => r.rsnh).slice(0, 20);
