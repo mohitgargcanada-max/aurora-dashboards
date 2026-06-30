@@ -1,18 +1,139 @@
 {
-  "status": "ALREADY_CURRENT_OR_UNCHANGED",
-  "provider": "CACHE",
-  "endpoint": "cache/india/ohlcv",
-  "retrieved_at": "2026-06-27T20:56:16.463Z",
-  "expected_completed_session": "2026-06-25",
-  "latest_data_as_of": "2026-06-25",
+  "status": "UPDATED",
+  "provider": "NSE_OFFICIAL_FETCH",
+  "endpoint": "scripts/fetch-nse-session.sh",
+  "retrieved_at": "2026-06-30T19:20:52.958Z",
+  "expected_completed_session": "2026-06-30",
+  "latest_data_as_of": "2026-06-30",
+  "same_date_cache": true,
   "fallback_label": "OFFICIAL_VERIFIED",
-  "fallback_reason": "CACHE_ALREADY_HAS_EXPECTED_COMPLETED_SESSION",
+  "fallback_reason": "OFFICIAL_NSE_FETCH_DAILY_APPEND",
   "coverage": {
-    "total_records": 8012,
-    "current_records": 3425,
-    "valid_current_records": 3425,
-    "current_coverage_pct": 42.75
+    "total_records": 8015,
+    "current_records": 3416,
+    "valid_current_records": 3416,
+    "current_coverage_pct": 42.62,
+    "required_symbols": 560,
+    "required_fresh_symbols": 543,
+    "required_missing_symbols": [
+      "GENUSPOWER"
+    ],
+    "required_stale_symbols": [
+      {
+        "symbol": "TATAMOTORS",
+        "latest_data_as_of": "2025-10-23",
+        "expected_session": "2026-06-30"
+      },
+      {
+        "symbol": "HBLPOWER",
+        "latest_data_as_of": "2024-12-20",
+        "expected_session": "2026-06-30"
+      },
+      {
+        "symbol": "SWANENERGY",
+        "latest_data_as_of": "2025-09-03",
+        "expected_session": "2026-06-30"
+      },
+      {
+        "symbol": "CENTURYTEX",
+        "latest_data_as_of": "2024-10-09",
+        "expected_session": "2026-06-30"
+      },
+      {
+        "symbol": "GEPIL",
+        "latest_data_as_of": "2025-08-26",
+        "expected_session": "2026-06-30"
+      },
+      {
+        "symbol": "SUVENPHAR",
+        "latest_data_as_of": "2025-05-16",
+        "expected_session": "2026-06-30"
+      },
+      {
+        "symbol": "IIFLSEC",
+        "latest_data_as_of": "2024-12-02",
+        "expected_session": "2026-06-30"
+      },
+      {
+        "symbol": "ARISINFRA",
+        "latest_data_as_of": "2026-02-06",
+        "expected_session": "2026-06-30"
+      },
+      {
+        "symbol": "SATINDLTD",
+        "latest_data_as_of": "2025-06-24",
+        "expected_session": "2026-06-30"
+      },
+      {
+        "symbol": "GLS",
+        "latest_data_as_of": "2025-01-17",
+        "expected_session": "2026-06-30"
+      },
+      {
+        "symbol": "RELINFRA",
+        "latest_data_as_of": "2026-06-22",
+        "expected_session": "2026-06-30"
+      },
+      {
+        "symbol": "KBCGLOBAL",
+        "latest_data_as_of": "2025-06-25",
+        "expected_session": "2026-06-30"
+      },
+      {
+        "symbol": "ONIXSOLAR",
+        "latest_data_as_of": "2026-06-22",
+        "expected_session": "2026-06-30"
+      },
+      {
+        "symbol": "JDCABLES",
+        "latest_data_as_of": "2026-06-22",
+        "expected_session": "2026-06-30"
+      },
+      {
+        "symbol": "SHREYAS",
+        "latest_data_as_of": "2024-10-22",
+        "expected_session": "2026-06-30"
+      },
+      {
+        "symbol": "HINDMOTORS",
+        "latest_data_as_of": "2026-06-22",
+        "expected_session": "2026-06-30"
+      }
+    ],
+    "required_freshness_coverage_pct": 96.96
   },
-  "attempts": [],
+  "attempts": [
+    {
+      "provider": "NSE_OFFICIAL_FETCH",
+      "endpoint": "scripts/fetch-nse-session.sh",
+      "source_files": [
+        {
+          "file": "BhavCopy_NSE_CM_0_0_0_20260630_F_0000.csv.zip",
+          "sha256": "c090279cd8e9864a13aa7b4696b3f06364499df623ce5a3e742a12ac64708cf1",
+          "bytes": 191928,
+          "accepted_rows": 3419
+        },
+        {
+          "file": "EQ_ISINCODE_300626.zip",
+          "sha256": "4478db3067a03abd440c4e7f0b265373b540fb00b0752aff1c6872b906af21f3",
+          "bytes": 12565,
+          "accepted_rows": 0,
+          "warning": "INVALID_ZIP_SKIPPED"
+        },
+        {
+          "file": "sec_bhavdata_full_30062026.csv",
+          "sha256": "b76d0a991d5eda7903bcce53ddc1ef0063baec36c9301df3879d0746449e643f",
+          "bytes": 371254,
+          "accepted_rows": 3270
+        }
+      ],
+      "inserted": 3416,
+      "corrected": 0,
+      "unchanged": 0,
+      "invalid": 0,
+      "rejected_rows": 0,
+      "symbols_touched": 3416
+    }
+  ],
   "warnings": []
 }

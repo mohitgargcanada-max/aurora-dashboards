@@ -382,7 +382,7 @@ for (const candidate of candidates) {
   if (weeklySymbols.has(candidate.ticker)) candidate.universe_route = "WEEKLY_UNIVERSE";
   else if (candidate.data_state.startsWith("PARTIAL") || candidate.data_state.startsWith("UNKNOWN")) candidate.universe_route = "DATA_REPAIR";
   else if (candidate.bucket === "AVOID_FRESH_LONG" || candidate.stage === "STAGE_4") candidate.universe_route = "REJECTED";
-  else if (candidate.scan_memberships.length && ((candidate.weekly_watchlist_score >= 60 && failed.length <= 3) || (failed.length <= 2 && candidate.scan_memberships.includes("S01_52W_HIGH") && candidate.scan_memberships.includes("S22_RS_LINE_NEW_HIGH")))) candidate.universe_route = "NEAR_WATCHLIST";
+  else if ((candidate.scan_memberships || []).length && ((candidate.weekly_watchlist_score >= 60 && failed.length <= 3) || (failed.length <= 2 && (candidate.scan_memberships || []).includes("S01_52W_HIGH") && (candidate.scan_memberships || []).includes("S22_RS_LINE_NEW_HIGH")))) candidate.universe_route = "NEAR_WATCHLIST";
   else if (candidate.scan_memberships.length) candidate.universe_route = "SCANNER_CANDIDATE";
   else candidate.universe_route = "REJECTED";
 }
@@ -464,7 +464,7 @@ const rejectedSplit = splitRejectedForRadarVisibility({
 const cleanedRejected = rejectedSplit.rejected;
 const softRsRecoveredRows = rejectedSplit.softRsRecoveredRows;
 const strongRsRetention = buildStrongRsRetention(candidates, {
-  sourceLists: { weekly, weeklyFocus, daily, developingWatchlist: nearWatchlist, rs21Rsnh: candidates.filter(x => x.rs_ema21 === "ABOVE" || x.scan_memberships.includes("S22_RS_LINE_NEW_HIGH")), myhApproaching: myhApproaching.myh_approaching_rows },
+  sourceLists: { weekly, weeklyFocus, daily, developingWatchlist: nearWatchlist, rs21Rsnh: candidates.filter(x => x.rs_ema21 === "ABOVE" || (x.scan_memberships || []).includes("S22_RS_LINE_NEW_HIGH")), myhApproaching: myhApproaching.myh_approaching_rows },
   retentionWindow: 20
 });
 const auroraRadarUniverse = buildAuroraRadarUniverse({
@@ -475,7 +475,7 @@ const auroraRadarUniverse = buildAuroraRadarUniverse({
     WEEKLY_FOCUS: weeklyFocus,
     DAILY_TOP_1_4: daily,
     DEVELOPING_WATCHLIST: nearWatchlist,
-    RS21_RSNH: candidates.filter(x => x.rs_ema21 === "ABOVE" || x.scan_memberships.includes("S22_RS_LINE_NEW_HIGH")),
+    RS21_RSNH: candidates.filter(x => x.rs_ema21 === "ABOVE" || (x.scan_memberships || []).includes("S22_RS_LINE_NEW_HIGH")),
     MYH_APPROACHING: myhApproaching.myh_approaching_rows,
     MYH_BREAKOUT_RETEST: myhBreakoutRetests,
     MA10_RESPECT: maRespect.ema10_respect_rows,
@@ -564,7 +564,7 @@ const state = {
   daily_top: daily,
   developing_watchlist_20: nearWatchlist,
   sections: {
-    rs21_rsnh: sectionSort(candidates.filter(x => x.rs_ema21 === "ABOVE" || x.scan_memberships.includes("S22_RS_LINE_NEW_HIGH"))),
+    rs21_rsnh: sectionSort(candidates.filter(x => x.rs_ema21 === "ABOVE" || (x.scan_memberships || []).includes("S22_RS_LINE_NEW_HIGH"))),
     myh_approaching: sectionSort(myhApproaching.myh_approaching_rows),
     myh_breakout_retest: sectionSort(myhBreakoutRetests),
     ma10_respect: sectionSort(maRespect.ema10_respect_rows),
@@ -577,7 +577,7 @@ const state = {
     strong_rs_retention: strongRsRetention,
     soft_rs_reject_recovered: softRsRecoveredRows,
     pbx_pullback: sectionSort(candidates.filter(x => x.bucket === "PULLBACK_WATCH" || x.pbx_quality.startsWith("PBX_VALID") || x.pbx_quality === "PBX_ACCEPTABLE")),
-    compression_vcp: sectionSort(candidates.filter(x => x.compressed || x.scan_memberships.includes("S10_VCP_HV_PROXY"))),
+    compression_vcp: sectionSort(candidates.filter(x => x.compressed || (x.scan_memberships || []).includes("S10_VCP_HV_PROXY"))),
     basepivot_patterns: sectionSort(candidates.filter(x => Math.abs(x.distance_to_trigger_pct) <= 7 || x.pattern_proxy !== "NO_CLEAR_BASE")),
     rmvp_early_entry: sectionSort(candidates.filter(x => ["TRIGGER_READY", "EARLY_ENTRY_WATCH"].includes(x.bucket) || x.rmvp_quality !== "RMVP_QUALITY_NONE")),
     ve2_volume_signature: sectionSort(candidates.filter(x => x.ve2_grade !== "C")),
