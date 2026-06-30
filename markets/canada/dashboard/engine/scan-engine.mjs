@@ -2,7 +2,7 @@ import { CANADA_PROFILE, FINAL_BUCKETS, REQUIRED_CANDIDATE_COLUMNS, liquidityLab
 import { providerBlendStatus } from "./freshness-guard.mjs";
 import { alignedSeries, assignPercentiles, atr, axmMatrix, clamp, emaSeries, escapeHtml, latest, mean, rmv, rmvLabel, round, rrgFromRsLine, rs21State, smaSeries, weightedRsRaw } from "./indicators.mjs";
 import { loadSellExtensionWatchlistRows, renderSellExtensionWatchlistHtml } from "../../../../scripts/active-ledger/sell-extension-watchlist.mjs";
-import { buildAuroraRadarUniverse, buildMyhBreakoutRetestRows, buildRrgHierarchy, buildStrongRsRetention, enrichRadarVisibility } from "../../../shared/classification-radar.mjs";
+import { buildAuroraRadarUniverse, buildMyhBreakoutRetestRows, buildRrgHierarchy, buildStrongRsRetention, enrichRadarVisibility, splitRejectedForRadarVisibility } from "../../../shared/classification-radar.mjs";
 import { buildMarketConfirmationStack, buildMaRespectWatchlists, buildMyhApproachingRows } from "../../../shared/market-confirmation-and-ma-respect.mjs";
 import { applyPatternQualityExecutionCap } from "../../../shared/pattern-quality-execution-cap.mjs";
 import { buildWeeklyUniverseForMode, runLightweightFullUniverseDiscovery } from "../../../shared/scan-orchestration.mjs";
@@ -324,6 +324,9 @@ export function buildDashboardModel({ rows, rejected, indexAudit, coverage, expe
     sourceLists: { weeklyUniverse, weeklyFocus, dailyTop, rsleTop20, developing, nearRsHigh, myhApproachingRows },
     retentionWindow: 20
   });
+  const rejectedSplit = splitRejectedForRadarVisibility({ rows, rejected, market: "CANADA", dataAsOf: expectedSession });
+  const cleanedRejected = rejectedSplit.rejected;
+  const softRsRecoveredRows = rejectedSplit.softRsRecoveredRows;
   const auroraRadarUniverse = buildAuroraRadarUniverse({
     market: "CANADA",
     dataAsOf: expectedSession,
@@ -343,13 +346,14 @@ export function buildDashboardModel({ rows, rejected, indexAudit, coverage, expe
       BASEPIVOT: basepivots,
       RMVP: rmvp,
       NO_CHASE_RISK: noChase,
-      STRONG_RS_RETENTION: strongRsRetention
+      STRONG_RS_RETENTION: strongRsRetention,
+      SOFT_RS_REJECT_RECOVERED: softRsRecoveredRows
     },
     allCandidates: rows
   });
   const rrgHierarchy = buildRrgHierarchy(rows, { minDenominator: 3 });
   const themes = stockThemeLeadership([["weekly", weeklyUniverse], ["focus", weeklyFocus], ["daily", dailyTop], ["rsle", rsleTop20], ["developing", developing]]);
-  return { expectedSession, rows, rejected, indexAudit, coverage, marketConfirmation, weeklyUniverse, weeklyFocus, dailyTop, rsleTop20, developing, nearRsHigh, myhApproachingRows, myhBreakoutRetests, ma10Respect, ma21Respect, ma50Respect, pullbacks, basepivots, rmvp, ve2, compression, noChase, themes, industryGroupRrg: rrgHierarchy.industry_group, industryRrg: rrgHierarchy.industry, subIndustryRrg: rrgHierarchy.sub_industry, auroraRadarUniverse, strongRsRetention, weeklyContract: weeklyPlan.weeklyContract, cadenceWarnings: weeklyPlan.warnings, discovery };
+  return { expectedSession, rows, rejected: cleanedRejected, softRsRecoveredRows, softRsRecoveredCount: rejectedSplit.soft_rs_recovered_count, indexAudit, coverage, marketConfirmation, weeklyUniverse, weeklyFocus, dailyTop, rsleTop20, developing, nearRsHigh, myhApproachingRows, myhBreakoutRetests, ma10Respect, ma21Respect, ma50Respect, pullbacks, basepivots, rmvp, ve2, compression, noChase, themes, industryGroupRrg: rrgHierarchy.industry_group, industryRrg: rrgHierarchy.industry, subIndustryRrg: rrgHierarchy.sub_industry, auroraRadarUniverse, strongRsRetention, weeklyContract: weeklyPlan.weeklyContract, cadenceWarnings: weeklyPlan.warnings, discovery };
 }
 
 export function renderCanadaDashboard(model) {

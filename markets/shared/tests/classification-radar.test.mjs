@@ -5,8 +5,10 @@ import {
   buildMyhBreakoutRetestRows,
   buildRrgHierarchy,
   buildStrongRsRetention,
+  earlyRsEvidence,
   enrichRadarVisibility,
-  normalizeClassification
+  normalizeClassification,
+  splitRejectedForRadarVisibility
 } from "../classification-radar.mjs";
 
 const row = (symbol, extra = {}) => ({
@@ -62,6 +64,14 @@ test("MYH breakout retest is radar only after prior break and retest context", (
   assert.equal(rows[1].myh_status, "MYH_APPROACHING");
 });
 
+test("generic rows do not default into MYH approaching", () => {
+  const rows = [row("PLAIN", { myh_status: undefined, myh_state: undefined, myh_gap_pct: undefined })];
+  enrichRadarVisibility(rows, { market: "US" });
+  assert.equal(rows[0].myh_status, null);
+  assert.equal(rows[0].scan_memberships?.includes("MYH_APPROACHING"), false);
+  assert.deepEqual(buildMyhBreakoutRetestRows(rows), []);
+});
+
 test("radar universe dedupes symbols and preserves memberships", () => {
   const aaa = row("AAA", { scan_memberships: ["RSLE_TOP_20"] });
   const radar = buildAuroraRadarUniverse({
@@ -97,4 +107,25 @@ test("Trifecta FAIL with early RS evidence is radar, not standalone rejection", 
   assert.ok(rows[1].scan_memberships.includes("AURORA_RADAR_UNIVERSE"));
   assert.ok(rows[2].scan_memberships.includes("AURORA_RADAR_UNIVERSE"));
   assert.equal(rows[3].scan_memberships, undefined);
+});
+
+test("early RS evidence accepts cross-market variants", () => {
+  assert.deepEqual(earlyRsEvidence(row("IBD", { rs_rating: 40, ibd_rs_rating_1_99: 78 })), ["RS_RATING_GE_70", "RS21_CONSTRUCTIVE", "RRG_IMPROVING"]);
+  assert.ok(earlyRsEvidence(row("PCT", { rs_rating: 40, rs21_state: "RS21_BELOW", rrg: { quadrant: "LAGGING" }, rs_1m_pctile: "84" })).includes("RS_PERCENTILE_GE_80"));
+  assert.ok(earlyRsEvidence(row("RRG2", { rs_rating: 40, rs21_state: "RS21_BELOW", rrg: undefined, stock_rrg_quadrant: "Stock is improving" })).includes("RRG_IMPROVING"));
+  assert.ok(earlyRsEvidence(row("RSNH", { rs_rating: 40, rs21_state: "RS21_BELOW", rrg: { quadrant: "LAGGING" }, setup_label: "RSNH_BEFORE_PRICE" })).includes("RSNH_BEFORE_PRICE"));
+  assert.ok(earlyRsEvidence(row("MANS", { rs_rating: 40, rs21_state: "RS21_BELOW", rrg: { quadrant: "LAGGING" }, mansfield_state: "RISING" })).includes("MANSFIELD_IMPROVING"));
+});
+
+test("soft RS rejects with early evidence move to recovered radar list", () => {
+  const rows = [
+    row("SOFT", { rs_rating: 73, rs_trifecta_label: "FAIL", rejection_reason: "RS_TRIFECTA_NOT_PASS" }),
+    row("HARD", { rs_rating: 80, rs_trifecta_label: "FAIL", rejection_reason: "RS_TRIFECTA_NOT_PASS, LIQUIDITY_HARD_FAIL" }),
+    row("NONE", { rs_rating: 40, rs21_state: "RS21_BELOW_WARNING", rrg: { quadrant: "LAGGING" }, rs_trifecta_label: "FAIL", rejection_reason: "RS_TRIFECTA_NOT_PASS" })
+  ];
+  const split = splitRejectedForRadarVisibility({ rows, rejected: rows, market: "US", dataAsOf: "2026-06-29" });
+  assert.deepEqual(split.softRsRecoveredRows.map(x => x.symbol), ["SOFT"]);
+  assert.deepEqual(split.rejected.map(x => x.symbol), ["HARD", "NONE"]);
+  assert.ok(rows[0].scan_memberships.includes("SOFT_RS_REJECT_RECOVERED"));
+  assert.ok(rows[0].scan_memberships.includes("AURORA_RADAR_UNIVERSE"));
 });

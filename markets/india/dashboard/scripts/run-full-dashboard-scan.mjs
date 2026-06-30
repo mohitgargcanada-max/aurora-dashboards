@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { latestCompletedIndiaSession } from "../engine/trading-calendar.mjs";
 import { auditIndexRecords, deriveExpectedCompletedSession, INDIA_PROVIDER_ROUTE, rejectionReasonCounts } from "../engine/freshness-guard.mjs";
 import { buildMarketConfirmationStack, buildMaRespectWatchlists, buildMyhApproachingRows } from "../../../shared/market-confirmation-and-ma-respect.mjs";
-import { buildAuroraRadarUniverse, buildMyhBreakoutRetestRows, buildRrgHierarchy, buildStrongRsRetention, enrichRadarVisibility } from "../../../shared/classification-radar.mjs";
+import { buildAuroraRadarUniverse, buildMyhBreakoutRetestRows, buildRrgHierarchy, buildStrongRsRetention, enrichRadarVisibility, splitRejectedForRadarVisibility } from "../../../shared/classification-radar.mjs";
 import { applyPatternQualityExecutionCap } from "../../../shared/pattern-quality-execution-cap.mjs";
 import { buildWeeklyUniverseForMode, parseScanArgs, resolveScanMode, runLightweightFullUniverseDiscovery, scanRunMetadata } from "../../../shared/scan-orchestration.mjs";
 
@@ -1236,6 +1236,9 @@ const strongRsRetention = buildStrongRsRetention(rows, {
   sourceLists: { weeklyUniverse, focusList, dailyTop, rsleTop20, developing20, nearRsHigh, myhApproaching: myhApproaching.myh_approaching_rows },
   retentionWindow: 20
 });
+const rejectedSplit = splitRejectedForRadarVisibility({ rows, rejected, market: "INDIA", dataAsOf: expectedSession });
+const cleanedRejected = rejectedSplit.rejected;
+const softRsRecoveredRows = rejectedSplit.softRsRecoveredRows;
 const auroraRadarUniverse = buildAuroraRadarUniverse({
   market: "INDIA",
   dataAsOf: expectedSession,
@@ -1255,12 +1258,13 @@ const auroraRadarUniverse = buildAuroraRadarUniverse({
     BASEPIVOT: basePivots,
     RMVP: rmvpEntries,
     NO_CHASE_RISK: noChase,
-    STRONG_RS_RETENTION: strongRsRetention
+    STRONG_RS_RETENTION: strongRsRetention,
+    SOFT_RS_REJECT_RECOVERED: softRsRecoveredRows
   },
   allCandidates: rows
 });
 const rrgHierarchy = buildRrgHierarchy(rows, { minDenominator: 3 });
-const rejectionCounts = rejectionReasonCounts(rejected);
+const rejectionCounts = rejectionReasonCounts(cleanedRejected);
 const latestDataAsOf = featureRows.map(x => x.data_as_of).filter(Boolean).sort().at(-1) || expectedSession;
 const runMetadata = scanRunMetadata({
   mode: scanMode.run_mode,
@@ -1289,7 +1293,8 @@ const result = {
   total_cache_records: files.length,
   feature_matrix_count: featureRows.length,
   scanned_candidates: rows.length,
-  rejected_count: rejected.length,
+  rejected_count: cleanedRejected.length,
+  soft_rs_recovered_count: rejectedSplit.soft_rs_recovered_count,
   rejection_reason_counts: rejectionCounts,
   top_rejection_reasons: Object.entries(rejectionCounts).slice(0, 10).map(([reason, count]) => ({ reason, count })),
   liquidity_min_inr: LIQUIDITY_MIN_INR,
@@ -1308,6 +1313,7 @@ const result = {
   sub_industry_rrg: rrgHierarchy.sub_industry,
   aurora_radar_universe: auroraRadarUniverse,
   strong_rs_retention: strongRsRetention,
+  soft_rs_reject_recovered: softRsRecoveredRows,
   near_rs_high: nearRsHigh,
   myh_approaching: myhApproaching.myh_approaching_rows,
   myh_breakout_retest: myhBreakoutRetests,
@@ -1322,7 +1328,7 @@ const result = {
   volume_signatures: volumeSignatures,
   no_chase: noChase,
   sector_rrg: sectorRows,
-  rejected: rejected.slice(0, 250)
+  rejected: cleanedRejected.slice(0, 250)
 };
 
 if ((result.feature_matrix_count === 0 || result.scanned_candidates === 0) && process.env.AURORA_ALLOW_EMPTY_DASHBOARD_PUBLISH !== "1") {
@@ -1594,7 +1600,7 @@ ${table("VE2 Volume Signature", "ve2", volumeSignatures.slice(0, 20), "Volume si
 ${table("Compression", "compression", compression.slice(0, 20), "RMV5 < RMV15 <= RMV25 style compression candidates.")}
 ${table("No-Chase / Risk", "risk", noChase.slice(0, 20), "Leadership may be present, but extension/risk says wait for pullback, shelf, or retest.")}
 ${sellExtensionWatchlistHtml()}
-<h2 id="rejected">Rejected / Data Repair Routes</h2><p class="notice">Rejection blocks promotion, not discovery. The scanner keeps exact failed gate and next promotion condition.</p><div class="table-wrap"><table><thead><tr>${rejectedFields.map(([label]) => `<th>${label}</th>`).join("")}</tr></thead><tbody>${rowsHtml(rejected.slice(0, 150), rejectedFields)}</tbody></table></div>
+<h2 id="rejected">Rejected / Data Repair Routes</h2><p class="notice">Rejection blocks promotion, not discovery. The scanner keeps exact failed gate and next promotion condition.</p><div class="table-wrap"><table><thead><tr>${rejectedFields.map(([label]) => `<th>${label}</th>`).join("")}</tr></thead><tbody>${rowsHtml(result.rejected.slice(0, 150), rejectedFields)}</tbody></table></div>
 <h2 id="provenance">Provenance</h2><div class="table-wrap"><table><tbody><tr><th>Provider route</th><td>${escape(result.provider_route)}</td></tr><tr><th>Benchmark</th><td>${escape(result.benchmark)} · ${escape(benchmarkRecord.provider)} · ${escape(benchmarkRecord.data_as_of)}</td></tr><tr><th>Top rejection reasons</th><td>${escape(result.top_rejection_reasons.map(x => `${x.reason}:${x.count}`).join(", "))}</td></tr><tr><th>Daily Top Formula</th><td>From WEEKLY_FOCUS only: 20% trigger proximity, 18% RS, 16% RMV/compression tightness, 14% BPX/RMVP structure, 10% VE2 volume, 10% RRG/theme proxy, 7% risk clarity, 5% market permission. Top name must score >=75; additional names must score >=70 and be within 12 points of #1. Never force four.</td></tr><tr><th>Conviction layers</th><td>AXM guards extension; PBX grades pullbacks; BPX/BasePivot and RMVP define structure; VE2 validates volume fuel. None of these create new final buckets.</td></tr><tr><th>Liquidity minimum reference</th><td>${money(LIQUIDITY_MIN_INR)} ADDV20. Not a discovery kill-switch; thin names are cautioned.</td></tr><tr><th>BSE overlay</th><td>Quick-mode short history, unadjusted, BSE exclusive, caution-only until full history/surveillance checks are added.</td></tr><tr><th>Scan JSON</th><td>${escape(scanPath)}</td></tr></tbody></table></div><p class="foot">Decision-support only. Confirm surveillance, series, corporate actions, next-session price/volume behavior, and risk before acting.</p></main><script>document.getElementById('search').addEventListener('input',e=>{const q=e.target.value.toLowerCase();document.querySelectorAll('tbody tr').forEach(r=>r.hidden=!r.textContent.toLowerCase().includes(q))})</script></body></html>`;
 
 await writeFile(`${dashboardPath}.tmp`, html);
@@ -1608,5 +1614,6 @@ console.log(JSON.stringify({
   myh: multiYearHighs.map(x => x.symbol).slice(0, 10),
   rsle_top5: rsleTop20.slice(0, 5).map(x => x.symbol),
   bse_overlay_count: bseOverlay.length,
-  rejected: rejected.length
+  rejected: result.rejected_count,
+  soft_rs_recovered: result.soft_rs_recovered_count
 }, null, 2));

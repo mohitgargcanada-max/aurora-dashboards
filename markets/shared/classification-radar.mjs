@@ -30,7 +30,20 @@ const text = value => {
   return String(value ?? "");
 };
 
-const number = (...values) => values.find(Number.isFinite);
+const number = (...values) => {
+  for (const value of values) {
+    if (Number.isFinite(value)) return value;
+    if (typeof value === "string" && value.trim() !== "") {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) return parsed;
+    }
+  }
+  return undefined;
+};
+const maxNumber = (...values) => {
+  const numbers = values.map(value => number(value)).filter(Number.isFinite);
+  return numbers.length ? Math.max(...numbers) : undefined;
+};
 const round = (value, digits = 2) => Number.isFinite(value) ? Number(value.toFixed(digits)) : null;
 
 function first(row, keys) {
@@ -61,8 +74,37 @@ function hardExcluded(row) {
     row.caution,
     row.data_state,
     row.rejection_reason,
-    row.reason
+    row.reason,
+    row.failed_gates
   ]));
+}
+
+function diagnosticNoteForReasons(reasons = []) {
+  return reasons.includes("RS21_RECLAIM") ? "RS21_RECLAIM_BUT_TRIFECTA_FAIL"
+    : reasons.includes("RS_RATING_GE_70") ? "RS_RATING_STRONG_TRIFECTA_FAIL"
+      : reasons.includes("RS_PERCENTILE_GE_80") ? "RS_PERCENTILE_STRONG_TRIFECTA_FAIL"
+        : reasons.some(reason => reason.startsWith("RRG_")) ? "RRG_IMPROVING_TRIFECTA_FAIL"
+          : reasons.includes("RS_HORIZON_ACCELERATING") ? "RS_HORIZON_ACCELERATING_TRIFECTA_FAIL"
+            : reasons.includes("MANSFIELD_IMPROVING") ? "MANSFIELD_IMPROVING_TRIFECTA_FAIL"
+              : reasons.includes("RSNH_BEFORE_PRICE") ? "RSNH_BEFORE_PRICE_TRIFECTA_FAIL"
+                : "RS_CONFIRMATION_PENDING";
+}
+
+function rejectionReasonTokens(row = {}) {
+  const raw = text([
+    row.rejection_reason,
+    row.reason,
+    row.failed_gate,
+    row.failed_gates,
+    row.data_repair_reason
+  ]).toUpperCase();
+  return raw.split(/[,;|]+|\s{2,}/).map(x => x.trim()).filter(Boolean);
+}
+
+function isSoftTrifectaOnlyReject(row = {}) {
+  const tokens = rejectionReasonTokens(row);
+  if (!tokens.length) return false;
+  return tokens.every(token => /^(RS[_\s-]*TRIFECTA.*(NOT[_\s-]*PASS|FAIL)|TRIFECTA.*(NOT[_\s-]*PASS|FAIL)|RS_CONFIRMATION_PENDING)$/.test(token));
 }
 
 export function normalizeClassification(row = {}, { market = row.market || "" } = {}) {
@@ -100,18 +142,20 @@ export function applyCrossMarketClassification(rows = [], context = {}) {
 
 export function earlyRsEvidence(row = {}) {
   const reasons = [];
-  if (number(row.rs_rating, row.rs_score_pct, row.rs_short_rating) >= 70) reasons.push("RS_RATING_GE_70");
-  const rs21 = text(first(row, ["rs21_state", "rs_ema21", "rs21"]));
+  if (maxNumber(row.rs_rating, row.rs_score_pct, row.rs_short_rating, row.ibd_rs_rating_1_99) >= 70) reasons.push("RS_RATING_GE_70");
+  if (maxNumber(row.rs_1w_percentile, row.rs_1m_percentile, row.rs_3m_percentile, row.rs_1w_pctile, row.rs_1m_pctile, row.rs_3m_pctile) >= 80) reasons.push("RS_PERCENTILE_GE_80");
+  const rs21 = text(first(row, ["rs21_state", "rs_ema21", "rs21"])).toUpperCase();
   if ([...RS21_EARLY].some(label => rs21.includes(label))) reasons.push(rs21.includes("RECLAIM") ? "RS21_RECLAIM" : "RS21_CONSTRUCTIVE");
-  const horizon = text(first(row, ["rs_horizon_state", "rs_1w_state", "rs_1m_state", "rs_3m_state"]));
+  const horizon = text(first(row, ["rs_horizon_state", "rs_1w_state", "rs_1m_state", "rs_3m_state"])).toUpperCase();
   if ([...RS_HORIZON_EARLY].some(label => horizon.includes(label))) reasons.push("RS_HORIZON_ACCELERATING");
-  const rrg = text(row.rrg?.quadrant || row.rrg_quadrant);
-  if (["IMPROVING", "LEADING"].includes(rrg)) reasons.push(`RRG_${rrg}`);
-  if (row.rsnh === true || row.rsnh63 === true || row.rsnh252 === true || row.rsnh_before_price === true) reasons.push("RSNH_BEFORE_PRICE");
+  const rrg = text(row.rrg?.quadrant || row.rrg_quadrant || row.stock_rrg_quadrant).toUpperCase();
+  if (rrg.includes("IMPROVING") || rrg.includes("LEADING")) reasons.push(`RRG_${rrg.includes("LEADING") ? "LEADING" : "IMPROVING"}`);
+  const statusText = text([row.setup_label, row.setup_status, row.status, row.rs_status, row.rsnh_status, row.scan_tags]).toUpperCase();
+  if (row.rsnh === true || row.rsnh63 === true || row.rsnh252 === true || row.rsnh_before_price === true || statusText.includes("RSNH_BEFORE_PRICE")) reasons.push("RSNH_BEFORE_PRICE");
   const mansfield = number(row.mansfield, row.mansfield_rs, row.mansfield_rs_value);
-  if (mansfield > 0 || /POSITIVE|RISING/i.test(text(row.mansfield_rs_state))) reasons.push("MANSFIELD_IMPROVING");
+  if (mansfield > 0 || /POSITIVE|RISING/i.test(text([row.mansfield_rs_state, row.mansfield_state]))) reasons.push("MANSFIELD_IMPROVING");
   if (row.strong_rs_retention_status) reasons.push("PRIOR_STRONG_RS_RETENTION");
-  return reasons;
+  return [...new Set(reasons)];
 }
 
 export function applyRsTrifectaDiagnostic(row = {}) {
@@ -119,12 +163,7 @@ export function applyRsTrifectaDiagnostic(row = {}) {
   if (!/FAIL|NOT_PASS/.test(label)) return row;
   const reasons = earlyRsEvidence(row);
   if (!reasons.length || hardExcluded(row)) return row;
-  const note = reasons.includes("RS21_RECLAIM") ? "RS21_RECLAIM_BUT_TRIFECTA_FAIL"
-    : reasons.includes("RS_RATING_GE_70") ? "RS_RATING_STRONG_TRIFECTA_FAIL"
-      : reasons.some(reason => reason.startsWith("RRG_")) ? "RRG_IMPROVING_TRIFECTA_FAIL"
-        : reasons.includes("RS_HORIZON_ACCELERATING") ? "RS_HORIZON_ACCELERATING_TRIFECTA_FAIL"
-          : reasons.includes("MANSFIELD_IMPROVING") ? "MANSFIELD_IMPROVING_TRIFECTA_FAIL"
-            : "RS_CONFIRMATION_PENDING";
+  const note = diagnosticNoteForReasons(reasons);
   row.rs_trifecta_diagnostic_note = note;
   row.rejection_reason = row.rejection_reason === "RS_TRIFECTA_NOT_PASS" ? "RS_CONFIRMATION_PENDING" : row.rejection_reason;
   row.current_gate = row.current_gate || note;
@@ -144,12 +183,20 @@ export function applyMyhLaneFields(row = {}) {
   const level = number(row.myh_breakout_level, row.myh_level, row.myh_target_level);
   const distance = number(row.myh_retest_distance_pct, row.myh_gap_pct);
   const retestAnchor = first(row, ["myh_retest_anchor", "support_retest_anchor", "ma_character_primary"]);
-  const state = text(row.myh_status || row.myh_state || row.myh_label);
-  let status = state.includes("MYH_NEAR_HIGH") ? "MYH_APPROACHING"
+  const state = text(row.myh_status || row.myh_state || row.myh_label).toUpperCase();
+  const hasMyhEvidence = Boolean(state) || Number.isFinite(level) || Number.isFinite(distance) || Number.isFinite(breakoutBars) || Boolean(retestAnchor);
+  if (!hasMyhEvidence) {
+    row.myh_status = row.myh_status ?? null;
+    row.myh_next_condition ??= null;
+    return row;
+  }
+  const approachingBandPct = number(row.myh_approaching_band_pct) ?? 8;
+  const nearHigh = state.includes("MYH_NEAR_HIGH") || state.includes("MYH_APPROACHING") || (Number.isFinite(distance) && distance >= 0 && distance <= approachingBandPct);
+  let status = nearHigh ? "MYH_APPROACHING"
     : state.includes("BREAKOUT_FAILED") ? "MYH_FAILED_BREAKOUT_REPAIR"
       : state.includes("BREAKOUT_CONFIRMED") ? "MYH_BREAKOUT_CONFIRMING"
         : row.axm_risk === "AXM_NO_CHASE" ? "MYH_EXTENDED_NO_CHASE"
-          : row.myh_status || "MYH_APPROACHING";
+          : row.myh_status || null;
   if (Number.isFinite(breakoutBars) && breakoutBars >= 1 && breakoutBars <= 20 && Number.isFinite(level) && Number.isFinite(distance) && Math.abs(distance) <= 6 && retestAnchor && earlyRsEvidence(row).length && !hardExcluded(row)) {
     status = "MYH_BREAKOUT_RETEST";
   }
@@ -162,7 +209,42 @@ export function applyMyhLaneFields(row = {}) {
     ? "Watch for constructive retest close with visible tactical stop; radar only unless normal AURORA gates promote it."
     : "Needs normal AURORA confirmation before promotion.";
   if (status === "MYH_BREAKOUT_RETEST") addMembership(row, "MYH_BREAKOUT_RETEST");
+  if (status === "MYH_APPROACHING") addMembership(row, "MYH_APPROACHING");
   return row;
+}
+
+export function splitRejectedForRadarVisibility({ rows = [], rejected = [], market = "", dataAsOf = null } = {}) {
+  const rowsBySymbol = new Map(rows.map(row => [symbolOf(row), row]).filter(([symbol]) => symbol));
+  const cleanRejected = [];
+  const recovered = [];
+  for (const item of rejected) {
+    const source = rowsBySymbol.get(symbolOf(item)) || item;
+    const reasons = earlyRsEvidence(source);
+    if (!isSoftTrifectaOnlyReject(item) || !reasons.length || hardExcluded(source) || hardExcluded(item)) {
+      cleanRejected.push(item);
+      continue;
+    }
+    applyRsTrifectaDiagnostic(source);
+    const note = diagnosticNoteForReasons(reasons);
+    source.rs_trifecta_diagnostic_note ||= note;
+    source.rejection_reason = "RS_CONFIRMATION_PENDING";
+    source.current_gate ||= note;
+    source.radar_reason ||= note;
+    source.data_as_of ||= dataAsOf;
+    addMembership(source, "SOFT_RS_REJECT_RECOVERED");
+    addMembership(source, "AURORA_RADAR_UNIVERSE");
+    recovered.push({
+      ...source,
+      market: normalizeClassification(source, { market }).market || market || source.market || null,
+      soft_reject_recovery_reason: reasons.join(", "),
+      original_rejection_reason: item.rejection_reason || item.reason || null
+    });
+  }
+  return {
+    rejected: cleanRejected,
+    softRsRecoveredRows: recovered,
+    soft_rs_recovered_count: recovered.length
+  };
 }
 
 export function buildMyhBreakoutRetestRows(rows = [], { limit = 50 } = {}) {
