@@ -61,6 +61,24 @@ The default mode is `off`. Scheduled runs remain off because active-ledger popul
 
 This integration does not fetch market data, run scans, change AURORA logic, or create buy/sell signals. Diagnostic labels never become final buckets. Real ledger population should be done only after dry-run review.
 
+## Workflow guarded modes
+
+Workflow choice values for `market_cache_mode` and `active_ledger_mode` must stay quoted strings: `"off"`, `"dry-run"`, and `"apply"`.
+
+The default remains `"off"`. Scheduled runs stay default-safe. Dry-run writes nothing and pushes nothing. Apply requires an explicit manual dispatch selection and the existing guarded secrets where applicable.
+
+## Manual dry-run report
+
+Use `run-active-ledger-dry-run-report.mjs` before any apply run to inspect what ledger population would do:
+
+```bash
+node scripts/active-ledger/run-active-ledger-dry-run-report.mjs --all --as-of YYYY-MM-DD
+```
+
+The report command never applies ledger changes, never runs workflows, and never calls providers. It prints JSON to stdout by default. `--out` is optional and writes only to an explicit safe report path; cache directories, dashboard data directories, and dashboard HTML artifacts are rejected.
+
+If a scan file is absent, the relevant market reports `SCAN_FILE_MISSING`. Add `--strict` to fail on missing or invalid inputs. PR #30 external JSON export comparison work remains separate from this ledger dry-run report flow.
+
 ## Validation
 
 Validate all committed ledgers:
