@@ -1,0 +1,18 @@
+{
+  "schema_version": "aurora_dashboard_latest_v1",
+  "market": "US",
+  "dashboard_version": null,
+  "data_as_of": "2026-06-29",
+  "completed_session": "2026-06-29",
+  "run_type": "WEEKDAY_EOD_UPDATE",
+  "run_mode": "WEEKDAY_EOD_UPDATE",
+  "generated_at": "2026-06-30T02:14:58.684Z",
+  "scan_url": "./us-full-dashboard-scan.json",
+  "dashboard_url": "../index.html",
+  "notes": [
+    "Machine-readable dashboard export only",
+    "No scanner behavior changed",
+    "No external report data included",
+    "No email data included"
+  ]
+}
