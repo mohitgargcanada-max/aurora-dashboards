@@ -25,6 +25,15 @@ on:
         description: "Snapshot id: latest, YYYY-WW, or YYYY-MM"
         required: false
         default: "latest"
+      active_ledger_mode:
+        description: "Active tracking ledger population mode"
+        required: false
+        default: "off"
+        type: choice
+        options:
+          - off
+          - dry-run
+          - apply
   schedule:
     - cron: "30 3 * * 1-5"
 
@@ -113,6 +122,34 @@ jobs:
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
         run: bash scripts/run-market.sh india
+
+      - name: Populate India active tracking ledger
+        if: success() && github.event_name == 'workflow_dispatch'
+        run: |
+          MODE="${{ github.event.inputs.active_ledger_mode || 'off' }}"
+
+          if [ "$MODE" = "off" ]; then
+            echo "Active ledger population disabled."
+            exit 0
+          fi
+
+          AS_OF="$(date -u +%F)"
+
+          if [ "$MODE" = "apply" ]; then
+            node scripts/active-ledger/populate-active-tracking-ledger.mjs \
+              --market india \
+              --ledger markets/india/dashboard/state/active-tracking-ledger.json \
+              --scan-file markets/india/dashboard/data/india-full-dashboard-scan.json \
+              --as-of "$AS_OF" \
+              --apply
+          else
+            node scripts/active-ledger/populate-active-tracking-ledger.mjs \
+              --market india \
+              --ledger markets/india/dashboard/state/active-tracking-ledger.json \
+              --scan-file markets/india/dashboard/data/india-full-dashboard-scan.json \
+              --as-of "$AS_OF" \
+              --dry-run
+          fi
 
       - name: Back up India market cache
         if: success() && (github.event_name != 'schedule' || env.RUN_INDIA_DASHBOARD == '1')

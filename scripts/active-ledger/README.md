@@ -53,6 +53,14 @@ This source/test PR does not populate real ledgers. It reads existing dashboard 
 
 Diagnostic labels never become final buckets. MFH/FOMO remains context-only and does not alter candidate inclusion, ranking, buckets, sell signals, or AURORA logic.
 
+## Workflow integration
+
+US, India, and Canada dashboard workflows expose manual `workflow_dispatch` input `active_ledger_mode` with `off`, `dry-run`, and `apply`.
+
+The default mode is `off`. Scheduled runs remain off because active-ledger population steps run only for manual `workflow_dispatch` runs. Dry-run reads the existing scan JSON and ledger, prints the population summary, and writes nothing. Apply requires explicit manual selection and writes only the per-market ledger path.
+
+This integration does not fetch market data, run scans, change AURORA logic, or create buy/sell signals. Diagnostic labels never become final buckets. Real ledger population should be done only after dry-run review.
+
 ## Validation
 
 Validate all committed ledgers:

@@ -43,6 +43,15 @@ on:
         description: "Snapshot id: latest, YYYY-WW, or YYYY-MM"
         required: false
         default: "latest"
+      active_ledger_mode:
+        description: "Active tracking ledger population mode"
+        required: false
+        default: "off"
+        type: choice
+        options:
+          - off
+          - dry-run
+          - apply
   schedule:
     - cron: "0 13 * * 1-5"
     - cron: "0 14 * * 1-5"
@@ -232,6 +241,34 @@ jobs:
           npm --prefix markets/canada/dashboard run cache:audit:indices
           npm --prefix markets/canada/dashboard run scan:full
           npm --prefix markets/canada/dashboard run scan:weekday
+
+      - name: Populate Canada active tracking ledger
+        if: success() && github.event_name == 'workflow_dispatch'
+        run: |
+          MODE="${{ github.event.inputs.active_ledger_mode || 'off' }}"
+
+          if [ "$MODE" = "off" ]; then
+            echo "Active ledger population disabled."
+            exit 0
+          fi
+
+          AS_OF="$(date -u +%F)"
+
+          if [ "$MODE" = "apply" ]; then
+            node scripts/active-ledger/populate-active-tracking-ledger.mjs \
+              --market canada \
+              --ledger markets/canada/dashboard/state/active-tracking-ledger.json \
+              --scan-file markets/canada/dashboard/data/canada-full-dashboard-scan.json \
+              --as-of "$AS_OF" \
+              --apply
+          else
+            node scripts/active-ledger/populate-active-tracking-ledger.mjs \
+              --market canada \
+              --ledger markets/canada/dashboard/state/active-tracking-ledger.json \
+              --scan-file markets/canada/dashboard/data/canada-full-dashboard-scan.json \
+              --as-of "$AS_OF" \
+              --dry-run
+          fi
 
       - name: Back up Canada market cache
         if: success() && (github.event_name != 'schedule' || env.RUN_CANADA_DASHBOARD == '1')
