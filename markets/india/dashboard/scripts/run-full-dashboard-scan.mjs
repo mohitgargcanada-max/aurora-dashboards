@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { latestCompletedIndiaSession } from "../engine/trading-calendar.mjs";
 import { auditIndexRecords, deriveExpectedCompletedSession, INDIA_PROVIDER_ROUTE, rejectionReasonCounts } from "../engine/freshness-guard.mjs";
 import { buildMarketConfirmationStack, buildMaRespectWatchlists, buildMyhApproachingRows } from "../../../shared/market-confirmation-and-ma-respect.mjs";
+import { buildAuroraRadarUniverse, buildMyhBreakoutRetestRows, buildRrgHierarchy, buildStrongRsRetention, enrichRadarVisibility } from "../../../shared/classification-radar.mjs";
 import { applyPatternQualityExecutionCap } from "../../../shared/pattern-quality-execution-cap.mjs";
 import { buildWeeklyUniverseForMode, parseScanArgs, resolveScanMode, runLightweightFullUniverseDiscovery, scanRunMetadata } from "../../../shared/scan-orchestration.mjs";
 
@@ -1162,6 +1163,7 @@ const marketConfirmation = buildMarketConfirmationStack(marketContext, {
   bars: benchmarkRecord.bars
 });
 
+enrichRadarVisibility(rows, { market: "INDIA" });
 for (const row of rows) row.user_note = userNote(row);
 const maRespect = buildMaRespectWatchlists(rows, { mutateRows: true });
 const myhApproaching = buildMyhApproachingRows(rows, { mutateRows: true });
@@ -1229,6 +1231,35 @@ const basePivots = rows.filter(x => ["BASEPIVOT_QUALITY_A", "BASEPIVOT_QUALITY_B
 const rmvpEntries = rows.filter(x => ["RMVP_QUALITY_A", "RMVP_QUALITY_B"].includes(x.rmvp_quality) || x.setup_label === "RMVP_EARLY_ENTRY").slice(0, 25);
 const volumeSignatures = rows.filter(x => ["A", "B"].includes(x.ve2_pattern_volume_grade)).slice(0, 25);
 const noChase = rows.filter(x => x.setup_label === "NO_CHASE_RISK").slice(0, 25);
+const myhBreakoutRetests = buildMyhBreakoutRetestRows(rows).slice(0, 25);
+const strongRsRetention = buildStrongRsRetention(rows, {
+  sourceLists: { weeklyUniverse, focusList, dailyTop, rsleTop20, developing20, nearRsHigh, myhApproaching: myhApproaching.myh_approaching_rows },
+  retentionWindow: 20
+});
+const auroraRadarUniverse = buildAuroraRadarUniverse({
+  market: "INDIA",
+  dataAsOf: expectedSession,
+  lists: {
+    WEEKLY_UNIVERSE: weeklyUniverse,
+    WEEKLY_FOCUS: focusList,
+    DAILY_TOP_1_4: dailyTop,
+    RSLE_TOP_20: rsleTop20,
+    DEVELOPING_WATCHLIST: developing20,
+    NEAR_RS_HIGH: nearRsHigh,
+    MYH_APPROACHING: myhApproaching.myh_approaching_rows,
+    MYH_BREAKOUT_RETEST: myhBreakoutRetests,
+    MA10_RESPECT: maRespect.ema10_respect_rows,
+    MA21_RESPECT: maRespect.ema21_respect_rows,
+    MA50_RESPECT: maRespect.sma50_respect_rows,
+    PBX_PULLBACK: pullbacks,
+    BASEPIVOT: basePivots,
+    RMVP: rmvpEntries,
+    NO_CHASE_RISK: noChase,
+    STRONG_RS_RETENTION: strongRsRetention
+  },
+  allCandidates: rows
+});
+const rrgHierarchy = buildRrgHierarchy(rows, { minDenominator: 3 });
 const rejectionCounts = rejectionReasonCounts(rejected);
 const latestDataAsOf = featureRows.map(x => x.data_as_of).filter(Boolean).sort().at(-1) || expectedSession;
 const runMetadata = scanRunMetadata({
@@ -1272,8 +1303,14 @@ const result = {
   developing_watchlist_20: developing20,
   bse_exclusive_overlay_20: bseOverlay,
   stock_sector_theme_leadership: stockSectorThemeRows,
+  industry_group_rrg: rrgHierarchy.industry_group,
+  industry_rrg: rrgHierarchy.industry,
+  sub_industry_rrg: rrgHierarchy.sub_industry,
+  aurora_radar_universe: auroraRadarUniverse,
+  strong_rs_retention: strongRsRetention,
   near_rs_high: nearRsHigh,
   myh_approaching: myhApproaching.myh_approaching_rows,
+  myh_breakout_retest: myhBreakoutRetests,
   multi_year_highs: multiYearHighs,
   ma10_respect: maRespect.ema10_respect_rows,
   ma21_respect: maRespect.ema21_respect_rows,
@@ -1354,7 +1391,7 @@ const sectorRrgRead = state => ({
 })[state] || "Sector context unavailable; do not infer.";
 const sectorCell = x => {
   const state = sectorRrgState(x);
-  return `Theme: ${escape(x.aurora_theme || "UNMAPPED_REVIEW")}<small>Sector: ${escape(x.gics_sector || "UNMAPPED_REVIEW")}</small><small>Industry: ${escape(x.main_industry || x.sub_industry || x.industry || "UNKNOWN")}</small><small>Sector RRG: ${escape(state)}</small><small>Read: ${escape(sectorRrgRead(state))}</small><small>${escape(x.sector_mapping_confidence || "LOW")} confidence</small>`;
+  return `Theme: ${escape(x.aurora_theme || "UNMAPPED_REVIEW")}<small>Sector: ${escape(x.gics_sector_name || x.gics_sector || "UNMAPPED_REVIEW")}</small><small>Sub-Industry: ${escape(x.gics_sub_industry_name || x.main_industry || x.sub_industry || x.industry || "UNKNOWN")}</small><small>Native: ${escape(x.market_native_sector || "UNKNOWN")} / ${escape(x.market_native_industry || "UNKNOWN")}</small><small>Sector RRG: ${escape(state)}</small><small>Read: ${escape(sectorRrgRead(state))}</small><small>${escape(x.gics_classification_confidence || x.sector_mapping_confidence || "LOW")} confidence</small>`;
 };
 const setupCell = x => `<span class="status ${escape(x.setup_label)}">${escape(x.setup_label)}</span><small>${escape(x.execution_permission ?? x.entry_permission)}</small>`;
 const rsCell = x => `${num(x.rs_rating, 0)}<small>1W ${num(x.rs_1w_rel)}% · 1M ${num(x.rs_1m_rel)}% · 3M ${num(x.rs_3m_rel)}%</small><small>${escape(x.rs21_state)} · ${escape(x.rs_trifecta_label)}</small>`;
@@ -1406,6 +1443,35 @@ const stockSectorThemeFields = [
   ["Developing", x => num(x.developing_count, 0)],
   ["Weighted Presence", x => num(x.total_presence, 0)],
   ["Symbols", x => escape(x.symbols)]
+];
+const rrgHierarchyFields = [
+  ["Level", x => escape(x.level)],
+  ["Name", x => `<strong>${escape(x.name)}</strong>`],
+  ["Denominator", x => num(x.denominator, 0)],
+  ["Valid RRG", x => num(x.valid_rrg_denominator, 0)],
+  ["Confidence", x => escape(x.confidence)],
+  ["Ratio", x => num(x.rrg_ratio)],
+  ["Momentum", x => num(x.rrg_momentum)],
+  ["Symbols", x => escape(x.symbols)]
+];
+const radarFields = [
+  ["Symbol", x => `<strong>${escape(x.symbol)}</strong><small>${escape(x.company_name || "")}</small>`],
+  ["Market", x => escape(x.market)],
+  ["Theme / Sub-Industry", x => `${escape(x.aurora_theme)}<small>${escape(x.gics_sub_industry_name)}</small>`],
+  ["Radar Reason", x => escape(x.radar_reason)],
+  ["Memberships", x => escape((x.scan_memberships || []).join(", "))],
+  ["Current Gate", x => escape(x.current_gate)],
+  ["Next", x => escape(x.next_condition)],
+  ["Confidence", x => escape(x.classification_confidence)]
+];
+const retentionFields = [
+  ["Symbol", x => `<strong>${escape(x.symbol)}</strong><small>${escape(x.company_name || "")}</small>`],
+  ["Status", x => escape(x.strong_rs_retention_status)],
+  ["Reason", x => escape(x.retention_reason)],
+  ["Last Seen", x => `${escape(x.last_seen_list)}<small>${escape(x.last_seen_date || "")}</small>`],
+  ["Score", x => num(x.rs_retention_score, 0)],
+  ["Current Gate", x => escape(x.current_gate)],
+  ["Next", x => escape(x.next_condition)]
 ];
 const marketFields = [
   ["Field", x => escape(x.field)],
@@ -1496,7 +1562,7 @@ const howToReadHtml = `<h2 id="guide">How to read this dashboard</h2><div class=
 </tbody></table></div>`;
 
 const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AURORA India Unified Dashboard</title><style>
-:root{--ink:#17201c;--muted:#66716b;--paper:#f7f8f5;--panel:#fff;--line:#d9ddd7;--green:#146b45;--greenbg:#e8f4ed;--amber:#895b00;--amberbg:#fff3d4;--red:#9b2f2f;--redbg:#fae9e7;--blue:#195a78;--bluebg:#e6f2f7}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.45 Inter,Arial,sans-serif}header.hero{background:#153f2d;color:white;padding:22px 28px;border-bottom:4px solid #d8ad42}.hero h1{margin:0;font-size:26px}.hero p{margin:5px 0 0;color:#deebe3}.nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.nav a{color:white;text-decoration:none;border:1px solid #72917f;padding:6px 10px;border-radius:4px}.wrap{padding:20px 28px 42px}.summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.metric{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px}.metric b{display:block;font-size:17px;margin-top:4px}.metric small,td small{display:block;color:var(--muted);margin-top:3px}h2{font-size:19px;margin:28px 0 10px}.notice{background:var(--amberbg);border-left:4px solid #c38b16;padding:10px 12px;border-radius:4px}.goodnote{background:var(--greenbg);border-left:4px solid var(--green);padding:10px 12px;border-radius:4px}.table-wrap{overflow-x:auto;overflow-y:auto;max-height:70vh;position:relative;border:1px solid var(--line);background:white;border-radius:6px}table{border-collapse:collapse;width:100%;min-width:1660px}th,td{text-align:left;vertical-align:top;padding:8px 9px;border-bottom:1px solid var(--line);font-size:12px}th{background:#edf1ec;position:sticky;top:0;z-index:2;white-space:nowrap}.status{display:inline-block;padding:3px 6px;border-radius:4px;font-size:11px;font-weight:700;background:var(--bluebg);color:var(--blue);white-space:nowrap}.TRIGGER_READY,.STANDARD_ENTRY{color:var(--green);background:var(--greenbg)}.PULLBACK,.COMPRESSION,.RMVP_EARLY_ENTRY,.RS21_RECLAIM_ENTRY{color:var(--blue);background:var(--bluebg)}.NO_CHASE_RISK{color:var(--red);background:var(--redbg)}input{padding:8px;border:1px solid var(--line);border-radius:4px;min-width:260px}.foot{color:var(--muted);margin-top:18px}@media(max-width:900px){.summary{grid-template-columns:1fr 1fr}.wrap{padding:16px}header.hero{padding:18px}table{min-width:1280px}}</style></head><body><header class="hero"><h1>AURORA India Unified Dashboard</h1><p>Full local scan · Completed session ${escape(expectedSession)} · NSE core + BSE-exclusive overlay · Free-first cache only</p><nav class="nav"><a href="#market">Market</a><a href="#guide">Column Guide</a><a href="#weekly">Weekly Universe</a><a href="#focus">Focus</a><a href="#top">Daily Top</a><a href="#rsle">RSLE Top 20</a><a href="#developing">Developing 20</a><a href="#bse">BSE Overlay</a><a href="#rrg">RRG</a><a href="#stocksectors">Theme Leadership</a><a href="#rrglegend">RRG Map</a><a href="#rshigh">Near RS High</a><a href="#myh-approaching">MYH Approaching</a><a href="#myh">Multi-Year High</a><a href="#ma10">10EMA Respect</a><a href="#ma21">21EMA Respect</a><a href="#ma50">50SMA Respect</a><a href="#pullbacks">PBX Pullback</a><a href="#basepivots">BasePivot</a><a href="#rmvp">RMVP</a><a href="#ve2">VE2 Volume</a><a href="#compression">Compression</a><a href="#risk">No-Chase</a><a href="#sell-extension">Sell / Extension</a><a href="#rejected">Rejected/Data Repair</a><a href="#provenance">Provenance</a></nav></header><main class="wrap">
+:root{--ink:#17201c;--muted:#66716b;--paper:#f7f8f5;--panel:#fff;--line:#d9ddd7;--green:#146b45;--greenbg:#e8f4ed;--amber:#895b00;--amberbg:#fff3d4;--red:#9b2f2f;--redbg:#fae9e7;--blue:#195a78;--bluebg:#e6f2f7}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.45 Inter,Arial,sans-serif}header.hero{background:#153f2d;color:white;padding:22px 28px;border-bottom:4px solid #d8ad42}.hero h1{margin:0;font-size:26px}.hero p{margin:5px 0 0;color:#deebe3}.nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.nav a{color:white;text-decoration:none;border:1px solid #72917f;padding:6px 10px;border-radius:4px}.wrap{padding:20px 28px 42px}.summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.metric{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px}.metric b{display:block;font-size:17px;margin-top:4px}.metric small,td small{display:block;color:var(--muted);margin-top:3px}h2{font-size:19px;margin:28px 0 10px}.notice{background:var(--amberbg);border-left:4px solid #c38b16;padding:10px 12px;border-radius:4px}.goodnote{background:var(--greenbg);border-left:4px solid var(--green);padding:10px 12px;border-radius:4px}.table-wrap{overflow-x:auto;overflow-y:auto;max-height:70vh;position:relative;border:1px solid var(--line);background:white;border-radius:6px}table{border-collapse:collapse;width:100%;min-width:1660px}th,td{text-align:left;vertical-align:top;padding:8px 9px;border-bottom:1px solid var(--line);font-size:12px}th{background:#edf1ec;position:sticky;top:0;z-index:2;white-space:nowrap}.status{display:inline-block;padding:3px 6px;border-radius:4px;font-size:11px;font-weight:700;background:var(--bluebg);color:var(--blue);white-space:nowrap}.TRIGGER_READY,.STANDARD_ENTRY{color:var(--green);background:var(--greenbg)}.PULLBACK,.COMPRESSION,.RMVP_EARLY_ENTRY,.RS21_RECLAIM_ENTRY{color:var(--blue);background:var(--bluebg)}.NO_CHASE_RISK{color:var(--red);background:var(--redbg)}input{padding:8px;border:1px solid var(--line);border-radius:4px;min-width:260px}.foot{color:var(--muted);margin-top:18px}@media(max-width:900px){.summary{grid-template-columns:1fr 1fr}.wrap{padding:16px}header.hero{padding:18px}table{min-width:1280px}}</style></head><body><header class="hero"><h1>AURORA India Unified Dashboard</h1><p>Full local scan · Completed session ${escape(expectedSession)} · NSE core + BSE-exclusive overlay · Free-first cache only</p><nav class="nav"><a href="#market">Market</a><a href="#guide">Column Guide</a><a href="#weekly">Weekly Universe</a><a href="#focus">Focus</a><a href="#top">Daily Top</a><a href="#rsle">RSLE Top 20</a><a href="#developing">Developing 20</a><a href="#bse">BSE Overlay</a><a href="#rrg">RRG</a><a href="#stocksectors">Theme Leadership</a><a href="#industry-rrg">Industry RRG</a><a href="#radar">Radar</a><a href="#retention">Strong RS Retention</a><a href="#rrglegend">RRG Map</a><a href="#rshigh">Near RS High</a><a href="#myh-approaching">MYH Approaching</a><a href="#myh-retest">MYH Retest</a><a href="#myh">Multi-Year High</a><a href="#ma10">10EMA Respect</a><a href="#ma21">21EMA Respect</a><a href="#ma50">50SMA Respect</a><a href="#pullbacks">PBX Pullback</a><a href="#basepivots">BasePivot</a><a href="#rmvp">RMVP</a><a href="#ve2">VE2 Volume</a><a href="#compression">Compression</a><a href="#risk">No-Chase</a><a href="#sell-extension">Sell / Extension</a><a href="#rejected">Rejected/Data Repair</a><a href="#provenance">Provenance</a></nav></header><main class="wrap">
 <section class="summary"><div class="metric">Run state<b>FULL_LOCAL_SCAN</b><small>No paid API calls</small></div><div class="metric">Session<b>${escape(expectedSession)}</b><small>latest completed bar</small></div><div class="metric">Market Cycle<b>${escape(marketContext.oneil_style_market_label)}</b><small>${escape(marketContext.mc2_cycle_state)}</small></div><div class="metric">Daily Top<b>${dailyTop.length}</b><small>maximum four, no padding</small></div><div class="metric">Market Permission<b>${escape(marketContext.final_market_permission)}</b><small>${escape(marketContext.market_dimmer_label)}</small></div><div class="metric">3-System<b>${escape(marketConfirmation.market_confirmation_state)}</b><small>${escape(marketConfirmation.benchmark_rs21_state)} · ${escape(marketConfirmation.benchmark_weinstein_stage)}</small></div></section>
 <h2 id="market">Market Summary Strength Stack</h2><p class="goodnote">Benchmark: NIFTY500 via cached index history. Market context is recalculated every scan using AURORA-MC2 plus an O'Neil-style user-facing cycle label. Unknown inputs receive conservative partial score, not a silent upgrade.</p><div class="table-wrap"><table><thead><tr>${marketFields.map(([label]) => `<th>${label}</th>`).join("")}</tr></thead><tbody>${rowsHtml(marketRows, marketFields)}</tbody></table></div>
 ${howToReadHtml}
@@ -1510,9 +1576,13 @@ ${table("Developing Watchlist Next 20", "developing", developing20, "Names with 
 ${table("BSE-Exclusive Overlay", "bse", bseOverlay, "Short-history BSE-only discovery. Always tagged BSE_EXCLUSIVE_CAUTION; do not promote without liquidity, surveillance and fresh-bar confirmation.")}
 <h2 id="rrg">Sector and Theme RRG</h2><p class="notice">${sectorRrgCopy}</p><div class="table-wrap"><table><thead><tr>${sectorFields.map(([label]) => `<th>${label}</th>`).join("")}</tr></thead><tbody>${rowsHtml(result.sector_rrg, sectorFields)}</tbody></table></div>
 <h2 id="stocksectors">Stock Theme Leadership</h2><p class="notice">${stockThemeCopy} India examples: Auto Components, EMS / Electronics, Defence, Capital Markets, Energy / Infra, Pharma / CDMO.</p><div class="table-wrap"><table><thead><tr>${stockSectorThemeFields.map(([label]) => `<th>${label}</th>`).join("")}</tr></thead><tbody>${rowsHtml(result.stock_sector_theme_leadership, stockSectorThemeFields)}</tbody></table></div>
+<h2 id="industry-rrg">Industry Group / Industry / Sub-Industry RRG</h2><p class="notice">Hierarchy RRG is context only. Denominators below threshold show RRG_INSUFFICIENT_DENOMINATOR and cannot create or block an AURORA trade bucket.</p><div class="table-wrap"><table><thead><tr>${rrgHierarchyFields.map(([label]) => `<th>${label}</th>`).join("")}</tr></thead><tbody>${rowsHtml([...result.industry_group_rrg, ...result.industry_rrg, ...result.sub_industry_rrg], rrgHierarchyFields)}</tbody></table></div>
+<h2 id="radar">AURORA_RADAR_UNIVERSE</h2><p class="notice">Names-only visibility layer. Radar membership never expands Weekly Universe, Weekly Focus or Daily Top and contains no trade plan columns.</p><div class="table-wrap"><table><thead><tr>${radarFields.map(([label]) => `<th>${label}</th>`).join("")}</tr></thead><tbody>${rowsHtml(result.aurora_radar_universe, radarFields)}</tbody></table></div>
+<h2 id="retention">STRONG_RS_RETENTION</h2><p class="notice">Radar-only retention for strong RS leaders waiting for cleaner trigger, risk, pullback or repair. It does not create final buckets or promote names.</p><div class="table-wrap"><table><thead><tr>${retentionFields.map(([label]) => `<th>${label}</th>`).join("")}</tr></thead><tbody>${rowsHtml(result.strong_rs_retention, retentionFields)}</tbody></table></div>
 <h2 id="rrglegend">RRG Quadrant Map</h2><div class="table-wrap"><table><thead><tr>${rrgLegendFields.map(([label]) => `<th>${label}</th>`).join("")}</tr></thead><tbody>${rowsHtml(rrgLegendRows, rrgLegendFields)}</tbody></table></div>
 ${table("Near RS High", "rshigh", nearRsHigh.slice(0, 20), "Stocks whose RS line is within 1.5% of its recent RS high.")}
 ${table("AURORA-MYH Approaching / Multi-Year High", "myh-approaching", result.myh_approaching.slice(0, 20), "Approaching multi-year high is a leadership radar lane, not a standalone buy signal.")}
+${table("AURORA-MYH Breakout Retest", "myh-retest", result.myh_breakout_retest.slice(0, 20), "Prior MYH breakout now retesting a valid support anchor. Radar/watchlist only unless normal AURORA gates promote it.")}
 ${table("AURORA-MYH Multi-Year High", "myh", multiYearHighs.slice(0, 20), "AURORA-MYH leadership lane from the master scan: MYH_2Y / MYH_3Y / MYH_5Y with MYH_NEAR_HIGH, MYH_BREAKOUT_CONFIRMED, or MYH_BREAKOUT_FAILED. Requires enough retained history; not a standalone buy signal.")}
 ${table("Strong RS 10EMA Respect Watchlist", "ma10", result.ma10_respect.slice(0, 20), "Tracks high-momentum leaders repeatedly respecting 10EMA. Watchlist only.")}
 ${table("Strong RS 21EMA Respect Watchlist", "ma21", result.ma21_respect.slice(0, 20), "Tracks strong RS leaders defending or reclaiming 21EMA. Watchlist only.")}
