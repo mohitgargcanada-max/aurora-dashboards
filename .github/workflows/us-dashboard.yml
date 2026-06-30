@@ -9,9 +9,9 @@ on:
         default: "off"
         type: choice
         options:
-          - off
-          - dry-run
-          - apply
+          - "off"
+          - "dry-run"
+          - "apply"
       market_cache_snapshot:
         description: "Market cache snapshot type"
         required: false
@@ -31,9 +31,9 @@ on:
         default: "off"
         type: choice
         options:
-          - off
-          - dry-run
-          - apply
+          - "off"
+          - "dry-run"
+          - "apply"
   schedule:
     - cron: "0 13 * * 1-5"
     - cron: "0 14 * * 1-5"
