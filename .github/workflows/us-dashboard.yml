@@ -242,6 +242,10 @@ jobs:
               --dry-run
           fi
 
+      - name: Capture US dashboard run start
+        if: github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1'
+        run: echo "US_DASHBOARD_RUN_START_ISO=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+
       - name: Run US dashboard
         if: github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1'
         env:
@@ -265,6 +269,12 @@ jobs:
           else
             echo "US visual validation blocked or failed; dashboard generation still completed." >&2
           fi
+
+      - name: Validate US JSON export contract
+        if: success() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
+        run: |
+          cd markets/us/dashboard
+          node scripts/validate-json-export-contract.mjs --run-start-iso "$US_DASHBOARD_RUN_START_ISO"
 
       - name: Populate US active tracking ledger
         if: success() && github.event_name == 'workflow_dispatch'
@@ -415,8 +425,7 @@ jobs:
           NODE
 
       - name: Commit updated US outputs
-        if: always() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
-        continue-on-error: true
+        if: success() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -440,7 +449,7 @@ jobs:
           done
 
       - name: Prepare GitHub Pages artifact
-        if: always() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
+        if: success() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
         run: |
           test -s markets/us/AURORA_US_Dashboard.html
           rm -rf public
@@ -467,17 +476,17 @@ jobs:
           touch public/.nojekyll
 
       - name: Configure GitHub Pages
-        if: always() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
+        if: success() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
         uses: actions/configure-pages@v5
 
       - name: Upload GitHub Pages artifact
-        if: always() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
+        if: success() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
         uses: actions/upload-pages-artifact@v3
         with:
           path: public
 
       - name: Deploy GitHub Pages
-        if: always() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
+        if: success() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
         id: deployment
         uses: actions/deploy-pages@v4
 
