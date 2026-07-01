@@ -97,4 +97,21 @@ for (const bucket of [
   assert.ok(!finalBucketCopy.split(", ").includes(bucket), `review label must not be a final bucket: ${bucket}`);
 }
 
+const sectionsIndex = rendererSource.indexOf("const sections = state.sections || {};");
+assert.ok(sectionsIndex >= 0, "renderer must initialize sections");
+
+for (const marker of [
+  "sections.rejected_data_repair",
+  "sections.industry_group_rrg",
+  "sections.industry_rrg",
+  "sections.sub_industry_rrg",
+  "sections.aurora_radar_universe",
+  "sections.strong_rs_retention",
+  "sections.myh_breakout_retest"
+]) {
+  const markerIndex = rendererSource.indexOf(marker);
+  assert.ok(markerIndex >= 0, `renderer missing section usage: ${marker}`);
+  assert.ok(sectionsIndex < markerIndex, `sections must initialize before ${marker}`);
+}
+
 console.log("US UI copy tests passed.");
