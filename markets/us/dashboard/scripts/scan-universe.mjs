@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { marketDimmer, weeklyWatchlistScore } from "../engine/aurora.mjs";
 import { loadSymbol } from "../engine/cache-store.mjs";
+import { buildAuroraRadarUniverse, buildMyhBreakoutRetestRows, buildRrgHierarchy, buildStrongRsRetention, enrichRadarVisibility, splitRejectedForRadarVisibility } from "../../../shared/classification-radar.mjs";
 import { buildMarketConfirmationStack, buildMaRespectWatchlists, buildMyhApproachingRows } from "../../../shared/market-confirmation-and-ma-respect.mjs";
 import { applyPatternQualityExecutionCap } from "../../../shared/pattern-quality-execution-cap.mjs";
 import { buildWeeklyUniverseForMode, parseScanArgs, resolveScanMode, runLightweightFullUniverseDiscovery, scanRunMetadata } from "../../../shared/scan-orchestration.mjs";
@@ -381,7 +382,7 @@ for (const candidate of candidates) {
   if (weeklySymbols.has(candidate.ticker)) candidate.universe_route = "WEEKLY_UNIVERSE";
   else if (candidate.data_state.startsWith("PARTIAL") || candidate.data_state.startsWith("UNKNOWN")) candidate.universe_route = "DATA_REPAIR";
   else if (candidate.bucket === "AVOID_FRESH_LONG" || candidate.stage === "STAGE_4") candidate.universe_route = "REJECTED";
-  else if (candidate.scan_memberships.length && ((candidate.weekly_watchlist_score >= 60 && failed.length <= 3) || (failed.length <= 2 && candidate.scan_memberships.includes("S01_52W_HIGH") && candidate.scan_memberships.includes("S22_RS_LINE_NEW_HIGH")))) candidate.universe_route = "NEAR_WATCHLIST";
+  else if ((candidate.scan_memberships || []).length && ((candidate.weekly_watchlist_score >= 60 && failed.length <= 3) || (failed.length <= 2 && (candidate.scan_memberships || []).includes("S01_52W_HIGH") && (candidate.scan_memberships || []).includes("S22_RS_LINE_NEW_HIGH")))) candidate.universe_route = "NEAR_WATCHLIST";
   else if (candidate.scan_memberships.length) candidate.universe_route = "SCANNER_CANDIDATE";
   else candidate.universe_route = "REJECTED";
 }
@@ -450,8 +451,42 @@ const marketConfirmation = buildMarketConfirmationStack({
   benchmark_rs21_state: spyCloses.at(-1) > spyE21 ? "BENCHMARK_RS21_HOLDING" : "BENCHMARK_RS21_BELOW",
   bars: spy
 });
+enrichRadarVisibility(candidates, { market: "US" });
 const maRespect = buildMaRespectWatchlists(candidates, { mutateRows: true });
 const myhApproaching = buildMyhApproachingRows(candidates, { mutateRows: true });
+const myhBreakoutRetests = buildMyhBreakoutRetestRows(candidates).slice(0, 25);
+const rejectedSplit = splitRejectedForRadarVisibility({
+  rows: candidates,
+  rejected: candidates.filter(x => ["REJECTED", "DATA_REPAIR"].includes(x.universe_route)),
+  market: "US",
+  dataAsOf: asOf
+});
+const cleanedRejected = rejectedSplit.rejected;
+const softRsRecoveredRows = rejectedSplit.softRsRecoveredRows;
+const strongRsRetention = buildStrongRsRetention(candidates, {
+  sourceLists: { weekly, weeklyFocus, daily, developingWatchlist: nearWatchlist, rs21Rsnh: candidates.filter(x => x.rs_ema21 === "ABOVE" || (x.scan_memberships || []).includes("S22_RS_LINE_NEW_HIGH")), myhApproaching: myhApproaching.myh_approaching_rows },
+  retentionWindow: 20
+});
+const auroraRadarUniverse = buildAuroraRadarUniverse({
+  market: "US",
+  dataAsOf: asOf,
+  lists: {
+    WEEKLY_UNIVERSE: weekly,
+    WEEKLY_FOCUS: weeklyFocus,
+    DAILY_TOP_1_4: daily,
+    DEVELOPING_WATCHLIST: nearWatchlist,
+    RS21_RSNH: candidates.filter(x => x.rs_ema21 === "ABOVE" || (x.scan_memberships || []).includes("S22_RS_LINE_NEW_HIGH")),
+    MYH_APPROACHING: myhApproaching.myh_approaching_rows,
+    MYH_BREAKOUT_RETEST: myhBreakoutRetests,
+    MA10_RESPECT: maRespect.ema10_respect_rows,
+    MA21_RESPECT: maRespect.ema21_respect_rows,
+    MA50_RESPECT: maRespect.sma50_respect_rows,
+    STRONG_RS_RETENTION: strongRsRetention,
+    SOFT_RS_REJECT_RECOVERED: softRsRecoveredRows
+  },
+  allCandidates: candidates
+});
+const rrgHierarchy = buildRrgHierarchy(candidates, { minDenominator: 3 });
 const state = {
   generated_at: generatedAt,
   run: {
@@ -529,20 +564,28 @@ const state = {
   daily_top: daily,
   developing_watchlist_20: nearWatchlist,
   sections: {
-    rs21_rsnh: sectionSort(candidates.filter(x => x.rs_ema21 === "ABOVE" || x.scan_memberships.includes("S22_RS_LINE_NEW_HIGH"))),
+    rs21_rsnh: sectionSort(candidates.filter(x => x.rs_ema21 === "ABOVE" || (x.scan_memberships || []).includes("S22_RS_LINE_NEW_HIGH"))),
     myh_approaching: sectionSort(myhApproaching.myh_approaching_rows),
+    myh_breakout_retest: sectionSort(myhBreakoutRetests),
     ma10_respect: sectionSort(maRespect.ema10_respect_rows),
     ma21_respect: sectionSort(maRespect.ema21_respect_rows),
     ma50_respect: sectionSort(maRespect.sma50_respect_rows),
+    industry_group_rrg: rrgHierarchy.industry_group,
+    industry_rrg: rrgHierarchy.industry,
+    sub_industry_rrg: rrgHierarchy.sub_industry,
+    aurora_radar_universe: auroraRadarUniverse,
+    strong_rs_retention: strongRsRetention,
+    soft_rs_reject_recovered: softRsRecoveredRows,
     pbx_pullback: sectionSort(candidates.filter(x => x.bucket === "PULLBACK_WATCH" || x.pbx_quality.startsWith("PBX_VALID") || x.pbx_quality === "PBX_ACCEPTABLE")),
-    compression_vcp: sectionSort(candidates.filter(x => x.compressed || x.scan_memberships.includes("S10_VCP_HV_PROXY"))),
+    compression_vcp: sectionSort(candidates.filter(x => x.compressed || (x.scan_memberships || []).includes("S10_VCP_HV_PROXY"))),
     basepivot_patterns: sectionSort(candidates.filter(x => Math.abs(x.distance_to_trigger_pct) <= 7 || x.pattern_proxy !== "NO_CLEAR_BASE")),
     rmvp_early_entry: sectionSort(candidates.filter(x => ["TRIGGER_READY", "EARLY_ENTRY_WATCH"].includes(x.bucket) || x.rmvp_quality !== "RMVP_QUALITY_NONE")),
     ve2_volume_signature: sectionSort(candidates.filter(x => x.ve2_grade !== "C")),
     no_chase_risk: sectionSort(candidates.filter(x => x.bucket === "NO_CHASE" || x.axm_atr > 3 || x.entry_risk_pct > 10)),
-    rejected_data_repair: candidates.filter(x => ["REJECTED", "DATA_REPAIR"].includes(x.universe_route)).slice(0, 500)
+    rejected_data_repair: cleanedRejected.slice(0, 500)
   },
   all_candidates_count: candidates.length,
+  soft_rs_recovered_count: rejectedSplit.soft_rs_recovered_count,
   scanner_counts: scannerCounts,
   events: events.slice(0, 100),
   event_registry_count: events.length,
