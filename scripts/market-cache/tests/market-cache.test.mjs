@@ -86,6 +86,7 @@ test('US, India, Canada are all accepted', () => {
   }
 });
 
+// Phase B intentionally validates dry-run restore/backup behavior only. Production apply-mode tests and apply-mode execution are deferred to Phase C, before apply mode can be enabled.
 test('backup dry-run writes nothing', async (t) => {
   const root = await tempDir(t);
   const source = path.join(root, 'source');
