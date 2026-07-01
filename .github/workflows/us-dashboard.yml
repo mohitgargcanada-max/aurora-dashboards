@@ -450,30 +450,7 @@ jobs:
 
       - name: Prepare GitHub Pages artifact
         if: success() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
-        run: |
-          test -s markets/us/AURORA_US_Dashboard.html
-          rm -rf public
-          mkdir -p public/markets/us/dashboard
-          cp markets/us/AURORA_US_Dashboard.html public/markets/us/AURORA_US_Dashboard.html
-          if [ -d markets/us/dashboard/data ]; then
-            cp -r markets/us/dashboard/data public/markets/us/dashboard/data
-          else
-            mkdir -p public/markets/us/dashboard/data
-          fi
-          cat > public/index.html <<'HTML'
-          <!doctype html>
-          <html>
-            <head>
-              <meta charset="utf-8">
-              <meta http-equiv="refresh" content="0; url=markets/us/AURORA_US_Dashboard.html">
-              <title>AURORA Dashboard</title>
-            </head>
-            <body>
-              <a href="markets/us/AURORA_US_Dashboard.html">Open AURORA US Dashboard</a>
-            </body>
-          </html>
-          HTML
-          touch public/.nojekyll
+        run: bash scripts/prepare-dashboard-pages-artifact.sh public --required-market us
 
       - name: Configure GitHub Pages
         if: success() && (github.event_name != 'schedule' || env.RUN_US_DASHBOARD == '1')
