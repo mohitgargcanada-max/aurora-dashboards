@@ -10,6 +10,7 @@ import {
   parseCliArgs,
   snapshotRoot,
 } from './config.mjs';
+import { validateBackupRoot } from '../market-data-backup/validate-backup-paths.mjs';
 
 function backupPlan({ manifest, sourceCachePath, snapshotPath, manifestFile }) {
   return [
@@ -30,8 +31,13 @@ export async function backupMarketCache(options) {
 
   if (!options.cacheRepo) throw new Error('Missing required --cache-repo');
 
+  const sourceRoot = path.resolve(options.sourceRoot ?? process.cwd());
   const sourceCachePath = path.resolve(options.source ?? defaultSourcePath(market));
   const cacheRepo = path.resolve(options.cacheRepo);
+  const backupRootValidation = validateBackupRoot(cacheRepo, { sourceRoot });
+  if (!backupRootValidation.ok) {
+    throw new Error(`Invalid cache repo root: ${backupRootValidation.reason}`);
+  }
   const snapshotPath = snapshotRoot(cacheRepo, market, snapshot, snapshotId);
   const manifestFile = manifestPath(cacheRepo, market);
   const apply = options.apply === true;
