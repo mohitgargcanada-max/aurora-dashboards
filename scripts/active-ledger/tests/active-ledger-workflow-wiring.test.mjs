@@ -24,23 +24,29 @@ const WORKFLOWS = Object.freeze({
 });
 
 async function workflowText(market) {
-  return readFile(WORKFLOWS[market].file, 'utf8');
+  return (await readFile(WORKFLOWS[market].file, 'utf8')).replace(/\r\n/g, '\n');
 }
 
-function assertInput(text) {
-  assert.match(text, /active_ledger_mode:/);
-  assert.match(text, /description: "Active tracking ledger population mode"/);
-  assert.match(text, /default: "off"/);
-  assert.match(text, /type: choice/);
+function inputBlock(text, inputName) {
+  const match = text.match(new RegExp(`\\n      ${inputName}:\\n([\\s\\S]*?)(?=\\n      [a-zA-Z0-9_]+:|\\n  schedule:)`));
+  assert.ok(match, `${inputName} input missing`);
+  return match[1];
+}
+
+function assertModeInput(text, inputName) {
+  const block = inputBlock(text, inputName);
+  assert.match(block, /default: "off"/);
+  assert.match(block, /type: choice/);
   for (const option of ['off', 'dry-run', 'apply']) {
-    assert.match(text, new RegExp(`- ${option}`));
+    assert.match(block, new RegExp(`- "${option}"`));
+    assert.doesNotMatch(block, new RegExp(`- ${option}(?:\\n|$)`));
   }
 }
 
 function assertPopulationStep(text, market) {
   const { label, ledger, scan } = WORKFLOWS[market];
   assert.match(text, new RegExp(`Populate ${label} active tracking ledger`));
-  assert.match(text, /github\.event_name == 'workflow_dispatch'/);
+  assert.match(text, /if: success\(\) && github\.event_name == 'workflow_dispatch'/);
   assert.match(text, /github\.event\.inputs\.active_ledger_mode \|\| 'off'/);
   assert.match(text, /Active ledger population disabled\./);
   assert.match(text, /populate-active-tracking-ledger\.mjs/);
@@ -49,12 +55,13 @@ function assertPopulationStep(text, market) {
   assert.match(text, new RegExp(`--scan-file ${scan.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));
   assert.match(text, /--dry-run/);
   assert.match(text, /--apply/);
-  assert.ok(text.indexOf('--apply') < text.indexOf('--dry-run'));
 }
 
-test('US, India, and Canada workflows expose default-off active ledger mode', async () => {
+test('US, India, and Canada workflows expose quoted default-off guarded modes', async () => {
   for (const market of Object.keys(WORKFLOWS)) {
-    assertInput(await workflowText(market));
+    const text = await workflowText(market);
+    assertModeInput(text, 'market_cache_mode');
+    assertModeInput(text, 'active_ledger_mode');
   }
 });
 
@@ -66,7 +73,8 @@ test('US, India, and Canada workflows call the population helper with market pat
 
 test('workflow wiring does not add forbidden commands or PR references', async () => {
   const combined = (await Promise.all(Object.keys(WORKFLOWS).map(workflowText))).join('\n');
-  assert.doesNotMatch(combined, /gh workflow run/);
+  assert.doesNotMatch(combined, /gh workflow run|gh workflow dispatch|workflow run/i);
   assert.doesNotMatch(combined, /PR #30|pull\/30|verify-us-json-export-publish-path/);
+  assert.doesNotMatch(combined, /PR #33|pull\/33|cross-market-classification-radar-rs-visibility/);
   assert.doesNotMatch(combined, /india-dashboard-json-export|canada-dashboard-json-export/i);
 });
