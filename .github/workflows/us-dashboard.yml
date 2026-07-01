@@ -260,6 +260,7 @@ jobs:
           node scripts/scan-universe.mjs
           node scripts/scan-rs-leadership.mjs
           node scripts/render-canonical.mjs
+          npm run validate:dashboard-json
           npm test
           node tests/history-repair.test.mjs
           npm run build
@@ -460,6 +461,11 @@ jobs:
           else
             mkdir -p public/markets/us/dashboard/data
           fi
+          test -s markets/us/dashboard/data/latest.json
+          test -s markets/us/dashboard/data/us-full-dashboard-scan.json
+          mkdir -p public/us/data
+          cp markets/us/dashboard/data/latest.json public/us/data/latest.json
+          cp markets/us/dashboard/data/us-full-dashboard-scan.json public/us/data/us-full-dashboard-scan.json
           cat > public/index.html <<'HTML'
           <!doctype html>
           <html>

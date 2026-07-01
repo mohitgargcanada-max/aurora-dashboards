@@ -1,12 +1,13 @@
 import assert from "node:assert/strict";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { buildUsDashboardJsonExport, writeUsDashboardJsonExport } from "../scripts/write-dashboard-json-export.mjs";
 
 const dashboardRoot = fileURLToPath(new URL("..", import.meta.url));
+const repoRoot = resolve(dashboardRoot, "../../..");
 
 function candidate(overrides = {}) {
   return {
@@ -102,6 +103,11 @@ try {
   assert.ok(invalid.scan.provenance.warnings.some(warning => warning.includes("UNKNOWN_FINAL_BUCKET")));
   const invalidValidate = spawnSync(process.execPath, ["scripts/validate-dashboard-json-export.mjs", `--dir=${dir}`], { cwd: dashboardRoot, encoding: "utf8" });
   assert.notEqual(invalidValidate.status, 0);
+
+  const workflow = await readFile(resolve(repoRoot, ".github/workflows/us-dashboard.yml"), "utf8");
+  assert.match(workflow, /npm run validate:dashboard-json/);
+  assert.match(workflow, /public\/us\/data\/latest\.json/);
+  assert.match(workflow, /public\/us\/data\/us-full-dashboard-scan\.json/);
 } finally {
   await rm(dir, { recursive: true, force: true });
 }
