@@ -28,7 +28,25 @@ Locked boundaries:
 
 The sidecars may explain, annotate, prioritize, or help analysts understand candidates that already surfaced through technical evidence. They may not create final buckets or bypass mandatory gates.
 
-## 3. Daily Discovery Funnel
+## 3. Explicit v0.1 Exclusions
+
+Excluded from v0.1:
+
+- Do not integrate Grok.
+- Do not integrate xAI.
+- Do not use X API in v0.1.
+- Do not scrape X.
+- Do not use SocialReaper.
+- Do not use Nitter.
+- Do not use snscrape.
+- Do not use twscrape.
+- Do not use Scrapling for social-media scraping.
+- Do not add Reddit, StockTwits, X, or social mention velocity in v0.1.
+- Social sentiment is deferred to a future phase.
+- AURORA-CAT v0.1 must use reliable, source-verifiable data only.
+- The only permitted AI research adapter in v0.1 is Gemini Search grounding for shortlisted symbols, and Gemini output must be source-cited, schema-validated, and unable to alter final buckets.
+
+## 4. Daily Discovery Funnel
 
 Daily Discovery adds a current-session surfacing lane without replacing the stable Weekly Universe.
 
@@ -57,7 +75,7 @@ Suggested flow:
 4. Daily Top stays small and only includes names that pass all locked gates.
 5. CAT and ISM sidecars enrich shortlisted names only.
 
-## 4. Promotion Guardrails
+## 5. Promotion Guardrails
 
 A daily-discovered name may enter Daily Top only if all normal locked gates pass:
 
@@ -75,7 +93,7 @@ A daily-discovered name may enter Daily Top only if all normal locked gates pass
 
 Daily Discovery may increase visibility, but it cannot override missing mandatory data, weak RS evidence, invalid market permission, excessive entry risk, or pattern-quality caps.
 
-## 5. AURORA-CAT v0.1 - AI Catalyst Sidecar
+## 6. AURORA-CAT v0.1 - AI Catalyst Sidecar
 
 AURORA-CAT is a sidecar for catalyst context on shortlisted symbols only.
 
@@ -125,7 +143,7 @@ CAT statuses:
 
 CAT may annotate the dashboard and help explain why a move happened. It must never change `final_bucket`, AURORA-SIG weights, market permission, or locked promotion gates.
 
-## 6. Google/Gemini Catalyst Research Adapter
+## 7. Google/Gemini Catalyst Research Adapter
 
 Use Gemini API with Google Search grounding as a research adapter for shortlisted symbols only.
 
@@ -155,7 +173,7 @@ Required adapter behavior:
 5. Refuse to infer official status from model text alone.
 6. Validate JSON schema before joining CAT output into dashboard data.
 
-## 7. AURORA-ISM v0.1 - Institutional / Smart-Money Sidecar
+## 8. AURORA-ISM v0.1 - Institutional / Smart-Money Sidecar
 
 AURORA-ISM is a sidecar for institutional and smart-money context on shortlisted symbols only.
 
@@ -192,7 +210,7 @@ False-positive guardrails:
 
 ISM may summarize accumulation-like evidence, but it cannot promote a stock by itself. ISM must surface uncertainty and false-positive flags prominently when the evidence is weak, stale, mechanical, or explainable by passive flows.
 
-## 8. Data Pull Budget and Cadence
+## 9. Data Pull Budget and Cadence
 
 Full universe daily:
 
@@ -215,11 +233,11 @@ Cadence:
 - 13F: quarterly only.
 - Shareholding/promoter pledge: quarterly only.
 - COT/COT proxy: weekly only.
-- Full filing NLP/social sentiment: future phase, not v0.1.
+- Full filing NLP and social sentiment: future phase, not v0.1.
 
 Budget rule: no full-universe CAT/ISM enrichment in v0.1. CAT/ISM calls must be downstream of technical discovery and should be bounded by list sizes, source priority, timeout, and fail-safe behavior.
 
-## 9. Dashboard Presentation
+## 10. Dashboard Presentation
 
 Planned diagnostic columns:
 
@@ -240,7 +258,7 @@ Presentation rules:
 - Source links should prefer official sources.
 - Near-miss notes should explain the locked blocker, for example `NO_CHASE`, missing RS evidence, invalid trigger proximity, or market permission.
 
-## 10. Acceptance Tests / Future Implementation Requirements
+## 11. Acceptance Tests / Future Implementation Requirements
 
 When implemented later, tests must prove:
 
