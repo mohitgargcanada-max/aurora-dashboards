@@ -5,20 +5,20 @@
     "STOOQ",
     "EODHD"
   ],
-  "retrieved_at": "2026-07-01T15:47:31.041Z",
+  "retrieved_at": "2026-07-01T19:56:42.675Z",
   "from": "2021-06-30",
   "expected_completed_session": "2026-06-30",
   "latest_data_as_of": "2026-06-30",
   "retain_bars": 1300,
   "symbols_requested": 11952,
-  "refreshed": 7343,
-  "skipped_current": 2413,
+  "refreshed": 6389,
+  "skipped_current": 3369,
   "ipo_short_history": 1335,
-  "unchanged_cache_better_than_provider": 22,
-  "failed": 839,
+  "unchanged_cache_better_than_provider": 19,
+  "failed": 840,
   "provider_counts": {
     "EODHD": 42,
-    "YAHOO_FINANCE": 8636
+    "YAHOO_FINANCE": 7682
   },
   "fallback_label": "EODHD_FALLBACK",
   "warnings": [
