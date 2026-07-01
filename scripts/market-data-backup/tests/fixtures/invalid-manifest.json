@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1",
+  "series": [
+    {
+      "symbol": "US_FAKE",
+      "market": "us",
+      "exchange": "FAKE",
+      "provider": "synthetic",
+      "endpoint_or_source": "synthetic-fixture",
+      "retrieved_at": "2026-01-04T00:00:00Z",
+      "data_as_of": "2026-01-02",
+      "currency": "USD",
+      "adjustment_status": "",
+      "delayed_or_live": "delayed",
+      "fallback_reason": "fixture",
+      "warnings": [],
+      "series_start": "2026-01-03",
+      "series_end": "2026-01-02",
+      "row_count": 2,
+      "checksum": "",
+      "source_priority_label": "REAL_DATA"
+    }
+  ]
+}

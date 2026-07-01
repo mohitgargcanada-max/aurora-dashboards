@@ -1,0 +1,62 @@
+{
+  "schema_version": "0.1",
+  "series": [
+    {
+      "symbol": "US_FAKE",
+      "market": "us",
+      "exchange": "FAKE",
+      "provider": "synthetic",
+      "endpoint_or_source": "synthetic-fixture",
+      "retrieved_at": "2026-01-04T00:00:00Z",
+      "data_as_of": "2026-01-02",
+      "currency": "USD",
+      "adjustment_status": "adjusted",
+      "delayed_or_live": "delayed",
+      "fallback_reason": "fixture",
+      "warnings": [],
+      "series_start": "2026-01-01",
+      "series_end": "2026-01-02",
+      "row_count": 2,
+      "checksum": "sha256:synthetic-us-fake",
+      "source_priority_label": "FREE_PRIMARY"
+    },
+    {
+      "symbol": "INDIA_FAKE",
+      "market": "india",
+      "exchange": "FAKE",
+      "provider": "synthetic",
+      "endpoint_or_source": "synthetic-fixture",
+      "retrieved_at": "2026-01-04T00:00:00Z",
+      "data_as_of": "2026-01-02",
+      "currency": "INR",
+      "adjustment_status": "adjusted",
+      "delayed_or_live": "delayed",
+      "fallback_reason": "fixture",
+      "warnings": [],
+      "series_start": "2026-01-01",
+      "series_end": "2026-01-02",
+      "row_count": 2,
+      "checksum": "sha256:synthetic-india-fake",
+      "source_priority_label": "OFFICIAL_VERIFIED"
+    },
+    {
+      "symbol": "CANADA_FAKE",
+      "market": "canada",
+      "exchange": "FAKE",
+      "provider": "synthetic",
+      "endpoint_or_source": "synthetic-fixture",
+      "retrieved_at": "2026-01-04T00:00:00Z",
+      "data_as_of": "2026-01-02",
+      "currency": "CAD",
+      "adjustment_status": "adjusted",
+      "delayed_or_live": "delayed",
+      "fallback_reason": "fixture",
+      "warnings": [],
+      "series_start": "2026-01-01",
+      "series_end": "2026-01-02",
+      "row_count": 2,
+      "checksum": "sha256:synthetic-canada-fake",
+      "source_priority_label": "YAHOO_FALLBACK"
+    }
+  ]
+}
