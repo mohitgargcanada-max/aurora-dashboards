@@ -65,7 +65,7 @@ node scripts/market-cache/plan-one-time-7y-market-history-seed.mjs
 git status --short
 ```
 
-The planner is dry-run only. `--apply` fails closed until safe external-root writers and all-market package validators exist.
+The planner is dry-run only. It never writes data. Use the commands below for external fetch, validation, and package operations.
 
 ## Sample fetch gate
 
@@ -81,16 +81,20 @@ Before a full run, fetch only `10` symbols per market into the external roots. T
 Run:
 
 ```powershell
+node scripts/market-cache/fetch-7y-history-external.mjs --market all --sample-size 10 --start 2019-07-01 --end 2026-07-01
 git status --short -- markets/*/dashboard/cache/** markets/*/dashboard/data/*.json public/** cache/** AURORA_*Dashboard*.html *.parquet *.jsonl.gz *.csv.gz *.zip
 ```
 
-Expected output: empty.
+The fetch command above is dry-run. To write a sample package outside the repo, add `--apply`. Full fetch requires both `--full --apply`.
+
+Expected git output: empty.
 
 ## Validation
 
-Validate each external history root before packaging. Current source support includes India validation:
+Validate each external history root before packaging:
 
 ```powershell
+node scripts/market-cache/validate-history-package.mjs --market all --root C:\Users\mohit\Downloads\aurora-history-seed
 node scripts/market-cache/validate-india-history-package.mjs --root C:\Users\mohit\Downloads\aurora-history-seed\india\ohlcv
 ```
 
@@ -127,13 +131,13 @@ aurora-market-cache/
   canada/monthly/2026-07/
 ```
 
-Current India dry-run package command:
+All-market dry-run package command:
 
 ```powershell
-node scripts/market-cache/package-india-history-snapshot.mjs --root C:\Users\mohit\Downloads\aurora-history-seed\india\ohlcv --cache-repo C:\Users\mohit\Downloads\aurora-market-cache --snapshot latest --snapshot-id latest --dry-run
+node scripts/market-cache/package-history-snapshot.mjs --market all --root C:\Users\mohit\Downloads\aurora-history-seed --cache-repo C:\Users\mohit\Downloads\aurora-market-cache --snapshot latest --dry-run
 ```
 
-Do not push `aurora-market-cache` until manifest validation passes.
+Package apply requires `--apply`, valid external roots, and a valid external cache repo. Do not push `aurora-market-cache` until manifest validation passes.
 
 ## Restore gate
 

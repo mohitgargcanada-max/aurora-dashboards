@@ -6,6 +6,11 @@ import path from 'node:path';
 import { backupMarketCache } from '../backup-market-cache.mjs';
 import { auditMarketHistoryCoverage } from '../audit-history-coverage.mjs';
 import { assertMarket, defaultSourcePath } from '../config.mjs';
+import {
+  fetch7yHistoryExternal,
+  packageHistorySnapshot,
+  validateHistoryPackage,
+} from '../external-history-tools.mjs';
 import { hashFile } from '../hash-file.mjs';
 import {
   buildIndiaHistorySnapshotPlan,
@@ -77,6 +82,58 @@ async function writeIndiaHistoryRecord(root, fileName, { bars = indiaBars(504), 
     data_as_of: bars.at(-1)?.date || null,
     bars,
   }, null, 2)}\n`);
+}
+
+function historyBars(count, { start = '2019-07-01', provider = 'YAHOO_FINANCE' } = {}) {
+  return indiaBars(count, { start, provider });
+}
+
+async function writeExternalHistoryRecord(baseRoot, market, { exchange, symbol, provider = 'YAHOO_FINANCE', bars = historyBars(504, { provider }), omit = [], barProvider = provider } = {}) {
+  const root = path.join(baseRoot, market, 'ohlcv');
+  await mkdir(root, { recursive: true });
+  const record = {
+    schema_version: 'aurora_history_v1',
+    market,
+    exchange,
+    symbol,
+    provider,
+    provider_symbol: symbol,
+    fallback_label: provider === 'EODHD' ? 'EODHD_FALLBACK' : 'FREE_PRIMARY',
+    fallback_reason: provider === 'EODHD' ? 'FREE_ROUTE_FAILED' : 'FREE_PRIMARY',
+    endpoint_or_source: 'fixture',
+    retrieved_at: '2026-07-02T00:00:00.000Z',
+    data_as_of: bars.at(-1)?.date || null,
+    currency: market === 'india' ? 'INR' : market === 'canada' ? 'CAD' : 'USD',
+    adjustment_status: 'FIXTURE_ADJUSTED',
+    delayed_or_live: 'EOD',
+    warnings: [],
+    bars: bars.map((bar) => ({ ...bar, provider: barProvider })),
+  };
+  for (const field of omit) delete record[field];
+  const file = path.join(root, `${exchange}__${symbol}.json`);
+  await writeFile(file, `${JSON.stringify(record, null, 2)}\n`);
+  return file;
+}
+
+function yahooFixturePayload() {
+  return {
+    chart: {
+      result: [{
+        timestamp: [1561939200, 1562025600, 1562112000],
+        indicators: {
+          quote: [{
+            open: [10, 11, 12],
+            high: [12, 13, 14],
+            low: [9, 10, 11],
+            close: [11, 12, 13],
+            volume: [1000, 1100, 1200],
+          }],
+          adjclose: [{ adjclose: [11, 12, 13] }],
+        },
+      }],
+      error: null,
+    },
+  };
 }
 
 async function writeUsBackupPackage(root, options = {}) {
@@ -445,5 +502,138 @@ test('one-time 7Y seed planner rejects source-repo roots and apply mode', async 
     'india-root': path.join(external, 'india', 'ohlcv'),
     'canada-root': path.join(external, 'canada', 'ohlcv'),
     apply: true,
-  }), /ONE_TIME_7Y_APPLY_BLOCKED_UNTIL_EXTERNAL_WRITERS_EXIST/);
+  }), /ONE_TIME_7Y_PLAN_ONLY_NO_WRITE/);
+});
+
+test('all-market external history validator accepts valid US India and Canada files', async (t) => {
+  const root = await tempDir(t);
+  await writeExternalHistoryRecord(root, 'us', { exchange: 'NASDAQ', symbol: 'AAPL', bars: historyBars(1500) });
+  await writeExternalHistoryRecord(root, 'india', { exchange: 'NSE', symbol: 'RELIANCE', provider: 'NSE_BSE_OFFICIAL', bars: historyBars(1260, { provider: 'NSE_BSE_OFFICIAL' }) });
+  await writeExternalHistoryRecord(root, 'canada', { exchange: 'TSX', symbol: 'SHOP', bars: historyBars(756) });
+
+  const result = await validateHistoryPackage({ market: 'all', root });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.markets.us.coverage.symbols, 1);
+  assert.equal(result.markets.india.coverage.ge_1260, 1);
+  assert.equal(result.markets.canada.coverage.ge_756, 1);
+  assert.match(result.markets.us.files[0].sha256, /^[a-f0-9]{64}$/);
+});
+
+test('all-market external history validator rejects duplicate and unsorted dates', async (t) => {
+  const root = await tempDir(t);
+  const duplicate = [historyBars(1)[0], historyBars(1)[0]];
+  const unsorted = [historyBars(1, { start: '2026-01-02' })[0], historyBars(1, { start: '2026-01-01' })[0]];
+  await writeExternalHistoryRecord(root, 'us', { exchange: 'NASDAQ', symbol: 'DUP', bars: duplicate });
+  await writeExternalHistoryRecord(root, 'india', { exchange: 'NSE', symbol: 'UNSORTED', provider: 'NSE_BSE_OFFICIAL', bars: unsorted });
+  await writeExternalHistoryRecord(root, 'canada', { exchange: 'TSX', symbol: 'SHOP' });
+
+  const result = await validateHistoryPackage({ market: 'all', root });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.errors.some((error) => error.includes('DUPLICATE_DATE')), true);
+  assert.equal(result.errors.some((error) => error.includes('UNSORTED_DATE')), true);
+});
+
+test('all-market external history validator rejects invalid OHLCV missing provenance and mixed providers', async (t) => {
+  const root = await tempDir(t);
+  const invalid = historyBars(2);
+  invalid[1] = { ...invalid[1], high: 8 };
+  await writeExternalHistoryRecord(root, 'us', { exchange: 'NASDAQ', symbol: 'BAD', bars: invalid });
+  await writeExternalHistoryRecord(root, 'india', { exchange: 'NSE', symbol: 'NOPROV', provider: 'NSE_BSE_OFFICIAL', omit: ['endpoint_or_source'] });
+  await writeExternalHistoryRecord(root, 'canada', { exchange: 'TSX', symbol: 'MIXED', provider: 'YAHOO_FINANCE', barProvider: 'EODHD' });
+
+  const result = await validateHistoryPackage({ market: 'all', root });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.errors.some((error) => error.includes('INVALID_OHLCV')), true);
+  assert.equal(result.errors.some((error) => error.includes('MISSING_endpoint_or_source')), true);
+  assert.equal(result.errors.some((error) => error.includes('MIXED_PROVIDER_SERIES')), true);
+});
+
+test('external 7Y fetch planner rejects unsafe roots and full fetch without apply', async (t) => {
+  const sourceRoot = await tempDir(t);
+  const external = path.join(await tempDir(t), 'aurora-history-seed');
+
+  await assert.rejects(() => fetch7yHistoryExternal({
+    market: 'us',
+    root: path.join(sourceRoot, 'aurora-history-seed'),
+    sourceRoot,
+  }), /must be outside the source repository/);
+
+  await assert.rejects(() => fetch7yHistoryExternal({
+    market: 'india',
+    root: external,
+    sourceRoot,
+    full: true,
+  }), /Full external history fetch requires --full --apply/);
+});
+
+test('external 7Y sample apply writes normalized JSON only to external root', async (t) => {
+  const sourceRoot = await tempDir(t);
+  const root = path.join(await tempDir(t), 'aurora-history-seed');
+  const calls = [];
+  const result = await fetch7yHistoryExternal({
+    market: 'us',
+    root,
+    sourceRoot,
+    sampleSize: 1,
+    start: '2019-07-01',
+    end: '2019-07-03',
+    apply: true,
+    fetcher: async (url) => {
+      calls.push(String(url));
+      return { ok: true, json: async () => yahooFixturePayload() };
+    },
+  });
+
+  assert.equal(result.applied, true);
+  assert.equal(result.summaries[0].written, 1);
+  assert.equal(calls.length, 1);
+  const validation = await validateHistoryPackage({ market: 'us', root, sourceRoot });
+  assert.equal(validation.ok, true);
+  assert.equal(validation.markets.us.files[0].symbol, 'AAPL');
+});
+
+test('external history package dry-run excludes generated source artifacts', async (t) => {
+  const sourceRoot = await tempDir(t);
+  const root = path.join(await tempDir(t), 'aurora-history-seed');
+  const cacheRepo = path.join(await tempDir(t), 'aurora-market-cache');
+  await writeExternalHistoryRecord(root, 'us', { exchange: 'NASDAQ', symbol: 'AAPL' });
+  await mkdir(path.join(root, 'us', 'ohlcv', 'dashboard', 'data'), { recursive: true });
+  await writeFile(path.join(root, 'us', 'ohlcv', 'dashboard', 'data', 'scan.json'), '{}\n');
+  await writeFile(path.join(root, 'us', 'ohlcv', 'AURORA_US_Dashboard.html'), '<html></html>\n');
+
+  const result = await packageHistorySnapshot({
+    market: 'us',
+    root,
+    cacheRepo,
+    sourceRoot,
+    sourceCommit: 'test-commit',
+    snapshot: 'latest',
+    snapshotId: 'latest',
+  });
+
+  assert.equal(result.applied, false);
+  assert.deepEqual(result.manifests.us.files.map((file) => file.path), ['NASDAQ__AAPL.json']);
+  assert.equal(result.plan.us.some((step) => String(step.from || '').includes('dashboard')), false);
+  assert.equal(result.plan.us.some((step) => String(step.from || '').includes('AURORA_US_Dashboard.html')), false);
+});
+
+test('external history package apply rejects invalid package before writing manifest', async (t) => {
+  const sourceRoot = await tempDir(t);
+  const root = path.join(await tempDir(t), 'aurora-history-seed');
+  const cacheRepo = path.join(await tempDir(t), 'aurora-market-cache');
+  await writeExternalHistoryRecord(root, 'us', { exchange: 'NASDAQ', symbol: 'AAPL', omit: ['provider'] });
+
+  await assert.rejects(() => packageHistorySnapshot({
+    market: 'us',
+    root,
+    cacheRepo,
+    sourceRoot,
+    sourceCommit: 'test-commit',
+    apply: true,
+  }), /History package validation failed/);
+
+  assert.equal(await exists(path.join(cacheRepo, 'manifests', 'us-cache-manifest.json')), false);
 });

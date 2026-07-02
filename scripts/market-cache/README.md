@@ -17,9 +17,9 @@ canada
 Default local cache sources:
 
 ```text
-markets/us/dashboard/cache
-markets/india/dashboard/cache
-markets/canada/dashboard/cache
+markets/us/dashboard/cache/us/ohlcv
+markets/india/dashboard/cache/india/ohlcv
+markets/canada/dashboard/cache/canada/ohlcv
 ```
 
 The framework is dry-run-first. Nothing is copied or restored unless `--apply` is passed.
@@ -99,3 +99,17 @@ The default mode is `off`. Scheduled workflows remain off unless a future PR exp
 When manually selected, `dry-run` validates the integration path without writing local cache files or pushing cache changes. `apply` requires the `AURORA_MARKET_CACHE_PAT` secret, restores cache before the scan, and backs up cache only after the dashboard scan/generation step succeeds.
 
 No real cache is uploaded unless `apply` is selected manually. Workflow integration still relies on the framework exclusions for generated dashboard HTML, `dashboard/data/*.json`, and `.git/`.
+
+## One-time external 7Y history seed commands
+
+These commands write only to external roots. They refuse in-repo roots and are dry-run first.
+
+```bash
+node scripts/market-cache/plan-one-time-7y-market-history-seed.mjs
+node scripts/market-cache/fetch-7y-history-external.mjs --market all --sample-size 10 --start 2019-07-01 --end 2026-07-01
+node scripts/market-cache/fetch-7y-history-external.mjs --market india --full --apply --start 2019-07-01 --end 2026-07-01
+node scripts/market-cache/validate-history-package.mjs --market all --root C:\Users\mohit\Downloads\aurora-history-seed
+node scripts/market-cache/package-history-snapshot.mjs --market all --root C:\Users\mohit\Downloads\aurora-history-seed --cache-repo C:\Users\mohit\Downloads\aurora-market-cache --snapshot latest --dry-run
+```
+
+`fetch-7y-history-external.mjs --full` requires `--apply`. `package-history-snapshot.mjs --apply` requires valid external history roots and a valid external `aurora-market-cache` root.
