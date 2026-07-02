@@ -8,6 +8,28 @@ export const DEFAULT_SOURCE_PATHS = Object.freeze({
   canada: 'markets/canada/dashboard/cache',
 });
 
+const SOURCE_CODE_EXTENSIONS = new Set([
+  '.cjs',
+  '.css',
+  '.html',
+  '.js',
+  '.jsx',
+  '.md',
+  '.mjs',
+  '.ts',
+  '.tsx',
+]);
+
+const SOURCE_CODE_ROOTS = new Set([
+  '.github',
+  'docs',
+  'markets',
+  'scripts',
+  'src',
+  'test',
+  'tests',
+]);
+
 export function assertMarket(market) {
   if (!SUPPORTED_MARKETS.includes(market)) {
     throw new Error(`Unsupported market: ${market}`);
@@ -67,6 +89,13 @@ export function parseCliArgs(argv) {
   return args;
 }
 
+export function isSourceCodePath(relativePath) {
+  const normalized = relativePath.replaceAll('\\', '/');
+  const parts = normalized.split('/');
+  const base = path.posix.basename(normalized).toLowerCase();
+  return SOURCE_CODE_ROOTS.has(parts[0]) || base === 'package.json' || SOURCE_CODE_EXTENSIONS.has(path.posix.extname(base));
+}
+
 export function shouldIncludeCacheFile(relativePath) {
   const normalized = relativePath.replaceAll('\\', '/');
   const base = path.posix.basename(normalized).toLowerCase();
@@ -77,6 +106,7 @@ export function shouldIncludeCacheFile(relativePath) {
   if (parts.includes('..')) return false;
   if (parts.some((part) => part === '.git' || part.startsWith('.'))) return false;
   if (['thumbs.db', 'desktop.ini', '.ds_store'].includes(base)) return false;
+  if (isSourceCodePath(normalized)) return false;
   if (/AURORA_.*Dashboard.*\.html$/i.test(base)) return false;
   if (/AURORA_.*Unified_Dashboard.*\.html$/i.test(base)) return false;
   if (/^dashboard\/data\/.*\.json$/i.test(normalized)) return false;
@@ -92,4 +122,14 @@ export function assertSafeRelativePath(relativePath) {
     throw new Error(`Unsafe manifest file path: ${relativePath}`);
   }
   return normalized;
+}
+
+export function resolveAllowedRestoreTarget(market, targetPath, { sourceRoot = process.cwd() } = {}) {
+  const allowedRoot = path.resolve(sourceRoot, defaultSourcePath(market));
+  const resolvedTarget = path.resolve(targetPath);
+  const relative = path.relative(allowedRoot, resolvedTarget);
+  if (relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative))) {
+    return resolvedTarget;
+  }
+  throw new Error(`Restore target outside allowed ${market} cache root: ${targetPath}`);
 }

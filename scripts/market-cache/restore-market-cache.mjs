@@ -8,6 +8,7 @@ import {
   defaultSourcePath,
   manifestPath,
   parseCliArgs,
+  resolveAllowedRestoreTarget,
   snapshotRoot,
 } from './config.mjs';
 import { loadManifest, validateManifest } from './validate-manifest.mjs';
@@ -28,7 +29,11 @@ export async function restoreMarketCache(options) {
 
   if (!options.cacheRepo) throw new Error('Missing required --cache-repo');
 
-  const targetPath = path.resolve(options.target ?? defaultSourcePath(market));
+  const sourceRoot = path.resolve(options.sourceRoot ?? process.cwd());
+  const targetCandidate = options.target
+    ? path.resolve(options.target)
+    : path.resolve(sourceRoot, defaultSourcePath(market));
+  const targetPath = resolveAllowedRestoreTarget(market, targetCandidate, { sourceRoot });
   const cacheRepo = path.resolve(options.cacheRepo);
   const snapshotPath = snapshotRoot(cacheRepo, market, snapshot, snapshotId);
   const manifestFile = manifestPath(cacheRepo, market);
