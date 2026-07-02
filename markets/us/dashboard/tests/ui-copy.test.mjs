@@ -107,6 +107,7 @@ for (const marker of [
   "sections.sub_industry_rrg",
   "sections.aurora_radar_universe",
   "sections.strong_rs_retention",
+  "sections.myh_approaching",
   "sections.myh_breakout_retest"
 ]) {
   const markerIndex = rendererSource.indexOf(marker);

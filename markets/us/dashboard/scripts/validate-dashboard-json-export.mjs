@@ -27,6 +27,7 @@ const LIST_KEYS = [
   "daily_top_1_4",
   "rsle_top_20",
   "developing_watchlist",
+  "myh_approaching",
   "near_rs_high",
   "pbx_pullbacks",
   "basepivot_patterns",

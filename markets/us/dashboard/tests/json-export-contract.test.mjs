@@ -41,6 +41,7 @@ function validScan(overrides = {}) {
     aurora_radar_universe: [],
     strong_rs_retention: [],
     soft_rs_reject_recovered: [],
+    myh_approaching: [],
     myh_breakout_retest: [],
     industry_group_rrg: [],
     industry_rrg: [],
