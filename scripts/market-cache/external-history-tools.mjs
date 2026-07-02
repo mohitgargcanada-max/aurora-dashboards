@@ -192,16 +192,23 @@ function parseYahooChart(payload, provider) {
   const result = payload?.chart?.result?.[0];
   const quote = result?.indicators?.quote?.[0] || {};
   const adjclose = result?.indicators?.adjclose?.[0]?.adjclose || [];
-  return (result?.timestamp || [])
-    .map((time, index) => normalizeBar({
+  return (result?.timestamp || []).map((time, index) => {
+    const close = finiteNumber(quote.close?.[index]);
+    const adjustedClose = finiteNumber(adjclose[index]);
+    const factor = close && adjustedClose ? adjustedClose / close : 1;
+    const scale = (value) => {
+      const number = finiteNumber(value);
+      return number === null ? null : number * factor;
+    };
+    return normalizeBar({
       date: new Date(Number(time) * 1000).toISOString().slice(0, 10),
-      open: quote.open?.[index],
-      high: quote.high?.[index],
-      low: quote.low?.[index],
-      close: adjclose[index] ?? quote.close?.[index],
+      open: scale(quote.open?.[index]),
+      high: scale(quote.high?.[index]),
+      low: scale(quote.low?.[index]),
+      close: adjustedClose ?? close,
       volume: quote.volume?.[index],
-    }, provider))
-    .filter(Boolean);
+    }, provider);
+  }).filter(Boolean);
 }
 
 function parseEodhdRows(rows, provider) {
@@ -339,8 +346,25 @@ async function fetchOfficialIndia(item, { start, end, env }) {
 
 function viableBars(candidate, end) {
   if (!candidate?.bars?.length) return { ok: false, reason: 'NO_USABLE_BARS' };
-  if (candidate.bars.at(-1).date < end) return { ok: false, reason: 'STALE_COMPLETED_SESSION' };
+  const lastDate = candidate.bars.at(-1).date;
+  if (lastDate > end) return { ok: false, reason: 'AFTER_REQUESTED_END' };
+  const endTime = new Date(`${end}T00:00:00Z`).getTime();
+  const lastTime = new Date(`${lastDate}T00:00:00Z`).getTime();
+  const daysBehind = Math.floor((endTime - lastTime) / 86_400_000);
+  if (daysBehind > 5) return { ok: false, reason: 'STALE_COMPLETED_SESSION' };
   return { ok: true, reason: 'OK' };
+}
+
+function sanitizedCandidate(candidate) {
+  const bars = candidate.bars || [];
+  const validBars = bars.filter((bar) => validBar(bar));
+  const dropped = bars.length - validBars.length;
+  if (!dropped) return candidate;
+  return {
+    ...candidate,
+    bars: validBars,
+    warnings: [...(candidate.warnings || []), `DROPPED_INVALID_OHLCV_BARS:${dropped}`],
+  };
 }
 
 async function fetchHistoryForItem(item, market, options) {
@@ -359,7 +383,7 @@ async function fetchHistoryForItem(item, market, options) {
 
   for (const [provider, call] of routes) {
     try {
-      const candidate = await call();
+      const candidate = sanitizedCandidate(await call());
       const usable = viableBars(candidate, options.end);
       attempts.push({ provider, status: usable.ok ? 'OK' : 'UNUSABLE', bars: candidate.bars.length, data_as_of: candidate.bars.at(-1)?.date || null, reason: usable.reason });
       if (!usable.ok) continue;
