@@ -62,7 +62,17 @@ function state() {
       ve2_volume_signature: [weekly],
       compression_vcp: [],
       no_chase_risk: [],
-      rejected_data_repair: []
+      rejected_data_repair: [],
+      myh_approaching: [candidate({
+        ticker: "MOCKMYH",
+        myh_status: "MYH_APPROACHING",
+        myh_approaching_status: "MYH_WITHIN_2PCT",
+        myh_target_level: 101,
+        myh_gap_pct: 1.2,
+        myh_lookback_label: "MYH_52W",
+        myh_history_confidence: "HISTORY_AVAILABLE",
+        myh_next_condition: "Needs clean close through MYH level."
+      })]
     },
     all_candidates: [weekly, daily, rsle]
   };
@@ -80,9 +90,13 @@ try {
   assert.equal(latest.scan_url, "./us-full-dashboard-scan.json");
   assert.equal(scan.schema_version, "aurora_dashboard_scan_v1");
   assert.equal(scan.market, "US");
-  for (const key of ["weekly_universe", "weekly_focus", "daily_top_1_4", "rsle_top_20", "developing_watchlist", "near_rs_high", "pbx_pullbacks", "basepivot_patterns", "rmvp_early_entry", "ve2_volume_signature", "compression", "no_chase_risk", "rejected_data_repair", "all_candidates"]) {
+  for (const key of ["weekly_universe", "weekly_focus", "daily_top_1_4", "rsle_top_20", "developing_watchlist", "myh_approaching", "near_rs_high", "pbx_pullbacks", "basepivot_patterns", "rmvp_early_entry", "ve2_volume_signature", "compression", "no_chase_risk", "rejected_data_repair", "all_candidates"]) {
     assert.ok(Array.isArray(scan[key]), `${key} should be array`);
   }
+  assert.equal(scan.myh_approaching[0].symbol, "MOCKMYH");
+  assert.equal(scan.myh_approaching[0].myh_status, "MYH_APPROACHING");
+  assert.equal(scan.myh_approaching[0].myh_gap_pct, 1.2);
+  assert.equal(scan.myh_approaching[0].myh_lookback_label, "MYH_52W");
   assert.ok(scan.daily_top_1_4.length <= 4);
   assert.equal(scan.audit_contract.json_export_only, true);
   assert.equal(scan.audit_contract.scanner_behavior_changed, false);
