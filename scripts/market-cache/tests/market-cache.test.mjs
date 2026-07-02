@@ -4,8 +4,13 @@ import { mkdtemp, mkdir, rm, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { backupMarketCache } from '../backup-market-cache.mjs';
+import { auditMarketHistoryCoverage } from '../audit-history-coverage.mjs';
 import { assertMarket, defaultSourcePath } from '../config.mjs';
 import { hashFile } from '../hash-file.mjs';
+import {
+  buildIndiaHistorySnapshotPlan,
+  validateIndiaHistoryPackage,
+} from '../india-history-tools.mjs';
 import { restoreMarketCache } from '../restore-market-cache.mjs';
 import { loadManifest, validateManifest } from '../validate-manifest.mjs';
 
@@ -41,6 +46,36 @@ async function writeFixtureCache(root) {
   await writeFile(path.join(root, 'src', 'helper.js'), 'export default true;\n');
   await writeFile(path.join(root, '.DS_Store'), 'junk\n');
   await writeFile(path.join(root, '.git', 'config'), 'junk\n');
+}
+
+function indiaBars(count, { start = '2020-01-01', provider = null } = {}) {
+  const startDate = new Date(`${start}T00:00:00Z`);
+  return Array.from({ length: count }, (_, index) => {
+    const date = new Date(startDate);
+    date.setUTCDate(startDate.getUTCDate() + index);
+    return {
+      date: date.toISOString().slice(0, 10),
+      open: 10,
+      high: 12,
+      low: 9,
+      close: 11,
+      volume: 1000,
+      ...(provider ? { provider } : {}),
+    };
+  });
+}
+
+async function writeIndiaHistoryRecord(root, fileName, { bars = indiaBars(504), provider = 'NSE_OFFICIAL_BHAVCOPY', symbol = 'AAA', exchange = 'NSE', series = 'EQ' } = {}) {
+  await mkdir(path.dirname(path.join(root, fileName)), { recursive: true });
+  await writeFile(path.join(root, fileName), `${JSON.stringify({
+    market: 'india',
+    exchange,
+    symbol,
+    series,
+    provider,
+    data_as_of: bars.at(-1)?.date || null,
+    bars,
+  }, null, 2)}\n`);
 }
 
 async function writeUsBackupPackage(root, options = {}) {
@@ -225,4 +260,135 @@ test('path traversal in manifest is rejected', async (t) => {
   };
 
   await assert.rejects(() => validateManifest(manifest, snapshot), /Unsafe manifest file path/);
+});
+
+test('valid India OHLCV history package passes and reports MYH coverage counts', async (t) => {
+  const root = await tempDir(t);
+  await writeIndiaHistoryRecord(root, 'NSE__PREFERRED.json', { symbol: 'PREFERRED', bars: indiaBars(1500) });
+  await writeIndiaHistoryRecord(root, 'NSE__FIVEY.json', { symbol: 'FIVEY', bars: indiaBars(1260) });
+  await writeIndiaHistoryRecord(root, 'NSE__THREEY.json', { symbol: 'THREEY', bars: indiaBars(756) });
+  await writeIndiaHistoryRecord(root, 'NSE__TWOY.json', { symbol: 'TWOY', bars: indiaBars(504) });
+  await writeIndiaHistoryRecord(root, 'NSE__SHORT.json', { symbol: 'SHORT', bars: indiaBars(100) });
+  await writeIndiaHistoryRecord(root, 'NSE__EMPTY.json', { symbol: 'EMPTY', bars: [] });
+
+  const result = await validateIndiaHistoryPackage(root);
+
+  assert.equal(result.ok, false);
+  assert.equal(result.coverage.symbols_ge_1500_bars, 1);
+  assert.equal(result.coverage.symbols_ge_5y, 2);
+  assert.equal(result.coverage.symbols_ge_3y, 3);
+  assert.equal(result.coverage.symbols_ge_2y, 4);
+  assert.equal(result.coverage.symbols_lt_2y, 1);
+  assert.equal(result.coverage.symbols_no_usable_history, 1);
+  assert.equal(result.errors.some((error) => error.includes('NO_USABLE_HISTORY')), true);
+});
+
+test('valid India OHLCV fixture passes without validation errors', async (t) => {
+  const root = await tempDir(t);
+  await writeIndiaHistoryRecord(root, 'NSE__AAA.json', { bars: indiaBars(1500) });
+
+  const result = await validateIndiaHistoryPackage(root);
+
+  assert.equal(result.ok, true);
+  assert.equal(result.coverage.symbols_ge_1500_bars, 1);
+  assert.equal(result.coverage.symbol_format.exchange_prefixed_plain_files, 1);
+});
+
+test('India history validation rejects unsorted and duplicate dates', async (t) => {
+  const root = await tempDir(t);
+  const unsorted = [
+    ...indiaBars(1, { start: '2026-01-02' }),
+    ...indiaBars(1, { start: '2026-01-01' }),
+  ];
+  const duplicate = [
+    ...indiaBars(1, { start: '2026-02-01' }),
+    ...indiaBars(1, { start: '2026-02-01' }),
+  ];
+  await writeIndiaHistoryRecord(root, 'NSE__UNSORTED.json', { symbol: 'UNSORTED', bars: unsorted });
+  await writeIndiaHistoryRecord(root, 'NSE__DUPLICATE.json', { symbol: 'DUPLICATE', bars: duplicate });
+
+  const result = await validateIndiaHistoryPackage(root);
+
+  assert.equal(result.ok, false);
+  assert.equal(result.errors.some((error) => error.includes('UNSORTED_DATE')), true);
+  assert.equal(result.errors.some((error) => error.includes('DUPLICATE_DATE')), true);
+});
+
+test('India history validation rejects invalid OHLCV and mixed provider series', async (t) => {
+  const root = await tempDir(t);
+  const invalid = indiaBars(2);
+  invalid[1] = { ...invalid[1], low: 20 };
+  await writeIndiaHistoryRecord(root, 'NSE__BAD.json', { symbol: 'BAD', bars: invalid });
+  await writeIndiaHistoryRecord(root, 'NSE__MIXED.json', {
+    symbol: 'MIXED',
+    provider: 'NSE_OFFICIAL_BHAVCOPY',
+    bars: indiaBars(2, { provider: 'YAHOO' }),
+  });
+
+  const result = await validateIndiaHistoryPackage(root);
+
+  assert.equal(result.ok, false);
+  assert.equal(result.errors.some((error) => error.includes('INVALID_OHLCV')), true);
+  assert.equal(result.errors.some((error) => error.includes('MIXED_PROVIDER_SERIES')), true);
+});
+
+test('India history package dry-run excludes generated artifact paths', async (t) => {
+  const sourceRoot = await tempDir(t);
+  const historyRoot = await tempDir(t);
+  const cacheRepo = path.join(await tempDir(t), 'aurora-market-cache');
+  await writeIndiaHistoryRecord(historyRoot, 'NSE__AAA.json', { bars: indiaBars(1500) });
+  await mkdir(path.join(historyRoot, 'dashboard', 'data'), { recursive: true });
+  await mkdir(path.join(historyRoot, 'scripts'), { recursive: true });
+  await writeFile(path.join(historyRoot, 'dashboard', 'data', 'india-full-dashboard-scan.json'), '{}\n');
+  await writeFile(path.join(historyRoot, 'AURORA_India_Dashboard.html'), '<html></html>\n');
+  await writeFile(path.join(historyRoot, 'scripts', 'helper.mjs'), 'export default true;\n');
+
+  const result = await buildIndiaHistorySnapshotPlan({
+    root: historyRoot,
+    cacheRepo,
+    sourceRoot,
+    snapshot: 'latest',
+    snapshotId: 'latest',
+    sourceCommit: 'test-commit',
+  });
+
+  assert.equal(result.applied, false);
+  assert.deepEqual(result.manifest.files.map((file) => file.path), ['NSE__AAA.json']);
+  assert.equal(result.plan.some((step) => String(step.from || '').includes('dashboard')), false);
+  assert.equal(result.plan.some((step) => String(step.from || '').includes('AURORA_India_Dashboard.html')), false);
+});
+
+test('India history package dry-run rejects in-repo history roots', async (t) => {
+  const sourceRoot = await tempDir(t);
+  const historyRoot = path.join(sourceRoot, 'markets', 'india', 'dashboard', 'cache', 'india', 'ohlcv');
+  const cacheRepo = path.join(await tempDir(t), 'aurora-market-cache');
+  await writeIndiaHistoryRecord(historyRoot, 'NSE__AAA.json', { bars: indiaBars(1500) });
+
+  await assert.rejects(() => buildIndiaHistorySnapshotPlan({
+    root: historyRoot,
+    cacheRepo,
+    sourceRoot,
+    snapshot: 'latest',
+    snapshotId: 'latest',
+    sourceCommit: 'test-commit',
+  }), /outside the source repository/);
+});
+
+test('all-market history audit reports active cache depth and scan-list coverage', async (t) => {
+  const root = await tempDir(t);
+  const cacheRoot = path.join(root, 'ohlcv');
+  await writeIndiaHistoryRecord(cacheRoot, 'NSE__AAA.json', { symbol: 'AAA', bars: indiaBars(1500) });
+  await writeIndiaHistoryRecord(cacheRoot, 'NSE__BBB.json', { symbol: 'BBB', bars: indiaBars(504) });
+  await writeIndiaHistoryRecord(cacheRoot, 'NSE__CCC.json', { symbol: 'CCC', bars: indiaBars(100) });
+
+  const result = await auditMarketHistoryCoverage('india', { root: cacheRoot });
+
+  assert.equal(result.coverage.symbols, 3);
+  assert.equal(result.coverage.median_bars, 504);
+  assert.equal(result.coverage.ge_1500, 1);
+  assert.equal(result.coverage.ge_1260, 1);
+  assert.equal(result.coverage.ge_756, 1);
+  assert.equal(result.coverage.ge_504, 2);
+  assert.equal(result.coverage.lt_504, 1);
+  assert.equal(result.myh_mode, 'TRUE_2Y_3Y_5Y');
 });
