@@ -11,6 +11,7 @@ import {
   buildIndiaHistorySnapshotPlan,
   validateIndiaHistoryPackage,
 } from '../india-history-tools.mjs';
+import { planOneTime7yMarketHistorySeed } from '../plan-one-time-7y-market-history-seed.mjs';
 import { restoreMarketCache } from '../restore-market-cache.mjs';
 import { loadManifest, validateManifest } from '../validate-manifest.mjs';
 
@@ -391,4 +392,58 @@ test('all-market history audit reports active cache depth and scan-list coverage
   assert.equal(result.coverage.ge_504, 2);
   assert.equal(result.coverage.lt_504, 1);
   assert.equal(result.myh_mode, 'TRUE_2Y_3Y_5Y');
+});
+
+test('one-time 7Y seed planner defaults to dry-run sample mode with external roots', async (t) => {
+  const root = await tempDir(t);
+  const sourceRoot = path.join(root, 'source');
+  const external = path.join(root, 'external');
+  await mkdir(sourceRoot, { recursive: true });
+
+  const plan = planOneTime7yMarketHistorySeed({
+    sourceRoot,
+    cacheRepo: path.join(external, 'aurora-market-cache'),
+    'us-root': path.join(external, 'us', 'ohlcv'),
+    'india-root': path.join(external, 'india', 'ohlcv'),
+    'canada-root': path.join(external, 'canada', 'ohlcv'),
+  });
+
+  assert.equal(plan.mode, 'dry-run');
+  assert.equal(plan.applied, false);
+  assert.equal(plan.date_range.start, '2019-07-01');
+  assert.equal(plan.date_range.end, '2026-07-01');
+  assert.equal(plan.sample_size, 10);
+  assert.deepEqual(plan.thresholds, {
+    preferred_bars: 1500,
+    true_5y_bars: 1260,
+    three_year_bars: 756,
+    two_year_bars: 504,
+  });
+  assert.ok(plan.route_order.us.includes('YAHOO_FINANCE_PRIMARY'));
+  assert.ok(plan.route_order.india.includes('EODHD_LAST_SUPPORTED_LISTINGS_ONLY'));
+  assert.ok(plan.route_order.canada.includes('YAHOO_TO_V_PRIMARY'));
+});
+
+test('one-time 7Y seed planner rejects source-repo roots and apply mode', async (t) => {
+  const root = await tempDir(t);
+  const sourceRoot = path.join(root, 'source');
+  const external = path.join(root, 'external');
+  await mkdir(sourceRoot, { recursive: true });
+
+  assert.throws(() => planOneTime7yMarketHistorySeed({
+    sourceRoot,
+    cacheRepo: path.join(external, 'aurora-market-cache'),
+    'us-root': path.join(sourceRoot, 'markets', 'us', 'dashboard', 'cache'),
+    'india-root': path.join(external, 'india', 'ohlcv'),
+    'canada-root': path.join(external, 'canada', 'ohlcv'),
+  }), /us history root must be outside the source repository/);
+
+  assert.throws(() => planOneTime7yMarketHistorySeed({
+    sourceRoot,
+    cacheRepo: path.join(external, 'aurora-market-cache'),
+    'us-root': path.join(external, 'us', 'ohlcv'),
+    'india-root': path.join(external, 'india', 'ohlcv'),
+    'canada-root': path.join(external, 'canada', 'ohlcv'),
+    apply: true,
+  }), /ONE_TIME_7Y_APPLY_BLOCKED_UNTIL_EXTERNAL_WRITERS_EXIST/);
 });
