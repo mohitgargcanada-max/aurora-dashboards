@@ -57,6 +57,18 @@ Retained-history coverage for MYH:
 
 The NIFTY500 benchmark index cache is also short for MYH-style long lookbacks: `markets/india/dashboard/cache/india/indices/NIFTY500.json` has 423 bars, from `2024-10-10` through `2026-07-01`.
 
+Local 5-year cache verification found no usable 5-year India cache in the inspected repo paths:
+
+| Source inspected | Symbols / entries | Earliest | Latest | Bars per symbol | >= 5Y | >= 3Y | >= 2Y | < 2Y | No usable history | Coverage / format |
+| --- | ---: | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `markets/india/dashboard/cache/india/ohlcv` | 8021 symbols | 2024-10-01 | 2026-07-01 | min 1 / median 32 / max 423 | 0 | 0 | 0 | 8021 | 0 | Weekly Universe 20/20 covered, RSLE 20/20 covered, but 0/20 have >=2Y; files use `NSE__SYMBOL.json` / `BSE__SYMBOL.json`, no `.NS` / `.BO` suffixes, no series suffix in symbol key; includes 416 BE/BZ/BL and 922 SME-style series records. |
+| `markets/india/dashboard/cache/india/indices` | 18 index symbols | 2024-10-10 | 2026-07-01 | min 423 / median 423 / max 423 | 0 | 0 | 0 | 18 | 0 | `NIFTY500` is present, but only 423 bars; not a stock-symbol cache for Weekly Universe / RSLE. |
+| `markets/india/dashboard/cache/india/manifests/*.json` | 4 ingest manifests | n/a | 2026-06-22 expected in latest named manifest | max reported post-ingest rows 420 | 0 | 0 | 0 | all manifest entries | 0 | Ingest manifests document short-history bhavcopy ingestion, not a restored 5-year backup manifest. |
+| `markets/india/dashboard/data/india-daily-refresh-report.json` | 8021 total records | n/a | 2026-07-01 | n/a | n/a | n/a | n/a | n/a | n/a | Refresh report shows `current_records: 3430`, `valid_current_records: 3430`, and `required_fresh_symbols: 546/563`; it reports freshness, not 5-year depth. |
+| `markets/india/dashboard/data/india-full-dashboard-scan.json` | 2993 feature-matrix rows / 2064 scanned candidates | n/a | 2026-07-01 | inherited from cache, max cache depth 423 | 0 | 0 | 0 | 2993 | 0 | Generated from `WEEKDAY_EOD_UPDATE`; MYH output sections are all empty. |
+| `markets/india/dashboard/data/india-dashboard-state.json` | 0 | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | File not present locally. |
+| Market-cache restored snapshot paths | 0 | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | No `aurora-market-cache`, `manifests/india-cache-manifest.json`, `india/latest`, weekly, or monthly restored snapshot path was found under the local repo / parent workspace search. |
+
 Top 20 scan-visible symbols failing MYH due to insufficient history:
 
 | Symbol | Rows | Earliest | Latest | Listing date | Cause |
@@ -82,7 +94,7 @@ Top 20 scan-visible symbols failing MYH due to insufficient history:
 | GROWWCHEM | 107 | 2026-01-16 | 2026-07-01 | n/a | Short retained cache |
 | NEXT50ETF | 108 | 2026-01-14 | 2026-07-01 | n/a | Short retained cache |
 
-Conclusion: `MYH_HISTORY_INSUFFICIENT` is legitimate for the current retained cache, but the broader root cause is not the MYH formula, not symbol normalization, and not the dashboard renderer. The source checkout does not contain a restored 5-year India cache for this run; the maximum retained OHLCV depth found in `cache/india/ohlcv` is 423 bars, below the 2Y/3Y/5Y MYH windows. Classification: `B. CACHE_NOT_RESTORED_OR_NOT_USED`. No wiring fix was applied because no alternate restored 5-year India cache path was present in the repo to wire in, and changing MYH thresholds is out of scope.
+Conclusion: `MYH_HISTORY_INSUFFICIENT` is legitimate for the current retained cache, but the broader root cause is not the MYH formula, not symbol normalization, and not the dashboard renderer. The expected 5-year India cache does not exist in the inspected local repo paths and was not restored into `markets/india/dashboard/cache/india/ohlcv` before this scan; the maximum retained OHLCV depth found in the scan path is 423 bars, below the 2Y/3Y/5Y MYH windows. Classification: `C. CACHE_WAS_NOT_RESTORED_INTO_SCAN_PATH` plus `F. DASHBOARD_OUTPUT_GENERATED_FROM_PARTIAL_RECENT_REFRESH_ONLY`, with `A. LEGITIMATE_NEW_LISTINGS_OR_SHORT_TRADING_HISTORY` applying only to individual new-listing rows. `B. 5_YEAR_CACHE_EXISTS_BUT_IS_NOT_BEING_LOADED` and `D. SYMBOL_NORMALIZATION_MISMATCH` were not found. No wiring fix was applied because no alternate restored 5-year India cache path was present in the repo to wire in, and changing MYH thresholds is out of scope.
 
 ## US Findings
 
