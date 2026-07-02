@@ -3,9 +3,9 @@ import path from 'node:path';
 export const SUPPORTED_MARKETS = Object.freeze(['us', 'india', 'canada']);
 
 export const DEFAULT_SOURCE_PATHS = Object.freeze({
-  us: 'markets/us/dashboard/cache',
-  india: 'markets/india/dashboard/cache',
-  canada: 'markets/canada/dashboard/cache',
+  us: 'markets/us/dashboard/cache/us/ohlcv',
+  india: 'markets/india/dashboard/cache/india/ohlcv',
+  canada: 'markets/canada/dashboard/cache/canada/ohlcv',
 });
 
 const SOURCE_CODE_EXTENSIONS = new Set([
@@ -79,6 +79,8 @@ export function parseCliArgs(argv) {
       args.dryRun = true;
     } else if (arg === '--apply') {
       args.apply = true;
+    } else if (arg === '--full') {
+      args.full = true;
     } else if (arg.startsWith('--')) {
       args[arg.slice(2)] = argv[index + 1];
       index += 1;

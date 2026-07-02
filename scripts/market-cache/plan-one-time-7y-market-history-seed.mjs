@@ -24,10 +24,9 @@ const ROUTES = Object.freeze({
 });
 
 const APPLY_BLOCKERS = Object.freeze([
-  'US existing repair-us-history-5y.mjs is active-cache oriented and not an external 7-calendar-year writer.',
-  'India existing backfill-india-history.mjs is active-cache oriented; package-india-history-snapshot.mjs is dry-run only.',
-  'Canada existing backfill-canada-history.mjs is active-cache oriented and not an external 7-calendar-year writer.',
-  'All-market US/Canada external package validation and manifest apply support is not yet implemented.',
+  'This command is a plan-only safety check and never writes data.',
+  'Use fetch-7y-history-external.mjs with --apply for external history writes.',
+  'Use package-history-snapshot.mjs with --apply for aurora-market-cache writes after validation passes.',
 ]);
 
 function assertDate(value, label) {
@@ -71,7 +70,7 @@ export function planOneTime7yMarketHistorySeed(options = {}) {
   const roots = Object.fromEntries(MARKETS.map((market) => [market, marketRoot(options, market, sourceRoot)]));
   const apply = options.apply === true;
   if (apply) {
-    throw new Error(`ONE_TIME_7Y_APPLY_BLOCKED_UNTIL_EXTERNAL_WRITERS_EXIST: ${APPLY_BLOCKERS.join(' | ')}`);
+    throw new Error(`ONE_TIME_7Y_PLAN_ONLY_NO_WRITE: ${APPLY_BLOCKERS.join(' | ')}`);
   }
 
   return {
@@ -112,6 +111,9 @@ export function planOneTime7yMarketHistorySeed(options = {}) {
       audit: 'node scripts/market-cache/audit-history-coverage.mjs --market all',
       india_validate: 'node scripts/market-cache/validate-india-history-package.mjs --root <external-india-root>',
       india_package_dry_run: 'node scripts/market-cache/package-india-history-snapshot.mjs --root <external-india-root> --cache-repo <external-cache-repo> --snapshot latest --snapshot-id latest --dry-run',
+      fetch_external_sample: 'node scripts/market-cache/fetch-7y-history-external.mjs --market all --sample-size 10 --start 2019-07-01 --end 2026-07-01',
+      validate_external_all: 'node scripts/market-cache/validate-history-package.mjs --market all --root <external-history-root>',
+      package_external_all: 'node scripts/market-cache/package-history-snapshot.mjs --market all --root <external-history-root> --cache-repo <external-cache-repo> --snapshot latest --dry-run',
       restore_dry_run: 'node scripts/market-cache/restore-market-cache.mjs --market <market> --cache-repo <external-cache-repo> --snapshot latest --snapshot-id latest',
     },
     apply_blockers: APPLY_BLOCKERS,
