@@ -4,6 +4,7 @@ import { mkdtemp, mkdir, rm, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { backupMarketCache } from '../backup-market-cache.mjs';
+import { auditMarketHistoryCoverage } from '../audit-history-coverage.mjs';
 import { assertMarket, defaultSourcePath } from '../config.mjs';
 import { hashFile } from '../hash-file.mjs';
 import {
@@ -371,4 +372,23 @@ test('India history package dry-run rejects in-repo history roots', async (t) =>
     snapshotId: 'latest',
     sourceCommit: 'test-commit',
   }), /outside the source repository/);
+});
+
+test('all-market history audit reports active cache depth and scan-list coverage', async (t) => {
+  const root = await tempDir(t);
+  const cacheRoot = path.join(root, 'ohlcv');
+  await writeIndiaHistoryRecord(cacheRoot, 'NSE__AAA.json', { symbol: 'AAA', bars: indiaBars(1500) });
+  await writeIndiaHistoryRecord(cacheRoot, 'NSE__BBB.json', { symbol: 'BBB', bars: indiaBars(504) });
+  await writeIndiaHistoryRecord(cacheRoot, 'NSE__CCC.json', { symbol: 'CCC', bars: indiaBars(100) });
+
+  const result = await auditMarketHistoryCoverage('india', { root: cacheRoot });
+
+  assert.equal(result.coverage.symbols, 3);
+  assert.equal(result.coverage.median_bars, 504);
+  assert.equal(result.coverage.ge_1500, 1);
+  assert.equal(result.coverage.ge_1260, 1);
+  assert.equal(result.coverage.ge_756, 1);
+  assert.equal(result.coverage.ge_504, 2);
+  assert.equal(result.coverage.lt_504, 1);
+  assert.equal(result.myh_mode, 'TRUE_2Y_3Y_5Y');
 });
